@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const Sequelize = require('sequelize');
 
 
 
@@ -8,9 +9,12 @@ const PORT = 3000;
 require('./src/database/connection');
 require('./src/bootstrap')();
 
+const user = require('./models/user')(global.sequelize, Sequelize.DataTypes);
+
 const func = async () => {
-    const User = require('./models/user')();
-    const u = await User.create({username: 'bek', password: 'password', email: 'bek@gmail.com'}).catch(e => console.log(e));
+
+    var u = await user.create({username: 'bek', password: 'password', email: 'bek@gmail.com'}).catch(e => console.log(e));
+    console.log(u);
 }
 
 func();

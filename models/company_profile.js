@@ -20,7 +20,10 @@ module.exports = (sequelize, DataTypes) => {
     companyAddress: DataTypes.STRING
   }, {});
   company_profile.associate = function(models) {
-    // associations can be defined here
+    company_profile.belongsTo(models.city);
+    company_profile.belongsTo(models.region);
+    company_profile.belongsTo(models.country);
+    company_profile.hasMany(models.user)
   };
   return company_profile;
 };

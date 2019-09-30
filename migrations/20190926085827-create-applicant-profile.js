@@ -2,6 +2,12 @@
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('applicant_profiles', {
+      id: {
+        primaryKey: true,
+        type: Sequelize.UUID,
+        allowNull: false,
+        defaultValue: Sequelize.UUIDV4
+      },
       cv: {
         type: Sequelize.STRING
       },

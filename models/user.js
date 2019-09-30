@@ -18,7 +18,6 @@ module.exports = (sequelize, DataTypes) => {
     emailvarified: DataTypes.BOOLEAN
   }, {});
   user.associate = function(models) {
-    // associations can be defined here
   };
   return user;
 };

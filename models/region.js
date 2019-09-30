@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     regionName: DataTypes.STRING
   }, {});
   region.associate = function(models) {
-    // associations can be defined here
+    region.belongsTo(models.country)
   };
   return region;
 };

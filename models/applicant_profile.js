@@ -15,7 +15,10 @@ module.exports = (sequelize, DataTypes) => {
     selfDescription: DataTypes.TEXT
   }, {});
   applicant_profile.associate = function(models) {
-    // associations can be defined here
+    applicant_profile.belongsTo(models.city);
+    applicant_profile.belongsTo(models.region);
+    applicant_profile.belongsTo(models.country);
+    applicant_profile.belongsTo(models.user);
   };
   return applicant_profile;
 };
