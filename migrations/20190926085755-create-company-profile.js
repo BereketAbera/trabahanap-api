@@ -29,7 +29,7 @@ module.exports = {
       companyLogo: {
         type: Sequelize.STRING
       },
-      companyDescriptioin: {
+      companyDescription: {
         type: Sequelize.TEXT
       },
       businessLicense: {

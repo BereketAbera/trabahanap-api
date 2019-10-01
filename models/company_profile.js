@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     websiteURL: DataTypes.STRING,
     industryType: DataTypes.STRING,
     companyLogo: DataTypes.STRING,
-    companyDescriptioin: DataTypes.TEXT,
+    companyDescription: DataTypes.TEXT,
     businessLicense: DataTypes.TEXT,
     businessLicenseNumber: DataTypes.INTEGER,
     companyAddress: DataTypes.STRING
