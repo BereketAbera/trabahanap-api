@@ -26,6 +26,8 @@ async function authenticate({ username, password }) {
             });
             return userWithoutPassword;
         }
+
+        return user;
     }
 }
 
