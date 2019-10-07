@@ -17,7 +17,13 @@ module.exports = (sequelize, DataTypes) => {
     lastLoggedIn: DataTypes.DATE,
     emailvarified: DataTypes.BOOLEAN
   }, {});
+
   user.associate = function(models) {
+    // user.belongsTo(models.company_profile);
   };
+
+  user.beforeCreate((u, options) => {
+    return bcryptjs.hashSync(u.password, 10);
+  });
   return user;
 };

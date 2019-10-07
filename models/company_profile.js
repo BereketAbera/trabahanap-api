@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     company_profile.belongsTo(models.city);
     company_profile.belongsTo(models.region);
     company_profile.belongsTo(models.country);
-    company_profile.hasMany(models.user)
+    // company_profile.hasMany(models.user)
   };
   return company_profile;
 };
