@@ -84,9 +84,9 @@ module.exports = {
 
     await queryInterface.bulkInsert('company_profiles', companyProfiles, {});
 
-    const companyProfileIds = await queryInterface.sequelize.query(
-      `SELECT id from company_profiles;`
-    );
+    // const companyProfileIds = await queryInterface.sequelize.query(
+    //   `SELECT id from company_profiles;`
+    // );
 
     let users = [];
     for(var i = 0; i<15; i++){
@@ -103,7 +103,7 @@ module.exports = {
         role: role,
         lastLoggedIn: new Date(),
         emailvarified: false,
-        CompanyProfileId: role == 'EMPLOYER' ? companyProfileIds[0][getRandomInt(companyProfileIds[0].length-1)].id : null,
+        // CompanyProfileId: role == 'EMPLOYER' ? companyProfileIds[0][getRandomInt(companyProfileIds[0].length-1)].id : null,
         createdAt: new Date(),
         updatedAt: new Date()
       }
@@ -112,9 +112,9 @@ module.exports = {
 
     await queryInterface.bulkInsert('users', users, {});
 
-    const employersCompanyId = await queryInterface.sequelize.query(
-      `SELECT CompanyProfileId from users where role='EMPLOYER';`
-    );
+    // const employersCompanyId = await queryInterface.sequelize.query(
+    //   `SELECT CompanyProfileId from users where role='EMPLOYER';`
+    // );
 
     let jobs = [];
     for(var i = 0; i<15; i++){
@@ -135,7 +135,7 @@ module.exports = {
         additionalQualifications: faker.lorem.paragraph(),
         applicationStartDate: new Date(),
         applicationEndDate: new Date(d.getTime() + 864000000),
-        CompanyProfileId: employersCompanyId[0][getRandomInt(employersCompanyId[0].length-1)].CompanyProfileId,
+        // CompanyProfileId: employersCompanyId[0][getRandomInt(employersCompanyId[0].length-1)].CompanyProfileId,
         createdAt: new Date(),
         updatedAt: new Date()
       }
