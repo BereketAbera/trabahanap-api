@@ -1,10 +1,13 @@
 const config = require('../../config.json');
 const jwt = require('jsonwebtoken');
 const bcryptjs = require('bcryptjs');
+const sgMail = require('@sendgrid/mail');
 const Sequelize = require('sequelize');
 const _ = require('lodash');
 
 const { User, ApplicantProfile } = require('../models');
+
+sgMail.setApiKey(config.sendGridApiKey);
 
 
 async function authenticate({ username, password }) {
@@ -42,6 +45,8 @@ async function signUpApplicant(body){
             CountryId: body.applicantInfo.CountryId
         }).catch(e => console.log(e));
         const applicant = await ApplicantProfile.findOne({where: { id: applicantProfile.id }, include: [{model: User}]}).catch(e => console.log(e));
+        const message = constructEmail(user);
+        sgMail.send(message);
         return applicant;
     }
     
@@ -49,11 +54,23 @@ async function signUpApplicant(body){
 
 async function emailUnique({ email }){
     const foundEmail = await User.findOne({where: { email }}).catch(e => console.log(e));
-    console.log(foundEmail);
     if(foundEmail){
         return false;
     }
+
     return true;
+}
+
+function constructEmail(user){
+    const msg = {
+        to: user.email,
+        from: "support@trabahanap-backend.herokuapp.com",
+        subject: "Email Verification",
+        text: "Click hear to activate your account.",
+        html: `Clcik <a href="#">hear</a> to activate your account`
+    }
+
+    return msg;
 }
 
 module.exports = {

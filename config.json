@@ -1,3 +1,4 @@
 {
-    "secret": "random-secret-text"
+    "secret": "random-secret-text",
+    "sendGridApiKey": "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"
 }
