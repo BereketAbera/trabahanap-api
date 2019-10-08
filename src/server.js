@@ -4,7 +4,7 @@ const cors = require('cors');
 const errorHandler = require('./_helpers/error_handler');
 const jwt = require('./_helpers/jwt');
 
-
+require('./database/connection');
 const routes = require('./routes');
 
 const PORT = process.env.PORT || 3000;

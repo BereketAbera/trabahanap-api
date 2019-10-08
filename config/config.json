@@ -1,12 +1,12 @@
 {
-  "development": {
+  "development3": {
     "username": "sql9307713",
     "password": "NyhsxYeSvU",
     "database": "sql9307713",
     "host": "sql9.freemysqlhosting.net",
     "dialect": "mysql"
   },
-  "development2": {
+  "development": {
     "username": "root",
     "password": null,
     "database": "trabahanap_development",

@@ -20,7 +20,8 @@
     "mysql2": "^1.7.0",
     "pg": "^7.12.1",
     "pg-hstore": "^2.3.3",
-    "sequelize": "^5.19.0"
+    "sequelize": "^5.19.0",
+    "validatory": "^0.3.1"
   },
   "engines": {
     "node": "10.x"

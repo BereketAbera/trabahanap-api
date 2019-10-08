@@ -4,10 +4,8 @@ const bcryptjs = require('bcryptjs');
 const Sequelize = require('sequelize');
 const _ = require('lodash');
 
-const User = require('../../models/user')(global.sequelize, Sequelize.DataTypes);
-const CompanyProfile = require('../../models/company_profile')(global.sequelize, Sequelize.DataTypes);
-User.belongsTo(CompanyProfile);
-CompanyProfile.hasMany(User);
+const { User, ApplicantProfile } = require('../models');
+
 
 async function authenticate({ username, password }) {
     const user = await User.findOne({ where: {username}, include: [{model: CompanyProfile}]}).catch(e => console.log(e));
@@ -31,14 +29,34 @@ async function authenticate({ username, password }) {
     }
 }
 
-async function getAll() {
-    // return users.map(u => {
-    //     const { password, ...userWithoutPassword } = u;
-    //     return userWithoutPassword;
-    // });
+async function signUpApplicant(body){
+    const unique = await emailUnique(body.userInfo);
+    if(unique){
+        body.userInfo["role"] = "APPLICANT";
+        const user = await User.create(body.userInfo).catch(e => console.log(e));
+        const applicantProfile = await ApplicantProfile.create({
+            ...body.applicantInfo, 
+            "UserId": user.id, 
+            CityId: body.applicantInfo.CityId,
+            RegionId: body.applicantInfo.RegionId,
+            CountryId: body.applicantInfo.CountryId
+        }).catch(e => console.log(e));
+        const applicant = await ApplicantProfile.findOne({where: { id: applicantProfile.id }, include: [{model: User}]}).catch(e => console.log(e));
+        return applicant;
+    }
+    
+}
+
+async function emailUnique({ email }){
+    const foundEmail = await User.findOne({where: { email }}).catch(e => console.log(e));
+    console.log(foundEmail);
+    if(foundEmail){
+        return false;
+    }
+    return true;
 }
 
 module.exports = {
     authenticate,
-    getAll
+    signUpApplicant
 };
