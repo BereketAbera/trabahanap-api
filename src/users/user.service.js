@@ -5,17 +5,19 @@ const sgMail = require('@sendgrid/mail');
 const Sequelize = require('sequelize');
 const _ = require('lodash');
 
-const { User, ApplicantProfile } = require('../models');
+const { User, ApplicantProfile, CompanyProfile } = require('../models');
 
 sgMail.setApiKey(config.sendGridApiKey);
 
 
-async function authenticate({ username, password }) {
-    const user = await User.findOne({ where: {username}, include: [{model: CompanyProfile}]}).catch(e => console.log(e));
+async function authenticate({ email, password }) {
+    console.log(email, password);
+    const user = await User.findOne({ where: {email}, include: [{model: CompanyProfile}]}).catch(e => console.log(e));
+    console.log(user);
     if (user) {
         const pass = bcryptjs.compareSync(password, user.password);
         if(pass){
-            const token = jwt.sign({ sub: user.id }, config.secret, { expiresIn: '2h' });
+            const token = jwt.sign({ sub: user.id, role: user.role }, config.secret, { expiresIn: '2h' });
             const userWithoutPassword = {};
             _.map(user.dataValues, (value, key) => {
                 if(key == 'password'){
