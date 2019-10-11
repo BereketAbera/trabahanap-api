@@ -4,6 +4,8 @@ const userController = require('../users/users.controller');
 
 app.post('/applicant_signup', userController.signUpApplicant);
 
+app.post('/employer_signup', userController.signUpEmployer)
+
 app.post('/login', userController.authenticate);
 
 app.get('/logout', (req, res) => {

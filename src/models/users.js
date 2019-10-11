@@ -42,10 +42,14 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       defaultValue: '2019-10-08 11:33:47'
     },
-    emailvarified: {
+    emailVerified: {
       type: DataTypes.INTEGER(1),
       allowNull: true,
       defaultValue: '0'
+    },
+    emailVerificationToken:{
+      type: DataTypes.STRING,
+      allowNull: true
     },
     createdAt: {
       type: DataTypes.DATE,

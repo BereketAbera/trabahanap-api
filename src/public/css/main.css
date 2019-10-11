@@ -1,0 +1,159 @@
+*{
+    padding: 0px;
+    margin: 0px;
+    box-sizing: border-box;
+    font-family: 'Nunito Sans', sans-serif;
+}
+
+html{
+    font-size: 30%;
+    font-family: 'Nunito Sans', Arial;
+}
+
+.container{
+    margin-top: 8rem;
+}
+
+.footer {
+    display: flex;
+    color: #fff;
+}
+.footer__primary {
+    background-color: #2a2a2a;
+    height: 90%;
+    justify-content: space-evenly;
+}
+.footer__primary .footer__logo-text {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 0;
+    width: 30%;
+}
+.footer__primary .footer__logo-text .ft-logo {
+    width: 10rem;
+    height: 10rem;
+}
+.footer__primary .footer__logo-text .logo-text {
+    color: #fff;
+    font-size: 1.5rem;
+    width: 60%;
+}
+.footer__primary .footer__menu {
+    flex: 1;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.5rem;
+}
+.footer__primary .footer__social {
+    padding: 0 2rem;
+    justify-content: center;
+    align-items: center;
+}
+.footer__primary .footer__social .fb-logo {
+    width: 6rem;
+    height: 6rem;
+}
+.footer__secondary {
+    height: 10%;
+    background-color: #000;
+    font-size: 1.2rem;
+    padding: 1rem 2.5rem;
+    justify-content: space-between;
+}
+.footer__secondary a {
+    text-decoration: none;
+    color: #fff;
+}
+.footer__secondary a:not(:last-child) {
+    margin-right: 1rem;
+}
+  
+
+.header-section {
+    position: fixed;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #000000ee;
+    padding-left: 2rem;
+    width: 100%;
+    height: 7rem;
+    z-index: 9999;
+}
+.header-section__menu-icon {
+    color: #fff;
+    font-size: 3rem;
+}
+.header-section__menu-icon:hover {
+    cursor: pointer;
+}
+.header-section__logo {
+    /* width: 7.7rem; */
+    height: 9rem;
+}
+
+.varification_container{
+    width: 80%;
+    margin: 3rem auto;
+    color: #2a2a2a;
+    font-size: 2rem;
+}
+
+.success{
+    color: rgb(77, 252, 77);
+    margin: 2rem 0;
+}
+
+.error{
+    color: rgb(250, 99, 99);
+    margin: 2rem 0;
+}
+  
+@media only screen and (min-width:320px) {
+    html{
+        font-size: 40%;
+    }
+    .footer__secondary {
+        font-size: 1.5rem;
+      }
+}
+
+@media only screen and (min-width: 425px) {
+    html{
+        font-size: 45%;
+    }
+    .footer__primary .footer__logo-text .ft-logo {
+      width: 15rem;
+      height: 15rem;
+    }
+  
+    .footer__primary .footer__social {
+      padding: 0 5rem;
+    }
+    .footer__primary .footer__social .fb-logo {
+      width: 8rem;
+      height: 8rem;
+    }
+}
+
+@media only screen and (min-width: 600px) {
+    html{
+        font-size: 50%;
+    }
+    .header-section .header-section__menu-icon {
+      display: none;
+    }
+}
+
+@media only screen and (min-width: 920px) {
+    html{
+        font-size: 62.5%;
+    }
+    .footer__primary .footer__social {
+      padding: 0 10rem;
+    }
+}
+
+

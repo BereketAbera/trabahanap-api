@@ -1,18 +1,25 @@
+require('dotenv').config();
 const express = require('express');
+const path = require('path');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const errorHandler = require('./_helpers/error_handler');
-const jwt = require('./_helpers/jwt');
+const hbs = require( 'express-handlebars');
 
+const errorHandler = require('./_helpers/error_handler');
 const routes = require('./routes');
 
 const PORT = process.env.PORT || 3000;
-// DB connection
 
 
 // const user = require('./models/user')(global.sequelize, Sequelize.DataTypes);
 
 let app = express();
+
+app.use(express.static(__dirname + '/public'));
+// view engine setup
+app.engine('.hbs', hbs({extname: '.hbs'}));
+app.set('view engine', '.hbs');
+app.set('views', path.join(__dirname, 'views'));
 
 app.use(bodyParser.json());
 

@@ -1,8 +1,11 @@
+require('dotenv').config();
 const config = require('../../config.json');
 const jwt = require('jsonwebtoken');
 const bcryptjs = require('bcryptjs');
 const sgMail = require('@sendgrid/mail');
-const Sequelize = require('sequelize');
+const uuidv4 = require('uuid/v4');
+const ROLE = require('../_helpers/role');
+const constructEmail = require('../_helpers/construct_email');
 const _ = require('lodash');
 
 const { User, ApplicantProfile, CompanyProfile } = require('../models');
@@ -11,9 +14,7 @@ sgMail.setApiKey(config.sendGridApiKey);
 
 
 async function authenticate({ email, password }) {
-    console.log(email, password);
     const user = await User.findOne({ where: {email}, include: [{model: CompanyProfile}]}).catch(e => console.log(e));
-    console.log(user);
     if (user) {
         const pass = bcryptjs.compareSync(password, user.password);
         if(pass){
@@ -35,47 +36,54 @@ async function authenticate({ email, password }) {
 }
 
 async function signUpApplicant(body){
-    const unique = await emailUnique(body.userInfo);
+    const unique = await isEmailUnique(body);
     if(unique){
-        body.userInfo["role"] = "APPLICANT";
-        const user = await User.create(body.userInfo).catch(e => console.log(e));
-        const applicantProfile = await ApplicantProfile.create({
-            ...body.applicantInfo, 
-            "UserId": user.id, 
-            CityId: body.applicantInfo.CityId,
-            RegionId: body.applicantInfo.RegionId,
-            CountryId: body.applicantInfo.CountryId
-        }).catch(e => console.log(e));
-        const applicant = await ApplicantProfile.findOne({where: { id: applicantProfile.id }, include: [{model: User}]}).catch(e => console.log(e));
+        body["role"] = ROLE.APPLICANT;
+        const user = await User.create({...body, emailVerificationToken: uuidv4()}).catch(e => console.log(e));
         const message = constructEmail(user);
         sgMail.send(message);
-        return applicant;
+        return user;
     }
     
 }
 
-async function emailUnique({ email }){
+async function signUpEmployer(body){
+    const unique = await isEmailUnique(body);
+    if(unique){
+        body["role"] = ROLE.EMPLOYER;
+        const user = await User.create({...body, emailVerificationToken: uuidv4()}).catch(e => console.log(e));
+        const message = constructEmail(user);
+        sgMail.send(message);
+        return user;
+    }
+   
+}
+
+async function verifyEmail(req){
+    const user = await User.findOne({where: {emailVerificationToken: req.query.token}}).catch(err => console.log(err));
+    if(user){
+        const updated = await user.update({ emailVerified: true}).catch(err => console.log(err));
+        if(updated){
+            return {success: true, message: "Email verifyed successfully.", HOST_URL: process.env.HOST_URL_FRONTEND}
+        }
+    }
+
+    return { success: false, message: "Cannot varify account.", HOST_URL: process.env.HOST_URL_FRONTEND}
+}
+
+// check there aren't registered users with the given email
+async function isEmailUnique({ email }){
     const foundEmail = await User.findOne({where: { email }}).catch(e => console.log(e));
     if(foundEmail){
         return false;
     }
-
     return true;
 }
 
-function constructEmail(user){
-    const msg = {
-        to: user.email,
-        from: "support@trabahanap-backend.herokuapp.com",
-        subject: "Email Verification",
-        text: "Click hear to activate your account.",
-        html: `Clcik <a href="#">hear</a> to activate your account`
-    }
-
-    return msg;
-}
 
 module.exports = {
     authenticate,
-    signUpApplicant
+    signUpApplicant,
+    signUpEmployer,
+    verifyEmail
 };

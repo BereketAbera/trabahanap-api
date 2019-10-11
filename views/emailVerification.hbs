@@ -1,0 +1,13 @@
+<div class="varification_container">
+    {{#if response.success}}
+        <div class="success">
+            Your Verification Was Successful
+        </div>
+        {{ response.message }} <a href="{{ response.HOST_URL }}">Go To Home</a>
+    {{else}}
+        <div class="error">
+            Your Verification Was Not Successful
+        </div>
+        {{ response.message }} <a href="{{ response.HOST_URL }}">Go To Home</a>
+    {{/if}}
+</div>

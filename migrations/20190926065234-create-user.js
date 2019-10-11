@@ -37,7 +37,7 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: new Date()
       },
-      emailvarified: {
+      emailVerified: {
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },

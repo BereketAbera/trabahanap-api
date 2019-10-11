@@ -102,7 +102,7 @@ module.exports = {
         gender: genders[i%2],
         role: role,
         lastLoggedIn: new Date(),
-        emailvarified: false,
+        emailVerified: false,
         CompanyProfileId: role == 'EMPLOYER' ? companyProfileIds[0][getRandomInt(companyProfileIds[0].length-1)].id : null,
         createdAt: new Date(),
         updatedAt: new Date()
