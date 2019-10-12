@@ -19,7 +19,7 @@ module.exports = function constructEmail(user){
 				                    <tr>
 					                    <td style="padding-top:30px;padding-bottom:20px">
 						                    <h4>
-							                    Click <a href="${process.env.HOST_URL}/verification?token=${user.emailVerificationToken}&email=${user.email}" target="_blank">hear ${process.env.HOST_URL}/verification?token=${user.emailVerificationToken}</a> to activate your account.
+							                    Click <a href="${process.env.HOST_URL}/auth/email_verification?token=${user.emailVerificationToken}&email=${user.email}" target="_blank">hear ${process.env.HOST_URL}/verification?token=${user.emailVerificationToken}</a> to activate your account.
 						                    </h4>
 				                </tbody>
 			                </table>
