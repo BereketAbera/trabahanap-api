@@ -59,6 +59,29 @@ async function signUpEmployer(body){
    
 }
 
+async function createApplicantProfile(body){
+    const user = await User.findOne({where: { id: body.user_id, role: ROLE.APPLICANT}}).catch(err => console.log(err));
+    if(user){
+        const appProfile = await ApplicantProfile.create({...body, UserId: body.user_id}).catch(err => console.log(err));
+        if(appProfile){
+            return appProfile;
+        }
+    }
+}
+
+async function createCompanyProfile(body){
+    const user = await User.findOne({where: { id: body.user_id, role: ROLE.EMPLOYER}}).catch(err => console.log(err));
+    if(user){
+        const compProfile = await CompanyProfile.create(body).catch(err => console.log(err));
+        if(compProfile){
+            const updated = await user.update({companyProfileId: compProfile.id});
+            if(updated){
+                return compProfile;
+            }
+        }
+    }
+}
+
 async function verifyEmail(req){
     const user = await User.findOne({where: {emailVerificationToken: req.query.token}}).catch(err => console.log(err));
     if(user){
@@ -85,5 +108,7 @@ module.exports = {
     authenticate,
     signUpApplicant,
     signUpEmployer,
-    verifyEmail
+    verifyEmail,
+    createApplicantProfile,
+    createCompanyProfile
 };
