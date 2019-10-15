@@ -1,5 +1,3 @@
-const express = require('express');
-const validator = require('validator');
 const userService = require('./user.service');
 const _ = require('lodash');
 const {
