@@ -67,7 +67,7 @@ module.exports = {
         contactNumber: faker.random.number(),
         websiteURL: faker.internet.url(),
         industryType: faker.commerce.department(),
-        companyLogo: faker.image.avatar(),
+        companyLogo: faker.image.business(),
         companyDescription: faker.lorem.paragraph(),
         businessLicense: faker.internet.url(),
         businessLicenseNumber: faker.random.number(),
