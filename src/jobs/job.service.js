@@ -17,7 +17,6 @@ async function getAllJobs(page){
 
     if(jobs){
         pager.totalItems = jobs.count;
-        pager.currentPage = page;
         pager.totalPages = jobs.count/pager.pageSize;
         return {
             pager,
