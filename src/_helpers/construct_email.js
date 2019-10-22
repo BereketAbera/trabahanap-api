@@ -9,7 +9,7 @@ module.exports = function constructEmail(user){
 	            <tbody>
 	                <tr>
 		                <td style="margin:0;padding:5px 15px;background:#ff5722;color:#ffffff;font-size:25px;font-family:Verdana" align="left" valign="middle">
-			                Email Varification
+			                Email Verification
 		                </td>
 	                </tr>
 	                <tr>

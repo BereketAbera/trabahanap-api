@@ -1,6 +1,6 @@
 const app = module.exports = require('express')();
 
-const userController = require('../users/users.controller');
+const userController = require('../controllers/users.controller');
 
 app.post('/applicant_signup', userController.signUpApplicant);
 

@@ -27,6 +27,8 @@ Region.belongsTo(Country);
 
 Job.belongsTo(CompanyProfile);
 
+Location.belongsTo(CompanyProfile);
+
 
 module.exports = {
     User,

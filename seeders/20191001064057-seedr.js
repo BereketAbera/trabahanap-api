@@ -117,7 +117,7 @@ module.exports = {
     );
 
     let jobs = [];
-    for(var i = 0; i<15; i++){
+    for(var i = 0; i<55; i++){
       var eduAtain = ['Highschool', 'College', 'University', 'Degree', 'Deploma']
       var salRange = ['<500', '500-1000', '1000-5000', '5000-10000', '>10000']
       var d = new Date();

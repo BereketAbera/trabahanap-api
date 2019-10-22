@@ -4,7 +4,9 @@
   "description": "",
   "main": "/src/server.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "nodemon src/server.js",
+    "test": "mocha src/**/*.test.js --timeout 5000",
+    "test-watch": "nodemon --exec 'npm test'"
   },
   "author": "",
   "license": "ISC",
@@ -31,5 +33,11 @@
   },
   "engines": {
     "node": "10.x"
+  },
+  "devDependencies": {
+    "expect": "^24.9.0",
+    "mocha": "^6.2.2",
+    "nodemon": "^1.19.4",
+    "supertest": "^4.0.2"
   }
 }
