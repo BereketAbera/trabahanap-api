@@ -15,7 +15,7 @@ function authenticate(req, res, next) {
 function signUpApplicant(req, res, next){
     const valid = validateUser(req.body);
     if(valid != true){
-        res.status(200).json({success: false, error: valid});
+        res.status(200).json({success: false, validationError: valid});
         return;
     }
 
@@ -29,7 +29,7 @@ function signUpEmployer(req, res, next){
     const valid = validateUser(req.body);
     
     if(valid != true){
-        res.status(200).json({success: false, error: valid});
+        res.status(200).json({success: false, validationError: valid});
         return;
     }
 
@@ -42,7 +42,7 @@ function createApplicantProfile(req, res, next){
     const valid = validateApplicantProfile(req.body);
 
     if(valid != true){
-        res.status(200).json({success: false, error: valid});
+        res.status(200).json({success: false, validationError: valid});
         return;
     }
 
@@ -55,7 +55,7 @@ function createCompanyProfile(req, res, next){
     const valid = validateCompanyProfile(req.body);
 
     if(valid != true){
-        res.status(200).json({success: false, error: valid});
+        res.status(200).json({success: false, validationError: valid});
         return;
     }
 

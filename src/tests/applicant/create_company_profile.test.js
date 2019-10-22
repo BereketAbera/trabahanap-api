@@ -6,21 +6,25 @@ const {User} = require('../../models');
 const ROLE = require('./../../_helpers/role');
 
 var user = {
-    email: "applicant@gmail.com",
+    email: "employer@gmail.com",
     username: "username",
     password: "password",
     firstName: "firstname",
     lastName: "lastname",
     gender: "MALE",
-    role: ROLE.APPLICANT
+    role: ROLE.EMPLOYER
 }
 
-var applicant = {
-	currentEmployer: "currentemployer",
-	currentOccopation: "currentoccopation",
-	address1: "address1",
-	address2: "address2",
-	selfDescription: "selfdescription",
+const employer = {
+	zipcode: 12422,
+    companyName: "companyname",
+	contactPerson: "contactperson",
+	contactNumber: 123412341,
+	websitURL: "websiturl",
+	industryType: "industrytype",
+	companyDescription: "companydescription",
+	businessLicense: 123412341,
+	companyAddress: "companyaddress",
 	CityId: 1,
 	RegionId: 3,
 	CountryId: 2
@@ -29,7 +33,7 @@ var applicant = {
 var token = null;
 
 
-describe('Post /applicant/profile', () => {
+describe('Post /employer/profile', () => {
     before((done) => {
         User.destroy({where: { email: user.email}}).then(x => {
             User.create(user).then(y => {
@@ -46,9 +50,9 @@ describe('Post /applicant/profile', () => {
 
     it('should return invalid token if the token is not valid or tempered with', (done) => {
         request(app)
-            .post('/applicant/profile')
+            .post('/employer/profile')
             .set('Authorization', 'Bearer ' + token  + "random text")
-            .send(applicant)
+            .send(employer)
             .expect(200)
             .expect((res) => {
                 expect(res.body.success).toBe(false);
@@ -57,25 +61,25 @@ describe('Post /applicant/profile', () => {
             .end(err => done(err));
     })
 
-    it('should add profile to un existing applicant', (done) => {
+    it('should add company profile to un existing employer', (done) => {
         
         request(app)
-            .post('/applicant/profile')
+            .post('/employer/profile')
             .set('Authorization', 'Bearer ' + token)
-            .send(applicant)
+            .send(employer)
             .expect(200)
             .expect((res) => {
                 expect(res.body.success).toBe(true);
-                expect(res.body.applicantProfile).toBeDefined();
+                expect(res.body.companyProfile).toBeDefined();
             })
             .end(err => done(err));
     })
 
-    it('should not add an invalid applicant profile', (done) => {
+    it('should not add an invalid company profile', (done) => {
         request(app)
-            .post('/applicant/profile')
+            .post('/employer/profile')
             .set('Authorization', 'Bearer ' + token)
-            .send({...applicant, currentEmployer: ""})
+            .send({...employer, companyName: ""})
             .expect(res => {
                 expect(res.body.success).toBe(false);
                 expect(res.body.validationError).toBeDefined();

@@ -66,7 +66,7 @@ describe("Post /auth/employer_signup", () => {
             .expect(200)
             .expect((res) => {
                 expect(res.body.success).toBe(false);
-                expect(res.body.error).toBeDefined();
+                expect(res.body.validationError).toBeDefined();
             })
             .end((err) => done(err));
     })
