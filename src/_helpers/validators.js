@@ -4,7 +4,7 @@ const _ = require('lodash');
 function validateUser(data){
     const errors = {};
     let valid = true;
-    const fields = ["email", "username", "password", "firstName", "lastName", "gender"];
+    const fields = ["email", "username", "phoneNumber", "password", "firstName", "lastName", "gender"];
     const keys = _.keys(data);
     fields.map(field => {
         if(keys.includes(field)){

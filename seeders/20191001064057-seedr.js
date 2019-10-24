@@ -95,6 +95,7 @@ module.exports = {
       var user = {
         id: faker.random.uuid(),
         username: faker.name.firstName().toLocaleLowerCase(),
+        phoneNumber: faker.phone.phoneNumberFormat(),
         password: bcryptjs.hashSync('password', 10),
         email: faker.internet.email(),
         firstName: faker.name.firstName(),
