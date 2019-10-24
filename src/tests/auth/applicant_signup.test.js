@@ -7,6 +7,7 @@ const {User} = require('../../models');
 var user = {
     email: "bereket5042@gmail.com",
     username: "username",
+    phoneNumber: "1234-121-124",
     password: "password",
     firstName: "firstname",
     lastName: "lastname",

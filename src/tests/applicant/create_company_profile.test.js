@@ -8,6 +8,7 @@ const ROLE = require('./../../_helpers/role');
 var user = {
     email: "employer@gmail.com",
     username: "username",
+    phoneNumber: "1234-121-124",
     password: "password",
     firstName: "firstname",
     lastName: "lastname",
