@@ -21,7 +21,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     contactNumber: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.STRING(225),
       allowNull: true
     },
     websiteURL: {
@@ -45,7 +45,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true
     },
     businessLicenseNumber: {
-      type: DataTypes.INTEGER(11),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     companyAddress: {

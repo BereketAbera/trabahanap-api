@@ -18,7 +18,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       contactNumber: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       websiteURL: {
         type: Sequelize.STRING
@@ -36,7 +36,7 @@ module.exports = {
         type: Sequelize.TEXT
       },
       businessLicenseNumber: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       companyAddress: {
         type: Sequelize.STRING
