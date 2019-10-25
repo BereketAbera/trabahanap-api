@@ -66,7 +66,7 @@ function validateApplicantProfile(data){
 function validateCompanyProfile(data){
     const errors = {};
     let valid = true;
-    const fields = ["zipcode", "companyName", "contactPerson", "contactNumber", "websitURL", "industryType", "companyDescription", "businessLicense", "companyAddress", "CityId", "RegionId", "CountryId"];
+    const fields = ["zipcode", "companyName", "contactPerson", "contactNumber", "websiteURL", "industryType", "companyDescription", "businessLicense", "companyAddress", "CityId", "RegionId", "CountryId"];
     const keys = _.keys(data);
     fields.map(field => {
         if(keys.includes(field)){
