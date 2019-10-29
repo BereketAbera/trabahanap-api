@@ -82,6 +82,19 @@ function verifyEmail(req, res, next){
         .catch(err => next(err));
 }
 
+function editCompanyProfile(req, res, next){
+    const valid = validateCompanyProfile(req.body);
+
+    if(valid != true){
+        res.status(200).json({success: false, validationError: valid});
+        return;
+    }
+
+    editUserCompanyProfile({...req.body, user_id: req.user.sub})
+        .then(companyProfile => companyProfile ? res.status(200).json({success: true, companyProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .catch(err => next(err));
+}
+
 async function authenticateUsers({ email, password }) {
     const user = await userService.getUserByEmail(email);
     if (user) {
@@ -149,6 +162,21 @@ async function createUserCompanyProfile(body){
     }
 }
 
+async function editUserCompanyProfile(body){
+    let user = await userService.getUserById(body.user_id);
+    if(user){
+        if(user.companyProfileId == body.id){
+            let compProfile = userService.updateCompanyProfileById(body.id, body);
+            if(compProfile){
+                let newUser = await userService.getUserById(body.user_id);
+                if(newUser){
+                    return newUser;
+                }
+            }
+        }
+    }
+}
+
 async function verifyUserEmail(req){
     const user = await userService.getUserByEmailToken(req.query.emailVerificationToken);
     if(user){
@@ -176,5 +204,6 @@ module.exports = {
     signUpEmployer,
     verifyEmail,
     createApplicantProfile,
-    createCompanyProfile
+    createCompanyProfile,
+    editCompanyProfile
 }

@@ -29,8 +29,13 @@ async function addApplicantProfile(applicantProfile){
 }
 
 async function updateUserById(id, newUser){
-    let user = await User.findOne({where: { id }}).catch(err => console.log(err))
+    let user = await User.findOne({where: { id }}).catch(err => console.log(err));
     return await user.update(newUser);
+}
+
+async function updateCompanyProfileById(id, companyProfile){
+    let compProfile = await CompanyProfile.findOne({where: { id }}).catch(err => console.log(err));
+    return await compProfile.update(companyProfile)
 }
 
 
@@ -42,5 +47,6 @@ module.exports = {
     getUserById,
     getUserByEmailToken,
     getUserByEmail,
-    createUser
+    createUser,
+    updateCompanyProfileById
 };
