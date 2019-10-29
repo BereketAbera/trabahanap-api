@@ -70,6 +70,7 @@ describe('Post /employer/profile', () => {
             .send(employer)
             .expect(200)
             .expect((res) => {
+                console.log(res.body);
                 expect(res.body.success).toBe(true);
                 expect(res.body.companyProfile).toBeDefined();
             })

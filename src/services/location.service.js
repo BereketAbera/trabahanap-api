@@ -13,40 +13,22 @@ async function getLocationById(LocationId){
     }
 }
 
-async function createLocation(location){
-    const loc = await Location.create(location).catch(err => console.log(err));
-    if(loc){
-        return loc;
-    }
+async function getCities(){
+    return await City.findAll().catch(err => console.log(err));
 }
 
-async function getAllCities(){
-    const cities = await City.findAll().catch(err => console.log(err));
-    if(cities){
-        return cities;
-    }
+async function getRegions(){
+    return await Region.findAll().catch(err => console.log(err));
 }
 
-async function getAllRegions(){
-    const regions = await Region.findAll().catch(err => console.log(err));
-    if(regions){
-        return regions;
-    }
+async function getCountries(){
+    return await Country.findAll().catch(err => console.log(err));
 }
-
-async function getAllCountries(){
-    const countries = await Country.findAll().catch(err => console.log(err));
-    if(countries){
-        return countries;
-    }
-}
-
 
 
 module.exports = {
     getLocationById,
-    createLocation,
-    getAllCities,
-    getAllRegions,
-    getAllCountries
+    getCities,
+    getRegions,
+    getCountries
 }
