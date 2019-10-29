@@ -21,7 +21,7 @@ const employer = {
     companyName: "companyname",
 	contactPerson: "contactperson",
 	contactNumber: 123412341,
-	websitURL: "websiturl",
+	websiteURL: "websiteurl",
 	industryType: "industrytype",
 	companyDescription: "companydescription",
 	businessLicense: 123412341,

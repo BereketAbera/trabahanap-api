@@ -76,7 +76,8 @@ async function createCompanyProfile(body){
         if(compProfile){
             const updated = await user.update({companyProfileId: compProfile.id});
             if(updated){
-                return compProfile;
+                const user = await User.findOne({ where: {id: updated.id}, include: [{model: CompanyProfile}]}).catch(e => console.log(e));
+                return user;
             }
         }
     }
