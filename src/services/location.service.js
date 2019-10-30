@@ -13,6 +13,10 @@ async function getLocationById(LocationId){
     }
 }
 
+async function addLocation(location){
+    return await Location.create(location).catch(err => console.log(err));
+}
+
 async function getCities(){
     return await City.findAll().catch(err => console.log(err));
 }
@@ -30,5 +34,6 @@ module.exports = {
     getLocationById,
     getCities,
     getRegions,
-    getCountries
+    getCountries,
+    addLocation
 }

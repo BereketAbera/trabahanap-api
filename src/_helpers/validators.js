@@ -101,8 +101,42 @@ function validateCompanyProfile(data){
     return errors;
 }
 
+function validateLocation(data){
+    const errors = {};
+    let valid = true;
+    const fields = ["locationName", "locationPhoneNumber", "isHeadOffice", "address1", "address2", "companyProfileId", "CityId", "RegionId", "CountryId"];
+    const keys = _.keys(data);
+    fields.map(field => {
+        if(keys.includes(field)){
+            return;
+        }
+        valid = false
+    }) 
+    if(!valid){
+        return "some required fields are not present";
+    }
+
+    _.map(data, (value, key) => {
+        if(key == "locationPhoneNumber"){
+            if(!validator.isNumeric(value + '')){
+                errors[key] = `${key} should be a number`;
+                valid = false;
+            }
+        }else if(validator.isEmpty(value + '')){
+            errors[key] = `${key} is not valid`;
+            valid = false;
+        }
+    })
+
+    if(valid){
+        return valid;
+    }
+    return errors;
+}
+
 module.exports = {
     validateUser,
     validateApplicantProfile,
-    validateCompanyProfile
+    validateCompanyProfile,
+    validateLocation
 }

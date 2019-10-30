@@ -38,6 +38,10 @@ async function updateCompanyProfileById(id, companyProfile){
     return await compProfile.update(companyProfile)
 }
 
+async function getCompanyProfileById(id){
+    return await CompanyProfile.findOne({where: {id}}).catch(err => console.log(err));
+}
+
 
 module.exports = {
     updateUserById,
@@ -48,5 +52,6 @@ module.exports = {
     getUserByEmailToken,
     getUserByEmail,
     createUser,
-    updateCompanyProfileById
+    updateCompanyProfileById,
+    getCompanyProfileById
 };

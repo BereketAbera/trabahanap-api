@@ -28,6 +28,9 @@ Region.belongsTo(Country);
 Job.belongsTo(CompanyProfile);
 
 Location.belongsTo(CompanyProfile);
+Location.belongsTo(City);
+Location.belongsTo(Region);
+Location.belongsTo(Country);
 
 
 module.exports = {
