@@ -7,4 +7,4 @@ app.get('/jobs', (req, res) => {
 
 app.post('/profile', userController.createCompanyProfile);
 
-app.put('/profile', userController.editCompanyProfile);
+app.put('/profile/:id', userController.editCompanyProfile);

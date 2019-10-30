@@ -90,7 +90,7 @@ function editCompanyProfile(req, res, next){
         return;
     }
 
-    editUserCompanyProfile({...req.body, user_id: req.user.sub})
+    editUserCompanyProfile({...req.body, user_id: req.user.sub}, req.params.id)
         .then(companyProfile => companyProfile ? res.status(200).json({success: true, companyProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
         .catch(err => next(err));
 }
@@ -162,11 +162,11 @@ async function createUserCompanyProfile(body){
     }
 }
 
-async function editUserCompanyProfile(body){
+async function editUserCompanyProfile(body, id){
     let user = await userService.getUserById(body.user_id);
     if(user){
-        if(user.companyProfileId == body.id){
-            let compProfile = userService.updateCompanyProfileById(body.id, body);
+        if(user.companyProfileId == id){
+            let compProfile = await userService.updateCompanyProfileById(id, body);
             if(compProfile){
                 let newUser = await userService.getUserById(body.user_id);
                 if(newUser){
