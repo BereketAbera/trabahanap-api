@@ -10,3 +10,5 @@ app.get('/location/cities', locationsController.getAllCities);
 app.get('/location/regions', locationsController.getAllRegions);
 
 app.get('/location/countries', locationsController.getAllCountries);
+
+app.get('/location/cities/:regionId', locationsController.getRegionCities);

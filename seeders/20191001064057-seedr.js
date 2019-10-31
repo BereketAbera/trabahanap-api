@@ -4,34 +4,51 @@ const bcryptjs = require('bcryptjs');
 
 const ROLES = ['ADMIN', 'EMPLOYER', 'APPLICANT'];
 
+console.log("running seedr");
+
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    let countries = [];
-    for(var i = 0; i<10; i++){
-      var country = {
-        countryName: faker.address.country(),
+    let countries = [
+      {
+        countryName: "Philippines",
         createdAt: new Date(),
         updatedAt: new Date()
       }
-      countries.push(country);
+    ];
 
-    }
     await queryInterface.bulkInsert('countries', countries, {});
 
     const countryIds = await queryInterface.sequelize.query(
       `SELECT id from countries;`
     );
     let regions = [];
-    for(var i = 0; i<10; i++){
+    // let rleft = ["Northern Mindanao", "Soccsksargen", "Westerb Visayas", "Zanboanga"];
+    let r = ["ARMM", "Bicol", "Cagayan", "Calabarzon", "CAR", "Caraga", "Central Luzon", "Central Visayas", "Davao", "Eastern Visayas", "Ilocos", "Mimaraopa", "NCR"];
+    for(var i = 0; i<r.length; i++){
       var region = {
-        regionName: faker.address.state(),
-        CountryId: countryIds[0][getRandomInt(countryIds[0].length-1)].id,
+        regionName: r[i],
+        CountryId: countryIds[0][0].id,
         createdAt: new Date(),
         updatedAt: new Date()
       }
       regions.push(region);
-
     }
+
+    let c = [
+      ["Basilan", "Lanao del Sur", "Maguindanao", "Sulu", "Tawi-Tawi"], 
+      ["Albay", "Camarines Norte", "Camarines Sur", "Catanduanes", "Masbate", "Naga", "Sorsogon"], 
+      ["Batanes", "Cagayan", "Isabela", "Nueva Vizcaya", "Quirino", "Santiago"], 
+      ["Batangas", "Cavite", "Laguna", "Lucena", "Quezon", "Rizal"], 
+      ["Abra", "Apayao", "Baguio", "Ifugao", "Kalinga", "Mt. Province"],
+      ["Agusan del Norte", "Agusa del Sur", "Butuan", "Dinagat Islands", "Surigao del Norte", "Surigao del Sur"],
+      ["Angeles", "Aurora", "Bataan", "Bulacan", "Nueva Ecija", "Olongapo", "Pampanga", "Tarlac", "Zambales"],
+      ["Bohol", "Cebu", "Cebu City", "Lapu Lapu", "Negros Oriental", "Siquijor"],
+      ["Compostela Valley", "Davao City", "Davao del Norte", "Davao del Sur", "Davao Oriental"],
+      ["Biliran", "Eastern Samar", "Leyte", "Northern Samar", "Ormoc", "Samar", "Southern Leyte", "Tacloban"],
+      ["Ilocos Norte", "Ilocos Sur", "La Union", "Pangasinan"],
+      ["Marindugue", "Occidental Mindoro", "Oriental Mindoro", "Palawan", "Puerto Princesa", "Romblon"],
+      ["Caloocan", "Las Pinas", "Makati", "Malabon", "Mandaluyong", "Manila", "Marikina", "Muntinlupa", "Navotas", "Paranaque", "Pasay", "Pasig", "Pateros", "Quezon City", "San Juan", "Taguig", "Valenzuela"]
+    ]
 
     await queryInterface.bulkInsert('regions', regions, {});
 
@@ -40,14 +57,19 @@ module.exports = {
     );
 
     let cities = [];
-    for(var i = 0; i<10; i++){
-      var city = {
-        cityName: faker.address.state(),
-        RegionId: regionIds[0][getRandomInt(regionIds[0].length-1)].id,
-        createdAt: new Date(),
-        updatedAt: new Date()
+    let cityId = 0;
+    for(var i = 0; i<r.length; i++){
+      for(var j = 0; j<c[i].length; j++){
+        cityId = cityId + 1;
+        var city = {
+          cityName: c[i][j],
+          RegionId: regionIds[0][i].id,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+        cities.push(city);
       }
-      cities.push(city);
+      
 
     }
 
@@ -74,7 +96,7 @@ module.exports = {
         companyAddress: faker.address.streetAddress(),
         CityId: cityIds[0][getRandomInt(cityIds[0].length-1)].id,
         RegionId: regionIds[0][getRandomInt(regionIds[0].length-1)].id,
-        CountryId: countryIds[0][getRandomInt(countryIds[0].length-1)].id,
+        CountryId: countryIds[0][0].id,
         createdAt: new Date(),
         updatedAt: new Date()
       }

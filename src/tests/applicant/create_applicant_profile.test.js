@@ -24,7 +24,7 @@ var applicant = {
 	selfDescription: "selfdescription",
 	CityId: 1,
 	RegionId: 3,
-	CountryId: 2
+	CountryId: 1
 }
 
 var token = null;

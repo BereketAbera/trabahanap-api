@@ -28,7 +28,7 @@ const employer = {
 	companyAddress: "companyaddress",
 	CityId: 1,
 	RegionId: 3,
-	CountryId: 2
+	CountryId: 1
 }
 
 var token = null;

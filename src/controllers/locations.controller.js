@@ -33,6 +33,12 @@ function getAllCountries(req, res, next){
         .catch(err => next(err));
 }
 
+function getRegionCities(req, res, next){
+    getCitiesByRegionsId(req.params.regionId)
+        .then(cities => res.status(200).send({success: true, cities}))
+        .catch(err => next(err));
+}
+
 
 async function getCities(){
     const cities = await locationService.getCities();
@@ -55,6 +61,13 @@ async function getCountries(){
     }
 }
 
+async function getCitiesByRegionsId(regionId){
+    const cities = await locationService.getCityByRegionId(regionId);
+    if(cities){
+        return cities;
+    }
+}
+
 async function addCompanyLocation(location){
     const companyProfile = await userService.getCompanyProfileById(location.companyProfileId).catch(err => console.log);
     if(companyProfile){
@@ -70,5 +83,6 @@ module.exports = {
     getAllCities,
     getAllRegions,
     getAllCountries,
-    addLocation
+    addLocation,
+    getRegionCities
 }
