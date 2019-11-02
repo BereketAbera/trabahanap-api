@@ -26,6 +26,7 @@ City.belongsTo(Region);
 Region.belongsTo(Country);
 
 Job.belongsTo(CompanyProfile);
+Job.belongsTo(Location);
 
 Location.belongsTo(CompanyProfile);
 Location.belongsTo(City);

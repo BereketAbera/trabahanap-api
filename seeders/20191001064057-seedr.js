@@ -141,8 +141,8 @@ module.exports = {
 
     let jobs = [];
     for(var i = 0; i<55; i++){
-      var eduAtain = ['Highschool', 'College', 'University', 'Degree', 'Deploma']
-      var salRange = ['<500', '500-1000', '1000-5000', '5000-10000', '>10000']
+      var eduAtain = ['Highschool', 'College', 'University', 'Degree', 'Deploma'];
+      var salRange = ['<500', '500-1000', '1000-5000', '5000-10000', '>10000'];
       var d = new Date();
       var empType = ['FULLTIME', 'PARTTIME'];
       var job = {
@@ -166,6 +166,27 @@ module.exports = {
     }
 
     await queryInterface.bulkInsert('jobs', jobs, {});
+
+    let locations = [];
+    for(var i = 0; i<10; i++){
+      var location = {
+        id: faker.random.uuid(),
+        locationName: faker.random.words(),
+        locationPhoneNumber: faker.phone.phoneNumberFormat(),
+        isHeadOffice: false,
+        address1: faker.address.streetAddress(),
+        address2: faker.address.streetAddress(),
+        CityId: cityIds[0][getRandomInt(cityIds[0].length-1)].id,
+        RegionId: regionIds[0][getRandomInt(regionIds[0].length-1)].id,
+        CountryId: countryIds[0][0].id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      locations.push(location);
+    }
+
+    await queryInterface.bulkInsert('locations', locations, {});
   },
 
   down: async (queryInterface, Sequelize) => {

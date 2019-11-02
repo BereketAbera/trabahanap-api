@@ -1,6 +1,44 @@
 const validator = require('validator');
 const _ = require('lodash');
 
+function validateJob(data){
+    const errors = {};
+    let valid = true;
+    const fields = ["jobTitle", "jobDescription", "industry", "position", "educationAttainment", "salaryRange", "employmentType", "vacancies", "additionalQualifications", "applicationStartDate", "applicationEndDate", "locationId"];
+    const keys = _.keys(data);
+    fields.map(field => {
+        if(keys.includes(field)){
+            return;
+        }
+        valid = false
+    }) 
+    if(!valid){
+        return "some required fields are not present";
+    }
+    _.map(data, (value, key) => {
+        if(key == "vacancies" || key == "zipCode" || key == "businessLicense"){
+            if(!validator.isNumeric(value + '')){
+                errors[key] = `${key} should be a number`;
+                valid = false;
+            }
+        }else if(key == "applicationStartDate" || key == "applicationEndDate"){
+            if(!validator.toDate(value + '')){
+                errors[key] = `${key} is not valid`;
+                valid = false;
+            }
+        }else if(validator.isEmpty(value + '')){
+            errors[key] = `${key} is not valid`;
+            valid = false;
+        }
+    })
+
+    if(valid){
+        return valid;
+    }
+
+    return errors;
+}
+
 function validateUser(data){
     const errors = {};
     let valid = true;
@@ -138,5 +176,6 @@ module.exports = {
     validateUser,
     validateApplicantProfile,
     validateCompanyProfile,
-    validateLocation
+    validateLocation,
+    validateJob
 }
