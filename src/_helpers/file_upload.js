@@ -20,7 +20,6 @@ function fileUploader() {
         var imgPath;
         var form = new formidable.IncomingForm();
         form.on('fileBegin', (name, file) => {
-            console.log(file);
             let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
             fileName = moment().format("YYYYMMDDHHmmssSS");
       

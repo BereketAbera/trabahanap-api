@@ -3,17 +3,17 @@ const userService = require('../services/user.service');
 const {validateLocation} = require('../_helpers/validators');
 
 function addLocation(req, res, next){
-    console.log(req.body);
-    // const valid = validateLocation(req.body);
+    // console.log(req.body);
+    const valid = validateLocation(req.body);
 
-    // if(valid != true){
-    //     res.status(200).json({success: false, validationError: valid});
-    //     return;
-    // }
+    if(valid != true){
+        res.status(200).json({success: false, validationError: valid});
+        return;
+    }
 
-    // addCompanyLocation({...req.body, cityId: req.body.CityId, regionId: req.body.RegionId, countryId: req.body.CountryId})
-    //     .then(location => res.status(200).send({success: true, location}))
-    //     .catch(err => next(err));
+    addCompanyLocation({...req.body, cityId: req.body.CityId, regionId: req.body.RegionId, countryId: req.body.CountryId})
+        .then(location => res.status(200).send({success: true, location}))
+        .catch(err => next(err));
 }
 
 function getAllCities(req, res, next){

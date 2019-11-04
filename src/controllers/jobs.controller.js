@@ -53,7 +53,6 @@ async function addEmployerJob(body){
         
         const compProfileId = user.company_profile.id;
         if(compProfileId){
-            console.log(compProfileId);
             const job = await jobsService.addJob({...body, companyProfileId: compProfileId});
             if(job){
                 return job;

@@ -11,9 +11,6 @@ const routes = require('./routes');
 
 const PORT = process.env.PORT || 3000;
 
-
-// const user = require('./models/user')(global.sequelize, Sequelize.DataTypes);
-
 let app = express();
 
 app.use(express.static(__dirname + '/public'));
