@@ -3,16 +3,17 @@ const userService = require('../services/user.service');
 const {validateLocation} = require('../_helpers/validators');
 
 function addLocation(req, res, next){
-    const valid = validateLocation(req.body);
+    console.log(req.body);
+    // const valid = validateLocation(req.body);
 
-    if(valid != true){
-        res.status(200).json({success: false, validationError: valid});
-        return;
-    }
+    // if(valid != true){
+    //     res.status(200).json({success: false, validationError: valid});
+    //     return;
+    // }
 
-    addCompanyLocation({...req.body, cityId: req.body.CityId, regionId: req.body.RegionId, countryId: req.body.CountryId})
-        .then(location => res.status(200).send({success: true, location}))
-        .catch(err => next(err));
+    // addCompanyLocation({...req.body, cityId: req.body.CityId, regionId: req.body.RegionId, countryId: req.body.CountryId})
+    //     .then(location => res.status(200).send({success: true, location}))
+    //     .catch(err => next(err));
 }
 
 function getAllCities(req, res, next){
@@ -36,6 +37,12 @@ function getAllCountries(req, res, next){
 function getRegionCities(req, res, next){
     getCitiesByRegionsId(req.params.regionId)
         .then(cities => res.status(200).send({success: true, cities}))
+        .catch(err => next(err));
+}
+
+function getCompanyLocations(req, res, next){
+    getLocationByCompanyProfileId(req.params.companyProfileId, req.user.sub)
+        .then(locations => res.status(200).send({success: true, locations}))
         .catch(err => next(err));
 }
 
@@ -78,11 +85,24 @@ async function addCompanyLocation(location){
     }
 }
 
+async function getLocationByCompanyProfileId(companyProfileId, user_id){
+    const user = await userService.getUserById(user_id);
+    if(user){
+        if(user.company_profile.id == companyProfileId){
+            const locations = await locationService.getCompanyLocations(companyProfileId).catch(err => console.log(err));
+            if(locations){
+                return locations;
+            }
+        }
+    }
+}
+
 
 module.exports = {
     getAllCities,
     getAllRegions,
     getAllCountries,
     addLocation,
-    getRegionCities
+    getRegionCities,
+    getCompanyLocations
 }

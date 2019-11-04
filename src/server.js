@@ -7,6 +7,7 @@ const hbs = require( 'express-handlebars');
 
 const errorHandler = require('./_helpers/error_handler');
 const routes = require('./routes');
+// const fileUpload = require('./_helpers/file_upload');
 
 const PORT = process.env.PORT || 3000;
 
@@ -28,6 +29,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cors());
 
 app.use(routes);
+
 
 app.use(errorHandler);
 

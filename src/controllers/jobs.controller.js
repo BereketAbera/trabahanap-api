@@ -49,10 +49,11 @@ function addJob(req, res, next){
 
 async function addEmployerJob(body){
     const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
-    console.log(user);
     if(user){
+        
         const compProfileId = user.company_profile.id;
         if(compProfileId){
+            console.log(compProfileId);
             const job = await jobsService.addJob({...body, companyProfileId: compProfileId});
             if(job){
                 return job;

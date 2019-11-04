@@ -33,6 +33,10 @@ async function getCountries(){
     return await Country.findAll().catch(err => console.log(err));
 }
 
+async function getCompanyLocations(companyProfileId){
+    return await Location.findAll({where: {companyProfileId}}).catch(err => console.log(err));
+}
+
 
 module.exports = {
     getLocationById,
@@ -40,5 +44,6 @@ module.exports = {
     getRegions,
     getCountries,
     addLocation,
-    getCityByRegionId
+    getCityByRegionId,
+    getCompanyLocations
 }
