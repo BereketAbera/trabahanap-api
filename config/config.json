@@ -1,12 +1,12 @@
 {
-  "development3": {
+  "development": {
     "username": "ucwfssjelgcnq7zc",
     "password": "UV2XYZi3g7TY3nXPenzL",
     "database": "bk4yqi0gmzcpimxfke0a",
     "host": "bk4yqi0gmzcpimxfke0a-mysql.services.clever-cloud.com",
     "dialect": "mysql"
   },
-  "development": {
+  "development2": {
     "username": "root",
     "password": null,
     "database": "trabahanap_development",
