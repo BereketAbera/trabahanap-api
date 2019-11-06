@@ -1,4 +1,14 @@
 require('dotenv').config();
+var fs = require('fs');
+var path = require('path');
+var AWS = require('aws-sdk');
+// const _ = require('lodash');
+var credentials = new AWS.SharedIniFileCredentials({ profile: 'qa-account' });
+AWS.config.credentials = credentials;
+// Set the region 
+AWS.config.update({ region: 'us-west-2' });
+// Create S3 service object
+s3 = new AWS.S3({ apiVersion: '2006-03-01' });
 const config = require('../../config.json');
 const jwt = require('jsonwebtoken');
 const bcryptjs = require('bcryptjs');
@@ -8,6 +18,8 @@ const ROLE = require('../_helpers/role');
 const constructEmail = require('../_helpers/construct_email');
 const _ = require('lodash');
 const userService = require('../services/user.service');
+const formidable = require('formidable');
+const CONSTANTS = require('../../constants.js');
 
 sgMail.setApiKey(config.sendGridApiKey);
 
@@ -50,6 +62,59 @@ function signUpEmployer(req, res, next){
         .catch(err => next(err));
 }
 
+function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next){
+
+    var fileNameLogo = "";
+    var fileNameBusinessLisence = "";
+    var form = new formidable.IncomingForm();
+    form.multiples = true;
+    
+
+    form.on('fileBegin', function (name, file){
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        let fileName = '';
+        if(name=="companyLogo"){
+            fileName = fileNameLogo = Date.now() + "company-logo";
+        }else{
+            fileName = fileNameBusinessLisence = Date.now() + "company-business-license"; 
+        }
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
+    });
+
+    form.on('file', function (name, file){
+        // console.log('Uploaded ' + file.name);
+    });
+
+    form.parse(req, (err, fields, files) => {
+        let companyProfile = {};
+        _.map(fields, (value, key) => {
+            companyProfile[key] = value;
+        })
+        companyProfile = {...companyProfile, CityId: companyProfile.cityId, RegionId: companyProfile.regionId, CountryId: companyProfile.countryId};
+        const valid = validateCompanyProfile(companyProfile);
+        if(valid != true){
+            res.status(200).json({success: false, validationError: valid});
+            return;
+        }
+        var fileLogo = files["companyLogo"];
+        var fileLicense = files["businessLicense"];
+        if(fileLogo && fileLicense){
+            uploadFilePromise(fileLogo.path, 'th-employer-logo', fileNameLogo)
+                .then(data => {
+                    companyProfile["companyLogo"] = data.Location;
+                    return uploadFilePromise(fileLicense.path, 'th-employer-license', fileNameBusinessLisence);
+                })
+                .then(data => {
+                    companyProfile["businessLicense"] = data.Location;
+                    return createUserCompanyProfile({...companyProfile, user_id: req.user.sub});
+                })
+                .then(companyProfile => companyProfile ? res.status(200).json({success: true, companyProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+                .catch(err => console.log(err));
+        }
+    });
+    // res.status(200).send({msg: "temporary"});
+}
+
 function createApplicantProfile(req, res, next){
     const valid = validateApplicantProfile(req.body);
 
@@ -60,19 +125,6 @@ function createApplicantProfile(req, res, next){
 
     createUserApplicantProfile({...req.body, user_id: req.user.sub})
         .then(applicantProfile => applicantProfile ? res.status(200).json({success: true, applicantProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
-        .catch(err => next(err));
-}
-
-function createCompanyProfile(req, res, next){
-    const valid = validateCompanyProfile(req.body);
-
-    if(valid != true){
-        res.status(200).json({success: false, validationError: valid});
-        return;
-    }
-
-    createUserCompanyProfile({...req.body, user_id: req.user.sub})
-        .then(companyProfile => companyProfile ? res.status(200).json({success: true, companyProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
         .catch(err => next(err));
 }
 
@@ -197,6 +249,24 @@ async function isEmailUnique({ email }){
     return true;
 }
 
+function uploadFilePromise(file, bucketName, fileName) {
+    var uploadParams = { Bucket: bucketName, Key: fileName, Body: '', ACL: 'public-read' };
+    var fileStream = fs.createReadStream(file);
+    uploadParams.Body = fileStream;
+    uploadParams.Key = path.basename(file);
+    return new Promise((resolve, reject) => {
+      s3.upload(uploadParams, function (err, data) {
+        if (err) {
+          reject(err)
+        } if (data) {
+          resolve(data);
+        } else {
+          reject("system error");
+        }
+      });
+    });
+}
+
 
 module.exports = {
     authenticate,
@@ -204,6 +274,7 @@ module.exports = {
     signUpEmployer,
     verifyEmail,
     createApplicantProfile,
-    createCompanyProfile,
-    editCompanyProfile
+    // createCompanyProfile,
+    editCompanyProfile,
+    createCompanyProfileWithBusinessLicenseAndLogo
 }

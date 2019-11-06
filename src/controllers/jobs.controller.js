@@ -7,12 +7,18 @@ const {
 } = require('../_helpers/validators');
 
 function getAllJobs(req, res, next){
-    getJobsWidthPagination(req.query.page || 1)
+    getJobsWithPagination(req.query.page || 1)
         .then(jobs => res.status(200).send({success: true, jobs}))
         .catch(err => next(err));
 }
 
-async function getJobsWidthPagination(page){
+function getAllCompanyJobs(req, res, next){
+    getCompanyJobsWithPagination(req.query.page || 1, req.user.sub)
+        .then(jobs => res.status(200).send({success: true, jobs}))
+        .catch(err => next(err));
+}
+
+async function getJobsWithPagination(page){
     const pager = {
         pageSize: 5,
         totalItems: 0,
@@ -26,7 +32,30 @@ async function getJobsWidthPagination(page){
 
     if(jobs){
         pager.totalItems = jobs.count;
-        pager.totalPages = jobs.count/pager.pageSize;
+        pager.totalPages = Math.ceil(jobs.count/pager.pageSize);
+        return {
+            pager,
+            rows: jobs.rows
+        }
+    }
+}
+
+async function getCompanyJobsWithPagination(page, user_id){
+    const pager = {
+        pageSize: 8,
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    const offset = (page-1)*pager.pageSize;
+    const limit = pager.pageSize;
+
+    const user = await userService.getUserById(user_id);
+    const jobs = await jobsService.getCompanyJobsWithOffsetAndLimit(offset, limit, user.companyProfileId);
+
+    if(jobs){
+        pager.totalItems = jobs.count;
+        pager.totalPages = Math.ceil(jobs.count/pager.pageSize);
         return {
             pager,
             rows: jobs.rows
@@ -63,5 +92,6 @@ async function addEmployerJob(body){
 
 module.exports = {
     getAllJobs,
-    addJob
+    addJob,
+    getAllCompanyJobs
 }

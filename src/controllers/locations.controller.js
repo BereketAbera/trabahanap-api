@@ -1,19 +1,52 @@
+var fs = require('fs');
+var path = require('path');
+var AWS = require('aws-sdk');
+const _ = require('lodash');
+var credentials = new AWS.SharedIniFileCredentials({ profile: 'qa-account' });
+AWS.config.credentials = credentials;
+// Set the region 
+AWS.config.update({ region: 'us-west-2' });
+// Create S3 service object
+s3 = new AWS.S3({ apiVersion: '2006-03-01' });
+var moment = require('moment');
+var formidable = require('formidable');
+const CONSTANTS = require('../../constants');
+
 const locationService = require('../services/location.service');
 const userService = require('../services/user.service');
 const {validateLocation} = require('../_helpers/validators');
 
-function addLocation(req, res, next){
-    // console.log(req.body);
-    const valid = validateLocation(req.body);
-
-    if(valid != true){
-        res.status(200).json({success: false, validationError: valid});
-        return;
-    }
-
-    addCompanyLocation({...req.body, cityId: req.body.CityId, regionId: req.body.RegionId, countryId: req.body.CountryId})
-        .then(location => res.status(200).send({success: true, location}))
-        .catch(err => next(err));
+function addLocationWithImage(req, res, next){
+    let localImagePath = "";
+    let location = {};
+    let fileName = ""
+    let userId = req.user.sub;
+    var form = new formidable.IncomingForm();
+    form.on('fileBegin', (name, file) => {
+      let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+      fileName = moment().format("YYYYMMDDHHmmssSS");
+      file.path = CONSTANTS.baseDir + '/uploads/' + fileName + "." + fileExt;
+      localImagePath = file.path;
+    });
+    form.on('file', function (name, file) {
+      console.log('Uploaded ' + file.name);
+    });
+    form.parse(req, function (err, fields, files) {
+        _.map(fields, (value, key) => {
+            location[key] = value;
+        });
+        location["CityId"] = location.cityId;
+        location["RegionId"] = location.regionId;
+        location["CountryId"] = location.countryId;
+        const valid = validateLocation(location);
+        if(valid != true){
+            res.status(200).json({success: false, validationError: valid});
+            return;
+        }
+        processFileUpload(userId, location, fileName, localImagePath)
+            .then(location => res.status(200).send({success: true, location}))
+            .catch(err => next(err));
+    });
 }
 
 function getAllCities(req, res, next){
@@ -98,11 +131,44 @@ async function getLocationByCompanyProfileId(companyProfileId, user_id){
 }
 
 
+async function processFileUpload(userId, location, fileName, localImagepath) {
+    const imgObj = await uploadFile(localImagepath, 'th-employer-logo', fileName)
+    location.bucket = 'th-employer-logo';
+    location.picture = imgObj.Location;
+    console.log(location.picture);
+    location.awsFileKey = fileName;
+    return addCompanyLocation(location);
+}
+
+function uploadFile(file, bucketName, fileName) {
+    return uploadFilePromise(file, bucketName, fileName).then(data => {
+      return data;
+    });
+}
+
+function uploadFilePromise(file, bucketName, fileName) {
+    var uploadParams = { Bucket: bucketName, Key: fileName, Body: '', ACL: 'public-read' };
+    var fileStream = fs.createReadStream(file);
+    uploadParams.Body = fileStream;
+    uploadParams.Key = path.basename(file);
+    return new Promise((resolve, reject) => {
+      s3.upload(uploadParams, function (err, data) {
+        if (err) {
+          reject(err)
+        } if (data) {
+          resolve(data);
+        } else {
+          reject("system error");
+        }
+      });
+    });
+}
+
 module.exports = {
     getAllCities,
     getAllRegions,
     getAllCountries,
-    addLocation,
     getRegionCities,
-    getCompanyLocations
+    getCompanyLocations,
+    addLocationWithImage
 }

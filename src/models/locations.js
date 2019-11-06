@@ -16,18 +16,18 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    // locationPicture:{
-    //   type: DataTypes.STRING,
-    //   allowNull: true
-    // },
-    // latitude: {
-    //   type: DataTypes.STRING,
-    //   allowNull: true
-    // },
-    // longitude: {
-    //   type: DataTypes.STRING,
-    //   allowNull: true
-    // },
+    picture:{
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    latitude: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    longitude: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     isHeadOffice: {
       type: DataTypes.INTEGER(1),
       allowNull: true

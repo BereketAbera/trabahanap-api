@@ -104,12 +104,13 @@ function validateApplicantProfile(data){
 function validateCompanyProfile(data){
     const errors = {};
     let valid = true;
-    const fields = ["zipcode", "companyName", "contactPerson", "contactNumber", "websiteURL", "industryType", "companyDescription", "businessLicense", "companyAddress", "CityId", "RegionId", "CountryId"];
+    const fields = ["zipcode", "companyName", "contactPerson", "contactNumber", "websiteURL", "industryType", "companyDescription", "businessLicenseNumber", "companyAddress", "CityId", "RegionId", "CountryId"];
     const keys = _.keys(data);
     fields.map(field => {
         if(keys.includes(field)){
             return;
         }
+        // console.log(field);
         valid = false
     }) 
     if(!valid){
@@ -142,7 +143,7 @@ function validateCompanyProfile(data){
 function validateLocation(data){
     const errors = {};
     let valid = true;
-    const fields = ["locationName", "locationPhoneNumber", "isHeadOffice", "address1", "address2", "companyProfileId", "CityId", "RegionId", "CountryId"];
+    const fields = ["locationName", "locationPhoneNumber", "isHeadOffice", "address1", "address2", "companyProfileId", "CityId", "RegionId", "CountryId", "latitude", "longitude"];
     const keys = _.keys(data);
     fields.map(field => {
         if(keys.includes(field)){
@@ -155,7 +156,7 @@ function validateLocation(data){
     }
 
     _.map(data, (value, key) => {
-        if(key == "locationPhoneNumber"){
+        if(key == "locationPhoneNumber", key == "latitude", key == "longitude"){
             if(!validator.isNumeric(value + '')){
                 errors[key] = `${key} should be a number`;
                 valid = false;

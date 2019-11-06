@@ -17,7 +17,7 @@ module.exports = {
       isHeadOffice: {
         type: Sequelize.BOOLEAN
       },
-      locationPicture:{
+      picture:{
         type: Sequelize.STRING
       },
       latitude: {
