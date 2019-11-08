@@ -5,11 +5,11 @@ require('../database/connection');
 
 
 
-app.use('/auth', require('./auth'));
-app.use('/applicant', autorize(ROLE.APPLICANT), require('./applicant'));
-app.use('/employer', autorize(ROLE.EMPLOYER), require('./employer'));
-app.use('/admin', autorize(ROLE.ADMIN), require('./admin'));
-app.use('/', require('./anonymous'));
+app.use('/api/auth', require('./auth'));
+app.use('/api/applicant', autorize(ROLE.APPLICANT), require('./applicant'));
+app.use('/api/employer', autorize(ROLE.EMPLOYER), require('./employer'));
+app.use('/api/admin', autorize(ROLE.ADMIN), require('./admin'));
+app.use('/api/', require('./anonymous'));
 
 // the catch all route
 app.all('/*', (req, res) => {

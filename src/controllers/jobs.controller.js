@@ -13,7 +13,7 @@ function getAllJobs(req, res, next){
 }
 
 function getAllCompanyJobs(req, res, next){
-    getCompanyJobsWithPagination(req.query.page || 1, req.user.sub)
+    getCompanyJobsWithPagination(req.query.page || 1, req.query.pageSize || 8, req.user.sub)
         .then(jobs => res.status(200).send({success: true, jobs}))
         .catch(err => next(err));
 }
@@ -40,9 +40,9 @@ async function getJobsWithPagination(page){
     }
 }
 
-async function getCompanyJobsWithPagination(page, user_id){
+async function getCompanyJobsWithPagination(page, pageSize, user_id){
     const pager = {
-        pageSize: 8,
+        pageSize : parseInt(pageSize),
         totalItems: 0,
         totalPages: 0,
         currentPage: parseInt(page)
@@ -76,6 +76,19 @@ function addJob(req, res, next){
 
 }
 
+function editJob(req, res, next){
+    const valid = validateJob(req.body);
+    if(valid != true){
+        res.status(200).json({success: false, validationError: valid});
+        return;
+    }
+
+    editEmployerJob({...req.body, user_id: req.user.sub, id: req.params.id})
+        .then(job => job ? res.status(200).json({success: true, job}) : res.status(200).json({ success: false, error: 'something is wrong'}))
+        .catch(err => next(err));
+
+}
+
 async function addEmployerJob(body){
     const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
     if(user){
@@ -90,8 +103,20 @@ async function addEmployerJob(body){
     }
 }
 
+async function editEmployerJob(body){
+    const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
+    const job = await jobsService.getJobById(body.id);
+    if(user && job){
+        const updatedJob = jobsService.editJobById(job.id, body);
+        if(updatedJob){
+            return updatedJob;
+        }
+    }
+}
+
 module.exports = {
     getAllJobs,
     addJob,
-    getAllCompanyJobs
+    getAllCompanyJobs,
+    editJob
 }

@@ -109,6 +109,7 @@ async function getCitiesByRegionsId(regionId){
 }
 
 async function addCompanyLocation(location){
+    location.isHeadOffice = location.isHeadOffice ? 1 : 0;
     const companyProfile = await userService.getCompanyProfileById(location.companyProfileId).catch(err => console.log);
     if(companyProfile){
         const newLocation = await locationService.addLocation(location).catch(err => console.log(err));
@@ -135,7 +136,6 @@ async function processFileUpload(userId, location, fileName, localImagepath) {
     const imgObj = await uploadFile(localImagepath, 'th-employer-logo', fileName)
     location.bucket = 'th-employer-logo';
     location.picture = imgObj.Location;
-    console.log(location.picture);
     location.awsFileKey = fileName;
     return addCompanyLocation(location);
 }

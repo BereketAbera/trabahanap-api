@@ -6,7 +6,7 @@ var AWS = require('aws-sdk');
 var credentials = {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-}
+};
 AWS.config.credentials = credentials;
 // Set the region 
 AWS.config.update({ region: 'us-west-2' });
@@ -167,8 +167,6 @@ async function authenticateUsers({ email, password }) {
             });
             return userWithoutPassword;
         }
-
-        return user;
     }
 }
 
