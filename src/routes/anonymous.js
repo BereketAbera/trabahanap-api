@@ -3,7 +3,9 @@ const userController = require('../controllers/users.controller');
 const jobsController = require('../controllers/jobs.controller');
 const locationsController = require('../controllers/locations.controller')
 
+app.get('/jobs/:id', jobsController.getJob);
 app.get('/jobs', jobsController.getAllJobs);
+
 
 app.get('/location/cities', locationsController.getAllCities);
 

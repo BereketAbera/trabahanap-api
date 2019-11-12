@@ -5,4 +5,5 @@ app.get('/jobs', (req, res) => {
     res.send({msg: 'from applicant'})
 })
 
-app.post('/profile', userController.createApplicantProfile);
+app.post('/profile', userController.createApplicantProfileWithCV);
+app.get('/profile', userController.getApplicantProfile);

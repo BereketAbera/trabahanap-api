@@ -12,6 +12,12 @@ function getAllJobs(req, res, next){
         .catch(err => next(err));
 }
 
+function getJob(req, res, next){
+    getJobById(req.params.id)
+        .then(job => res.status(200).send({success: true, job}))
+        .catch(err => next(err));
+}
+
 function getAllCompanyJobs(req, res, next){
     getCompanyJobsWithPagination(req.query.page || 1, req.query.pageSize || 8, req.user.sub)
         .then(jobs => res.status(200).send({success: true, jobs}))
@@ -89,6 +95,10 @@ function editJob(req, res, next){
 
 }
 
+async function getJobById(id){
+    return await jobsService.getJobById(id);
+}
+
 async function addEmployerJob(body){
     const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
     if(user){
@@ -118,5 +128,6 @@ module.exports = {
     getAllJobs,
     addJob,
     getAllCompanyJobs,
-    editJob
+    editJob,
+    getJob
 }

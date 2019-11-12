@@ -3,6 +3,8 @@ const userController = require('../controllers/users.controller');
 const locationController = require('../controllers/locations.controller');
 const jobsController = require('../controllers/jobs.controller');
 
+app.post('/location', locationController.addLocationWithImage);
+app.get('/profile/locations/:id', locationController.getLocation);
 app.get('/locations/:companyProfileId', locationController.getCompanyLocations);
 
 
@@ -14,4 +16,3 @@ app.post('/profile',  userController.createCompanyProfileWithBusinessLicenseAndL
 
 app.put('/profile/:id', userController.editCompanyProfile);
 
-app.post('/location', locationController.addLocationWithImage);

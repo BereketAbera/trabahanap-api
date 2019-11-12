@@ -44,9 +44,18 @@ function addLocationWithImage(req, res, next){
             return;
         }
         processFileUpload(userId, location, fileName, localImagePath)
-            .then(location => res.status(200).send({success: true, location}))
+            .then(location => {
+                fs.unlinkSync(localImagePath);
+                res.status(200).send({success: true, location})
+            })
             .catch(err => next(err));
     });
+}
+
+function getLocation(req, res, next){
+    getCompanyLocationById(req.params.id, req.user.sub)
+        .then(location => res.status(200).send({success: true, location}))
+        .catch(err => next(err));
 }
 
 function getAllCities(req, res, next){
@@ -123,9 +132,9 @@ async function getLocationByCompanyProfileId(companyProfileId, user_id){
     const user = await userService.getUserById(user_id);
     if(user){
         if(user.company_profile.id == companyProfileId){
-            const locations = await locationService.getCompanyLocations(companyProfileId).catch(err => console.log(err));
-            if(locations){
-                return locations;
+            const location = await locationService.getCompanyLocations(companyProfileId).catch(err => console.log(err));
+            if(location){
+                return location;
             }
         }
     }
@@ -164,11 +173,22 @@ function uploadFilePromise(file, bucketName, fileName) {
     });
 }
 
+async function getCompanyLocationById(id, userId){
+    const user = await userService.getUserById(userId);
+    if(user && user.role == "EMPLOYER" && user.company_profile){
+        const location = await locationService.getLocationById(id);
+        if(location.companyProfileId == user.companyProfileId){
+            return location;
+        }
+    }
+}
+
 module.exports = {
     getAllCities,
     getAllRegions,
     getAllCountries,
     getRegionCities,
     getCompanyLocations,
-    addLocationWithImage
+    addLocationWithImage,
+    getLocation
 }

@@ -84,10 +84,6 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next){
         file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
     });
 
-    form.on('file', function (name, file){
-        // console.log('Uploaded ' + file.name);
-    });
-
     form.parse(req, (err, fields, files) => {
         let companyProfile = {};
         _.map(fields, (value, key) => {
@@ -111,25 +107,83 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next){
                     companyProfile["businessLicense"] = data.Location;
                     return createUserCompanyProfile({...companyProfile, user_id: req.user.sub});
                 })
-                .then(companyProfile => companyProfile ? res.status(200).json({success: true, companyProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
-                .catch(err => console.log(err));
+                .then(companyProfile => {
+                    fs.unlinkSync(fileLogo.path);
+                    fs.unlinkSync(fileLicense.path);
+                    companyProfile ? res.status(200).json({success: true, companyProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'})
+                })
+                .catch(err => next(err));
         }
     });
-    // res.status(200).send({msg: "temporary"});
 }
 
-function createApplicantProfile(req, res, next){
-    const valid = validateApplicantProfile(req.body);
+function createApplicantProfileWithCV(req, res, next){
+    var fileNameCV = "";
+    var form = new formidable.IncomingForm();
+    form.multiples = true;
 
-    if(valid != true){
-        res.status(200).json({success: false, validationError: valid});
-        return;
-    }
+    form.on('fileBegin', function (name, file){
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        let fileName = '';
+        fileName = fileNameCV = Date.now() + "applicant-cv";
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
+    });
 
-    createUserApplicantProfile({...req.body, user_id: req.user.sub})
-        .then(applicantProfile => applicantProfile ? res.status(200).json({success: true, applicantProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+    form.parse(req, (err, fields, files) => {
+        let applicantProfile = {};
+        _.map(fields, (value, key) => {
+            applicantProfile[key] = value;
+        })
+
+        applicantProfile = {...applicantProfile, UserId: req.user.sub};
+        const valid = validateApplicantProfile(applicantProfile);
+
+        if(valid != true){
+            res.status(200).json({success: false, validationError: valid});
+            return;
+        }
+
+        var cvFile = files['cv'];
+        if(cvFile){
+            uploadFilePromise(cvFile.path, 'th-applicant-cv', fileNameCV)
+                .then(data => {
+                    applicantProfile['cv'] = data.Location;
+                    return createUserApplicantProfile(applicantProfile);
+                })
+                .then(applicantProfile => {
+                    fs.unlinkSync(cvFile.path);
+                    applicantProfile ? res.status(200).json({success: true, applicantProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'})
+                })
+                .catch(err => next(err));
+        }
+
+    });
+}
+
+// function createApplicantProfile(req, res, next){
+//     const valid = validateApplicantProfile(req.body);
+
+//     if(valid != true){
+//         res.status(200).json({success: false, validationError: valid});
+//         return;
+//     }
+
+//     createUserApplicantProfile({...req.body, user_id: req.user.sub})
+//         .then(applicantProfile => applicantProfile ? res.status(200).json({success: true, applicantProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+//         .catch(err => next(err));
+// }
+
+function getApplicantProfile(req, res, next){
+    getUserApplicantProfile(req.user.sub)
+        .then(applicantProfile => {
+            if(applicantProfile){
+                res.status(200).json({success: true, applicantProfile})
+            }else{
+                res.status(200).json({success: true, applicantProfile: null})
+            }
+        })
         .catch(err => next(err));
-}
+    }
 
 function verifyEmail(req, res, next){
     verifyUserEmail(req)
@@ -193,11 +247,22 @@ async function signUpUserEmployer(body){
 }
 
 async function createUserApplicantProfile(body){
-    const user = await userService.getUserByIdAndRole(body.user_id, ROLE.APPLICANT);
+    const user = await userService.getUserByIdAndRole(body.UserId, ROLE.APPLICANT);
+    console.log(body);
     if(user){
-        const appProfile = await userService.addApplicantProfile({...body, UserId: body.user_id});
+        const appProfile = await userService.addApplicantProfile({...body});
         if(appProfile){
             return appProfile;
+        }
+    }
+}
+
+async function getUserApplicantProfile(id){
+    let user = await userService.getUserById(id);
+    if(user && user.role == "APPLICANT"){
+        let applicantProfile = await userService.getApplicantProfileByUserId(user.id);
+        if(applicantProfile){
+            return applicantProfile;
         }
     }
 }
@@ -229,6 +294,7 @@ async function editUserCompanyProfile(body, id){
         }
     }
 }
+
 
 async function verifyUserEmail(req){
     const user = await userService.getUserByEmailToken(req.query.emailVerificationToken);
@@ -274,8 +340,10 @@ module.exports = {
     signUpApplicant,
     signUpEmployer,
     verifyEmail,
-    createApplicantProfile,
+    // createApplicantProfile,
     // createCompanyProfile,
     editCompanyProfile,
-    createCompanyProfileWithBusinessLicenseAndLogo
+    createCompanyProfileWithBusinessLicenseAndLogo,
+    getApplicantProfile,
+    createApplicantProfileWithCV
 }
