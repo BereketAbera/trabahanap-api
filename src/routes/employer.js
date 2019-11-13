@@ -12,6 +12,7 @@ app.get('/jobs', jobsController.getAllCompanyJobs)
 app.post('/jobs', jobsController.addJob)
 app.put('/jobs/:id', jobsController.editJob)
 
+app.post('/profile/logo', userController.updateCompanyLogo)
 app.post('/profile',  userController.createCompanyProfileWithBusinessLicenseAndLogo);
 
 app.put('/profile/:id', userController.editCompanyProfile);

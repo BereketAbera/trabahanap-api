@@ -117,6 +117,34 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next){
     });
 }
 
+function updateCompanyLogo(req, res, next){
+    var fileNameLogo = "";
+    var form = new formidable.IncomingForm();
+    form.multiples = true;
+
+    form.on('fileBegin', function (name, file){
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        let fileName = '';
+        fileName = fileNameLogo = Date.now() + "th-employer-logo";
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
+    });
+    form.parse(req, (err, fields, files) => {
+        var companyLogo = files['companyLogo'];
+        if(companyLogo){
+            uploadFilePromise(companyLogo.path, 'th-employer-logo', fileNameLogo)
+                .then(data => {
+                    return updateCompanyField(data.Location, "companyLogo", req.user.sub);
+                })
+                .then(companyProfile => {
+                    fs.unlinkSync(companyLogo.path);
+                    companyProfile ? res.status(200).json({success: true, companyProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'})
+                })
+                .catch(err => next(err));
+        }
+
+    });
+}
+
 function createApplicantProfileWithCV(req, res, next){
     var fileNameCV = "";
     var form = new formidable.IncomingForm();
@@ -159,19 +187,6 @@ function createApplicantProfileWithCV(req, res, next){
 
     });
 }
-
-// function createApplicantProfile(req, res, next){
-//     const valid = validateApplicantProfile(req.body);
-
-//     if(valid != true){
-//         res.status(200).json({success: false, validationError: valid});
-//         return;
-//     }
-
-//     createUserApplicantProfile({...req.body, user_id: req.user.sub})
-//         .then(applicantProfile => applicantProfile ? res.status(200).json({success: true, applicantProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
-//         .catch(err => next(err));
-// }
 
 function getApplicantProfile(req, res, next){
     getUserApplicantProfile(req.user.sub)
@@ -239,16 +254,25 @@ async function signUpUserEmployer(body){
     if(unique){
         body["role"] = ROLE.EMPLOYER;
         const user = await userService.createUser({...body, emailVerificationToken: uuidv4()});
-        // const message = constructEmail(user);
-        // sgMail.send(message);
         return user;
     }
-   
+}
+
+async function updateCompanyField(value, fieldName, userId){
+    const user = await userService.getUserById(userId);
+    if(user && user.companyProfileId){
+        const companyProfile = await userService.updateCompanyField(value, fieldName, user.companyProfileId);
+        if(companyProfile[0] && companyProfile[0] > 0){
+            const compProfile = await userService.getCompanyProfileById(user.companyProfileId);
+            if(compProfile){
+                return compProfile;
+            }
+        }
+    }
 }
 
 async function createUserApplicantProfile(body){
     const user = await userService.getUserByIdAndRole(body.UserId, ROLE.APPLICANT);
-    console.log(body);
     if(user){
         const appProfile = await userService.addApplicantProfile({...body});
         if(appProfile){
@@ -345,5 +369,6 @@ module.exports = {
     editCompanyProfile,
     createCompanyProfileWithBusinessLicenseAndLogo,
     getApplicantProfile,
-    createApplicantProfileWithCV
+    createApplicantProfileWithCV,
+    updateCompanyLogo
 }
