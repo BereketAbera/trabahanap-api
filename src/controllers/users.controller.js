@@ -276,7 +276,11 @@ async function createUserApplicantProfile(body){
     if(user){
         const appProfile = await userService.addApplicantProfile({...body});
         if(appProfile){
-            return appProfile;
+            const newUser = await user.update({hasFinishedProfile: true});
+            // if(user)
+            if(newUser){
+                return newUser;
+            }
         }
     }
 }
@@ -296,7 +300,7 @@ async function createUserCompanyProfile(body){
     if(user){
         const compProfile = await userService.addCompanyProfile(body);
         if(compProfile){
-            const updated = await userService.updateUserById(user.id, {companyProfileId: compProfile.id});;
+            const updated = await userService.updateUserById(user.id, {companyProfileId: compProfile.id, hasFinishedProfile: true});
             if(updated){
                 return await userService.getUserById(updated.id);
             }

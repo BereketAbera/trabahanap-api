@@ -51,6 +51,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       defaultValue: '0'
     },
+    hasFinishedProfile:{
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     emailVerificationToken:{
       type: DataTypes.STRING,
       allowNull: true

@@ -44,6 +44,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    hasLocations:{
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     businessLicenseNumber: {
       type: DataTypes.STRING(255),
       allowNull: true

@@ -46,6 +46,10 @@ async function getCompanyProfileById(id){
     return await CompanyProfile.findOne({where: {id}}).catch(err => console.log(err));
 }
 
+async function updateUserField(value, fieldName, userId){
+    return User.update({[fieldName]: value},{where: {id: userId}});
+}
+
 async function getApplicantProfileByUserId(userId){
     return await ApplicantProfile.findOne({where: {userId}}).catch(err => console.log(err));
 }
@@ -63,5 +67,6 @@ module.exports = {
     updateCompanyProfileById,
     getCompanyProfileById,
     getApplicantProfileByUserId,
-    updateCompanyField
+    updateCompanyField,
+    updateUserField
 };

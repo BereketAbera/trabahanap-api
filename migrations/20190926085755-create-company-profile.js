@@ -35,6 +35,10 @@ module.exports = {
       businessLicense: {
         type: Sequelize.TEXT
       },
+      hasLocations:{
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
       businessLicenseNumber: {
         type: Sequelize.STRING
       },

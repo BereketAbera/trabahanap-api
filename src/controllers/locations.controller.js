@@ -123,7 +123,10 @@ async function addCompanyLocation(location){
     if(companyProfile){
         const newLocation = await locationService.addLocation(location).catch(err => console.log(err));
         if(newLocation){
-            return newLocation;
+            const newComapanyProfile = await companyProfile.update({hasLocations: true});
+            if(newComapanyProfile){
+                return newLocation;
+            }   
         }
     }
 }
