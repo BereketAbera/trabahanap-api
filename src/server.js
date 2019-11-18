@@ -4,6 +4,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const hbs = require( 'express-handlebars');
+const morgan = require('morgan');
 
 const errorHandler = require('./_helpers/error_handler');
 const routes = require('./routes');
@@ -15,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 
 let app = express();
 
-console.log(CONSTANTS.baseDir);
+app.use(morgan('tiny'));
 app.use(express.static(__dirname + '/public'));
 // view engine setup
 app.engine('.hbs', hbs({extname: '.hbs'}));

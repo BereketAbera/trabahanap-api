@@ -2,11 +2,12 @@ require('dotenv').config();
 var fs = require('fs');
 var path = require('path');
 var AWS = require('aws-sdk');
-// const _ = require('lodash');
-var credentials = {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-};
+const _ = require('lodash');
+// var credentials = {
+//     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+//     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+// };
+var credentials = new AWS.SharedIniFileCredentials({ profile: 'liguam' });
 AWS.config.credentials = credentials;
 // Set the region 
 AWS.config.update({ region: 'us-west-2' });
@@ -19,8 +20,8 @@ const sgMail = require('@sendgrid/mail');
 const uuidv4 = require('uuid/v4');
 const ROLE = require('../_helpers/role');
 const constructEmail = require('../_helpers/construct_email');
-const _ = require('lodash');
 const userService = require('../services/user.service');
+const jobService = require('../services/job.service');
 const formidable = require('formidable');
 const CONSTANTS = require('../../constants.js');
 
@@ -198,7 +199,7 @@ function getApplicantProfile(req, res, next){
             }
         })
         .catch(err => next(err));
-    }
+}
 
 function verifyEmail(req, res, next){
     verifyUserEmail(req)
@@ -224,7 +225,7 @@ async function authenticateUsers({ email, password }) {
     if (user) {
         const pass = bcryptjs.compareSync(password, user.password);
         if(pass){
-            const token = jwt.sign({ sub: user.id, role: user.role }, config.secret, { expiresIn: '2h' });
+            const token = jwt.sign({ sub: user.id, role: user.role }, config.secret, { expiresIn: '24h' });
             const userWithoutPassword = {};
             _.map(user.dataValues, (value, key) => {
                 if(key == 'password'){
@@ -244,6 +245,8 @@ async function signUpUserApplicant(body){
     if(unique){
         body["role"] = ROLE.APPLICANT;
         const user = await userService.createUser({...body, emailVerificationToken: uuidv4()});
+        const message = constructEmail(user);
+        sgMail.send(message);
         return user;
     }
     
@@ -254,6 +257,8 @@ async function signUpUserEmployer(body){
     if(unique){
         body["role"] = ROLE.EMPLOYER;
         const user = await userService.createUser({...body, emailVerificationToken: uuidv4()});
+        const message = constructEmail(user);
+        sgMail.send(message);
         return user;
     }
 }
@@ -322,7 +327,6 @@ async function editUserCompanyProfile(body, id){
         }
     }
 }
-
 
 async function verifyUserEmail(req){
     const user = await userService.getUserByEmailToken(req.query.emailVerificationToken);

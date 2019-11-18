@@ -2,7 +2,11 @@ var fs = require('fs');
 var path = require('path');
 var AWS = require('aws-sdk');
 const _ = require('lodash');
-var credentials = new AWS.SharedIniFileCredentials({ profile: 'qa-account' });
+// var credentials = {
+//     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+//     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+// };
+var credentials = new AWS.SharedIniFileCredentials({ profile: 'liguam' });
 AWS.config.credentials = credentials;
 // Set the region 
 AWS.config.update({ region: 'us-west-2' });
@@ -118,7 +122,7 @@ async function getCitiesByRegionsId(regionId){
 }
 
 async function addCompanyLocation(location){
-    location.isHeadOffice = location.isHeadOffice ? 1 : 0;
+    location.isHeadOffice = location.isHeadOffice == 'false' ? false : true;
     const companyProfile = await userService.getCompanyProfileById(location.companyProfileId).catch(err => console.log);
     if(companyProfile){
         const newLocation = await locationService.addLocation(location).catch(err => console.log(err));

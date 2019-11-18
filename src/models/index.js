@@ -25,13 +25,18 @@ City.belongsTo(Region);
 
 Region.belongsTo(Country);
 
-Job.belongsTo(CompanyProfile);
-Job.belongsTo(Location);
-
 Location.belongsTo(CompanyProfile);
 Location.belongsTo(City);
 Location.belongsTo(Region);
 Location.belongsTo(Country);
+
+JobApplication.belongsTo(CompanyProfile);
+JobApplication.belongsTo(ApplicantProfile);
+JobApplication.belongsTo(Job);
+
+Job.belongsTo(CompanyProfile);
+Job.belongsTo(Location);
+Job.hasMany(JobApplication);
 
 
 module.exports = {

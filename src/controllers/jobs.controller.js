@@ -95,6 +95,24 @@ function editJob(req, res, next){
 
 }
 
+function applyJob(req, res, next){
+    addJobApplication({...req.body, user_id: req.user.sub})
+        .then(response => response ? res.status(200).json({success: true}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .catch(err => next(err));
+}
+
+function getApplicantApplications(req, res, next){
+    getUserApplicantApplications(req.user.sub)
+        .then(applications => applications ? res.status(200).json({success: true, applications}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .catch(err => next(err));
+}
+
+function getJobApplications(req, res, next){
+    getEmployerJobApplications(req.user.sub, req.body.JobId)
+        .then(applications => applications ? res.status(200).json({success: true, applications}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .catch(err => next(err));
+}
+
 async function getJobById(id){
     return await jobsService.getJobById(id);
 }
@@ -124,10 +142,54 @@ async function editEmployerJob(body){
     }
 }
 
+async function addJobApplication(body){
+    const job = await jobsService.getJobById(body.JobId);
+    const applicantProfile = await userService.getApplicantProfileByUserId(body.user_id);
+    
+    if(job && applicantProfile){
+        const applied = await jobsService.getApplicationByProfileIdAndJobId(job.id, applicantProfile.id);
+        if(applied){
+            return false;
+        }
+        const jobApplication = jobsService.addJobApplication({JobId: job.id, ApplicantProfileId: applicantProfile.id, CompanyProfileId: job.CompanyProfileId, applicationDate: new Date()});
+        if(jobApplication){
+            return true;
+        }
+    }
+    return false;
+}
+
+async function getUserApplicantApplications(user_id){
+    const applicantProfile = await userService.getApplicantProfileByUserId(user_id);
+    if(applicantProfile){
+        const applications = await jobsService.getApplicantApplications(applicantProfile.id);
+        if(applications){
+            return applications;
+        }
+    }
+
+    return false;
+}
+
+async function getEmployerJobApplications(user_id, JobId){
+    const user = await userService.getUserById(user_id);
+    if(user && user.companyProfileId){
+        const applications = await jobsService.getEmployerJobApplications(JobId, user.companyProfileId);
+        if(applications){
+            return applications;
+        }
+    }
+
+    return false;
+}
+
 module.exports = {
     getAllJobs,
     addJob,
     getAllCompanyJobs,
     editJob,
-    getJob
+    getJob,
+    applyJob,
+    getApplicantApplications,
+    getJobApplications
 }

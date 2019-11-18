@@ -1,6 +1,8 @@
 const {
     Job,
-    CompanyProfile
+    CompanyProfile,
+    JobApplication,
+    ApplicantProfile
 } = require('../models');
 
 async function getJobsWithOffsetAndLimit(offset, limit){
@@ -15,6 +17,10 @@ async function addJob(job){
     return await Job.create(job).catch(err => console.log(err));
 }
 
+function addJobApplication(jobApplication){
+    return JobApplication.create(jobApplication).catch(err => console.log(err));
+}
+
 async function editJobById(id, newJob){
     const job = await Job.findOne({where: {id}}).catch(err => console.log(err));
     return await job.update(newJob).catch(err => console.log(err));
@@ -24,11 +30,26 @@ async function getJobById(id){
     return Job.findOne({where: {id}}).catch(err => console.log(err));
 }
 
+function getApplicationByProfileIdAndJobId(JobId, ApplicantProfileId){
+    return JobApplication.findOne({where: {JobId, ApplicantProfileId}}).catch(err => console.log(err));
+}
+
+function getApplicantApplications(ApplicantProfileId){
+    return JobApplication.findAll({where: {ApplicantProfileId}, include: [{model: CompanyProfile}, {model: ApplicantProfile}, {model: Job}]}).catch(err => console.log(err));
+}
+
+function getEmployerJobApplications(JobId, CompanyProfileId){
+    return JobApplication.findAll({where: {JobId, CompanyProfileId}, include: [{model: CompanyProfile}, {model: ApplicantProfile}, {model: Job}]}).catch(err => console.log(err));
+}
 
 module.exports = {
     getJobsWithOffsetAndLimit,
     addJob,
     editJobById,
     getJobById,
-    getCompanyJobsWithOffsetAndLimit
+    getCompanyJobsWithOffsetAndLimit,
+    addJobApplication,
+    getApplicationByProfileIdAndJobId,
+    getApplicantApplications,
+    getEmployerJobApplications
 }
