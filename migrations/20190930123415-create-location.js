@@ -26,10 +26,10 @@ module.exports = {
       longitude: {
         type: Sequelize.STRING
       },
-      address1: {
+      address: {
         type: Sequelize.STRING
       },
-      address2: {
+      email: {
         type: Sequelize.STRING
       },
       createdAt: {

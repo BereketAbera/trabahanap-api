@@ -32,13 +32,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER(1),
       allowNull: true
     },
-    address1: {
-      type: DataTypes.STRING(255),
-      allowNull: true
+    address: {
+      type: DataTypes.STRING
     },
-    address2: {
-      type: DataTypes.STRING(255),
-      allowNull: true
+    email: {
+      type: DataTypes.STRING
     },
     createdAt: {
       type: DataTypes.DATE,

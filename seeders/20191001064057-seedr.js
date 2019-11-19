@@ -112,7 +112,6 @@ module.exports = {
 
     let users = [];
     for(var i = 0; i<15; i++){
-      var genders = ['MALE', 'FEMALE'];
       var role = ROLES[i%3];
       var user = {
         id: faker.random.uuid(),
@@ -122,7 +121,6 @@ module.exports = {
         email: faker.internet.email(),
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
-        gender: genders[i%2],
         role: role,
         lastLoggedIn: new Date(),
         emailVerified: false,
@@ -174,8 +172,8 @@ module.exports = {
         locationName: faker.random.words(),
         locationPhoneNumber: faker.phone.phoneNumberFormat(),
         isHeadOffice: false,
-        address1: faker.address.streetAddress(),
-        address2: faker.address.streetAddress(),
+        address: faker.address.streetAddress(),
+        email: faker.internet.email(),
         CityId: cityIds[0][getRandomInt(cityIds[0].length-1)].id,
         RegionId: regionIds[0][getRandomInt(regionIds[0].length-1)].id,
         CountryId: countryIds[0][0].id,

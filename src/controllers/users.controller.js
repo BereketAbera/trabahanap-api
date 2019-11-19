@@ -146,6 +146,21 @@ function updateCompanyLogo(req, res, next){
     });
 }
 
+function editApplicantProfile(req, res, next){
+    const valid = validateApplicantProfile(req.body);
+    
+    if(valid != true){
+        res.status(200).json({success: false, validationError: valid});
+        return;
+    }
+
+    const { body } = req;
+
+    editUserApplicantProfile({...body, user_id: req.user.sub, cityId: body.CityId, regionId: body.RegionId, countryId: body.CountryId}, req.params.id)
+        .then(applicant => applicant ? res.status(200).json({success: true, applicant}) : res.status(200).json({ success: false, error: 'something went wrong'}))
+        .catch(err => next(err));
+}
+
 function createApplicantProfileWithCV(req, res, next){
     var fileNameCV = "";
     var form = new formidable.IncomingForm();
@@ -260,6 +275,16 @@ async function signUpUserEmployer(body){
         const message = constructEmail(user);
         sgMail.send(message);
         return user;
+    }
+}
+
+async function editUserApplicantProfile(body, id){
+    let applicantProfile = await userService.getApplicantProfileByUserId(body.user_id);
+    if(applicantProfile && applicantProfile.id == id){
+        const updatedProfile = await userService.updateApplicantProfile(applicantProfile, body);
+        if(updatedProfile){
+            return updatedProfile;
+        }
     }
 }
 
@@ -378,5 +403,6 @@ module.exports = {
     createCompanyProfileWithBusinessLicenseAndLogo,
     getApplicantProfile,
     createApplicantProfileWithCV,
-    updateCompanyLogo
+    updateCompanyLogo,
+    editApplicantProfile
 }

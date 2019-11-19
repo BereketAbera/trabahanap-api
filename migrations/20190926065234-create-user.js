@@ -30,9 +30,6 @@ module.exports = {
       lastName: {
         type: Sequelize.STRING
       },
-      gender: {
-        type: Sequelize.STRING
-      },
       role: {
         type: Sequelize.STRING,
         allowNull: false,

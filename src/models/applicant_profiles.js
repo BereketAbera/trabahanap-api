@@ -20,13 +20,15 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    address1: {
+    address: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    address2: {
-      type: DataTypes.STRING(255),
-      allowNull: true
+    gender: {
+      type: DataTypes.STRING
+    },
+    dateOfBirth:{
+      type: DataTypes.DATE
     },
     selfDescription: {
       type: DataTypes.TEXT,

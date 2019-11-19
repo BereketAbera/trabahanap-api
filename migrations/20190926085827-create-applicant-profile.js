@@ -17,11 +17,14 @@ module.exports = {
       currentOccopation: {
         type: Sequelize.STRING
       },
-      address1: {
+      address: {
         type: Sequelize.STRING
       },
-      address2: {
+      gender: {
         type: Sequelize.STRING
+      },
+      dateOfBirth:{
+        type: Sequelize.DATE
       },
       selfDescription: {
         type: Sequelize.TEXT

@@ -42,7 +42,7 @@ function validateJob(data){
 function validateUser(data){
     const errors = {};
     let valid = true;
-    const fields = ["email", "username", "phoneNumber", "password", "firstName", "lastName", "gender"];
+    const fields = ["email", "username", "phoneNumber", "password", "firstName", "lastName"];
     const keys = _.keys(data);
     fields.map(field => {
         if(keys.includes(field)){
@@ -76,7 +76,7 @@ function validateUser(data){
 function validateApplicantProfile(data){
     const errors = {};
     let valid = true;
-    const fields = ["currentEmployer", "currentOccopation", "address1", "address2", "selfDescription", "CityId", "RegionId", "CountryId"];
+    const fields = ["currentEmployer", "currentOccopation", "address", "gender", "dateOfBirth", "selfDescription", "CityId", "RegionId", "CountryId"];
     const keys = _.keys(data);
     fields.map(field => {
         if(keys.includes(field)){
@@ -143,7 +143,7 @@ function validateCompanyProfile(data){
 function validateLocation(data){
     const errors = {};
     let valid = true;
-    const fields = ["locationName", "locationPhoneNumber", "isHeadOffice", "address1", "address2", "companyProfileId", "CityId", "RegionId", "CountryId", "latitude", "longitude"];
+    const fields = ["locationName", "locationPhoneNumber", "isHeadOffice", "address", "email", "companyProfileId", "CityId", "RegionId", "CountryId", "latitude", "longitude"];
     const keys = _.keys(data);
     fields.map(field => {
         if(keys.includes(field)){

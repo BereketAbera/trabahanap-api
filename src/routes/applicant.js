@@ -11,3 +11,4 @@ app.get('/jobs/applications', jobsController.getApplicantApplications)
 
 app.post('/profile', userController.createApplicantProfileWithCV);
 app.get('/profile', userController.getApplicantProfile);
+app.put('/profile/:id', userController.editApplicantProfile);
