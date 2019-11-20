@@ -98,7 +98,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next){
         }
         var fileLogo = files["companyLogo"];
         var fileLicense = files["businessLicense"];
-        if(fileLogo && fileLicense){
+        if(fileLogo && fileLicense && fileLogo.path && fileLicense.path){
             uploadFilePromise(fileLogo.path, 'th-employer-logo', fileNameLogo)
                 .then(data => {
                     companyProfile["companyLogo"] = data.Location;
@@ -114,6 +114,8 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next){
                     companyProfile ? res.status(200).json({success: true, companyProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'})
                 })
                 .catch(err => next(err));
+        }else{
+            res.status(200).json({success: false});
         }
     });
 }
@@ -126,12 +128,12 @@ function updateCompanyLogo(req, res, next){
     form.on('fileBegin', function (name, file){
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         let fileName = '';
-        fileName = fileNameLogo = Date.now() + "th-employer-logo";
+        fileName = fileNameLogo = Date.now() + "company-logo";
         file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
     });
     form.parse(req, (err, fields, files) => {
         var companyLogo = files['companyLogo'];
-        if(companyLogo){
+        if(companyLogo && companyLogo.path){
             uploadFilePromise(companyLogo.path, 'th-employer-logo', fileNameLogo)
                 .then(data => {
                     return updateCompanyField(data.Location, "companyLogo", req.user.sub);
@@ -141,6 +143,68 @@ function updateCompanyLogo(req, res, next){
                     companyProfile ? res.status(200).json({success: true, companyProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'})
                 })
                 .catch(err => next(err));
+        }else{
+            res.status(200).json({success: false});
+        }
+
+    });
+}
+
+function updateCompanyBusinessLicense(req, res, next){
+    var fileBusinessLicense = "";
+    var form = new formidable.IncomingForm();
+    form.multiples = true;
+
+    form.on('fileBegin', function (name, file){
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        let fileName = '';
+        fileName = fileBusinessLicense = Date.now() + "company-business-license";
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
+    });
+    form.parse(req, (err, fields, files) => {
+        var businessLicense = files['businessLicense'];
+        if(businessLicense && businessLicense.path){
+            uploadFilePromise(businessLicense.path, 'th-employer-license', fileBusinessLicense)
+                .then(data => {
+                    return updateCompanyField(data.Location, "businessLicense", req.user.sub);
+                })
+                .then(companyProfile => {
+                    fs.unlinkSync(businessLicense.path);
+                    companyProfile ? res.status(200).json({success: true, companyProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'})
+                })
+                .catch(err => next(err));
+        }else{
+            res.status(200).json({success: false});
+        }
+
+    });
+}
+
+function updateApplicantCV(req, res, next){
+    var fileNameCV = "";
+    var form = new formidable.IncomingForm();
+    form.multiples = true;
+
+    form.on('fileBegin', function (name, file){
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        let fileName = '';
+        fileName = fileNameCV = Date.now() + "applicant-cv";
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
+    });
+    form.parse(req, (err, fields, files) => {
+        var applicantCV = files['cv'];
+        if(applicantCV && applicantCV.path){
+            uploadFilePromise(applicantCV.path, 'th-applicant-cv', fileNameCV)
+                .then(data => {
+                    return updateApplicantField(data.Location, "cv", req.user.sub);
+                })
+                .then(applicantProfile => {
+                    fs.unlinkSync(applicantCV.path);
+                    applicantProfile ? res.status(200).json({success: true, applicantProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'})
+                })
+                .catch(err => next(err));
+        }else{
+            res.status(200).json({success: false});
         }
 
     });
@@ -235,6 +299,7 @@ function editCompanyProfile(req, res, next){
         .catch(err => next(err));
 }
 
+
 async function authenticateUsers({ email, password }) {
     const user = await userService.getUserByEmail(email);
     if (user) {
@@ -279,6 +344,8 @@ async function signUpUserEmployer(body){
 }
 
 async function editUserApplicantProfile(body, id){
+    body = {...body, cityId: body.CityId, countryId: body.countryId, regionId: body.regionId};
+    // console.log("from edit user applicant profile", body);  
     let applicantProfile = await userService.getApplicantProfileByUserId(body.user_id);
     if(applicantProfile && applicantProfile.id == id){
         const updatedProfile = await userService.updateApplicantProfile(applicantProfile, body);
@@ -297,6 +364,17 @@ async function updateCompanyField(value, fieldName, userId){
             if(compProfile){
                 return compProfile;
             }
+        }
+    }
+}
+
+async function updateApplicantField(value, fieldName, userId){
+    const applicantProfile = await userService.getApplicantProfileByUserId(userId);
+
+    if(applicantProfile){
+        const newApplicantProfile = await userService.updateApplicantProfile(applicantProfile, {[fieldName]: value});
+        if(newApplicantProfile){
+            return newApplicantProfile;
         }
     }
 }
@@ -404,5 +482,7 @@ module.exports = {
     getApplicantProfile,
     createApplicantProfileWithCV,
     updateCompanyLogo,
-    editApplicantProfile
+    editApplicantProfile,
+    updateApplicantCV,
+    updateCompanyBusinessLicense
 }

@@ -39,14 +39,13 @@ function addLocationWithImage(req, res, next){
         _.map(fields, (value, key) => {
             location[key] = value;
         });
-        location["CityId"] = location.cityId;
-        location["RegionId"] = location.regionId;
-        location["CountryId"] = location.countryId;
+        
         const valid = validateLocation(location);
         if(valid != true){
             res.status(200).json({success: false, validationError: valid});
             return;
         }
+        location = {...location, CityId: location.cityId, RegionId: location.regionId, CountryId: location.countryId}
         processFileUpload(userId, location, fileName, localImagePath)
             .then(location => {
                 fs.unlinkSync(localImagePath);
@@ -54,6 +53,42 @@ function addLocationWithImage(req, res, next){
             })
             .catch(err => next(err));
     });
+}
+
+function updateLocationPicture(req, res, next){
+    var fileNameLocationPicture = "";
+    var form = new formidable.IncomingForm();
+    form.multiples = true;
+
+    form.on('fileBegin', function (name, file){
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        let fileName = '';
+        fileName = fileNameLocationPicture = Date.now() + "location-picture";
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
+    });
+    form.parse(req, (err, fields, files) => {
+        var locationPicture = files['picture'];
+        if(locationPicture){
+            uploadFilePromise(locationPicture.path, 'th-employer-logo', fileNameLocationPicture)
+                .then(data => {
+                    return updateCompanyLocation({[picture]: data.Location}, req.params.id, req.user.sub);
+                })
+                .then(location => {
+                    fs.unlinkSync(locationPicture.path);
+                    location ? res.status(200).json({success: true, location}) : res.status(200).json({sucess: false, error: 'Something went wrong'})
+                })
+                .catch(err => next(err));
+        }else{
+            res.status(200).json({success: false});
+        }
+
+    });
+}
+
+function updateLocation(req, res, next){
+    updateCompanyLocation(req.body, req.params.id, req.user.sub)
+        .then(location => res.status(200).send({success: true, location}))
+        .catch(err => next(err));
 }
 
 function getLocation(req, res, next){
@@ -121,16 +156,17 @@ async function getCitiesByRegionsId(regionId){
     }
 }
 
-async function addCompanyLocation(location){
-    location.isHeadOffice = location.isHeadOffice == 'false' ? false : true;
-    const companyProfile = await userService.getCompanyProfileById(location.companyProfileId).catch(err => console.log);
-    if(companyProfile){
-        const newLocation = await locationService.addLocation(location).catch(err => console.log(err));
-        if(newLocation){
-            const newComapanyProfile = await companyProfile.update({hasLocations: true});
-            if(newComapanyProfile){
-                return newLocation;
-            }   
+async function updateCompanyLocation(nLocation, locationId, user_id){
+    const { CityId, RegionId, CountryId } = nLocation;
+    if(CityId){nLocation.cityId = CityId}
+    if(RegionId){nLocation.regionId = RegionId}
+    if(CountryId){nLocation.countryId = CountryId}
+    var location = await locationService.getLocationById(locationId);
+    var user = await userService.getUserById(user_id);
+    if(location && user && location.CompanyProfileId == user.CompanyProfileId){
+        var updatedLocation = await locationService.updateLocation(location, nLocation)
+        if(updatedLocation){
+            return updatedLocation;
         }
     }
 }
@@ -150,9 +186,9 @@ async function getLocationByCompanyProfileId(companyProfileId, user_id){
 
 async function processFileUpload(userId, location, fileName, localImagepath) {
     const imgObj = await uploadFile(localImagepath, 'th-employer-logo', fileName)
-    location.bucket = 'th-employer-logo';
+    // location.bucket = 'th-employer-logo';
     location.picture = imgObj.Location;
-    location.awsFileKey = fileName;
+    // location.awsFileKey = fileName;
     return addCompanyLocation(location);
 }
 
@@ -179,6 +215,19 @@ function uploadFilePromise(file, bucketName, fileName) {
       });
     });
 }
+async function addCompanyLocation(location){
+    location.isHeadOffice = location.isHeadOffice == 'false' ? false : true;
+    const companyProfile = await userService.getCompanyProfileById(location.companyProfileId).catch(err => console.log);
+    if(companyProfile){
+        const newLocation = await locationService.addLocation(location).catch(err => console.log(err));
+        if(newLocation){
+            const newComapanyProfile = await companyProfile.update({hasLocations: true});
+            if(newComapanyProfile){
+                return newLocation;
+            }   
+        }
+    }
+}
 
 async function getCompanyLocationById(id, userId){
     const user = await userService.getUserById(userId);
@@ -197,5 +246,7 @@ module.exports = {
     getRegionCities,
     getCompanyLocations,
     addLocationWithImage,
-    getLocation
+    getLocation,
+    updateLocation,
+    updateLocationPicture
 }

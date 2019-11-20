@@ -37,6 +37,10 @@ async function getCompanyLocations(companyProfileId){
     return await Location.findAll({where: {companyProfileId}}).catch(err => console.log(err));
 }
 
+async function updateLocation(location, newLocation){
+    return await location.update(newLocation);
+}
+
 
 module.exports = {
     getLocationById,
@@ -45,5 +49,6 @@ module.exports = {
     getCountries,
     addLocation,
     getCityByRegionId,
-    getCompanyLocations
+    getCompanyLocations,
+    updateLocation
 }

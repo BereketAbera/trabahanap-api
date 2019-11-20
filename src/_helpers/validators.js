@@ -143,7 +143,7 @@ function validateCompanyProfile(data){
 function validateLocation(data){
     const errors = {};
     let valid = true;
-    const fields = ["locationName", "locationPhoneNumber", "isHeadOffice", "address", "email", "companyProfileId", "CityId", "RegionId", "CountryId", "latitude", "longitude"];
+    const fields = ["locationName", "locationPhoneNumber", "isHeadOffice", "address", "email", "companyProfileId", "cityId", "regionId", "countryId", "latitude", "longitude"];
     const keys = _.keys(data);
     fields.map(field => {
         if(keys.includes(field)){
