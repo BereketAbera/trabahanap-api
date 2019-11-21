@@ -8,6 +8,25 @@ console.log("running seedr");
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    const industries = [];
+    const ind = ["Agriculture", "Airline", "Arts", "Automovtive", "Banking/Financial",
+     "Call Center", "Communication", "Construction", "Distribution", "Education", "Energy",
+     "Engineering", "Fast Food", "Gaming", "HealthCare", "Hospitality", "Hotel", "Human Resources",
+     "Information Technology", "Insurance", "Landscaping", "Manpower Services", "Manufacturing",
+     "Marketing", "Media", "Others", "Publishing", "Real Estate",
+     "Restaurant", "Retail", "Sales", "Science", "Services", "Warehouse"]
+
+    for(var x = 0; x < ind.length; x ++){
+      industries.push({
+        industryName: ind[x],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+    }
+
+    await queryInterface.bulkInsert('industries', industries, {});
+
+
     let countries = [
       {
         countryName: "Philippines",

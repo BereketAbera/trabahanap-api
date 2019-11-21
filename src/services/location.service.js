@@ -13,32 +13,32 @@ async function getLocationById(LocationId){
     }
 }
 
-async function getCityByRegionId(regionId){
-    return await City.findAll({where: {regionId}}).catch(err => console.log(err));
+function getCityByRegionId(regionId){
+    return City.findAll({where: {regionId}}).catch(err => console.log(err));
 }
 
-async function addLocation(location){
-    return await Location.create(location).catch(err => console.log(err));
+function addLocation(location){
+    return Location.create(location).catch(err => console.log(err));
 }
 
-async function getCities(){
-    return await City.findAll().catch(err => console.log(err));
+function getCities(){
+    return City.findAll().catch(err => console.log(err));
 }
 
-async function getRegions(){
-    return await Region.findAll().catch(err => console.log(err));
+function getRegions(){
+    return Region.findAll().catch(err => console.log(err));
 }
 
-async function getCountries(){
-    return await Country.findAll().catch(err => console.log(err));
+function getCountries(){
+    return Country.findAll().catch(err => console.log(err));
 }
 
-async function getCompanyLocations(companyProfileId){
-    return await Location.findAll({where: {companyProfileId}}).catch(err => console.log(err));
+function getCompanyLocations(companyProfileId){
+    return Location.findAll({where: {companyProfileId}}).catch(err => console.log(err));
 }
 
-async function updateLocation(location, newLocation){
-    return await location.update(newLocation);
+function updateLocation(location, newLocation){
+    return location.update(newLocation);
 }
 
 

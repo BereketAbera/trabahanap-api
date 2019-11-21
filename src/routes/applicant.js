@@ -8,6 +8,7 @@ app.get('/jobs', (req, res) => {
 
 app.post('/jobs/apply', jobsController.applyJob);
 app.get('/jobs/applications', jobsController.getApplicantApplications)
+app.get('/jobs/:id', jobsController.getApplicantJob);
 
 app.post('/profile', userController.createApplicantProfileWithCV);
 app.get('/profile', userController.getApplicantProfile);

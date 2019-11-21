@@ -1,6 +1,7 @@
 const jobsService = require('../services/job.service');
 const userService = require('../services/user.service');
 const ROLE = require('../_helpers/role');
+const _ = require('lodash');
 
 const {
     validateJob
@@ -14,6 +15,12 @@ function getAllJobs(req, res, next){
 
 function getJob(req, res, next){
     getJobById(req.params.id)
+        .then(job => res.status(200).send({success: true, job}))
+        .catch(err => next(err));
+}
+
+function getApplicantJob(req, res, next){
+    getApplicantJobById(req.params.id, req.user.sub)
         .then(job => res.status(200).send({success: true, job}))
         .catch(err => next(err));
 }
@@ -107,14 +114,27 @@ function getApplicantApplications(req, res, next){
         .catch(err => next(err));
 }
 
-function getJobApplications(req, res, next){
-    getEmployerJobApplications(req.user.sub, req.body.JobId)
+function getJobWithApplications(req, res, next){
+    getEmployerJobWithApplications(req.user.sub)
         .then(applications => applications ? res.status(200).json({success: true, applications}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
         .catch(err => next(err));
 }
 
 async function getJobById(id){
     return await jobsService.getJobById(id);
+}
+
+async function getApplicantJobById(jobId, userId){
+    const job = await jobsService.getJobById(jobId);
+    const applicantProfile = await userService.getApplicantProfileByUserId(userId);
+    // console.log(jobId, userId);
+    if(job && applicantProfile){
+        // console.log(job);
+        const applied = await jobsService.getApplicationByProfileIdAndJobId(jobId, applicantProfile.id);
+        const newJob = { ...job.dataValues, applied: applied ? true : false };
+
+        return newJob;
+    }
 }
 
 async function addEmployerJob(body){
@@ -171,13 +191,18 @@ async function getUserApplicantApplications(user_id){
     return false;
 }
 
-async function getEmployerJobApplications(user_id, JobId){
+async function getEmployerJobWithApplications(user_id){
     const user = await userService.getUserById(user_id);
     if(user && user.companyProfileId){
-        const applications = await jobsService.getEmployerJobApplications(JobId, user.companyProfileId);
-        if(applications){
-            return applications;
+        const jobWithApplications = await jobsService.getJobsWithApplications(user.companyProfileId);
+        // console.log(jobWithApplications);
+        if(jobWithApplications){
+            return jobWithApplications;
         }
+        // const applications = await jobsService.getEmployerJobApplications(JobId, user.companyProfileId);
+        // if(applications){
+        //     return applications;
+        // }
     }
 
     return false;
@@ -191,5 +216,6 @@ module.exports = {
     getJob,
     applyJob,
     getApplicantApplications,
-    getJobApplications
+    getJobWithApplications,
+    getApplicantJob
 }

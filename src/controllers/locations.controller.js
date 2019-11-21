@@ -68,10 +68,10 @@ function updateLocationPicture(req, res, next){
     });
     form.parse(req, (err, fields, files) => {
         var locationPicture = files['picture'];
-        if(locationPicture){
+        if(locationPicture && locationPicture.path){
             uploadFilePromise(locationPicture.path, 'th-employer-logo', fileNameLocationPicture)
                 .then(data => {
-                    return updateCompanyLocation({[picture]: data.Location}, req.params.id, req.user.sub);
+                    return updateCompanyLocation({picture: data.Location}, req.params.id, req.user.sub);
                 })
                 .then(location => {
                     fs.unlinkSync(locationPicture.path);

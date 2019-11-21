@@ -2,8 +2,11 @@ const {
     Job,
     CompanyProfile,
     JobApplication,
-    ApplicantProfile
+    ApplicantProfile,
+    Location
 } = require('../models');
+
+const sequelize = require('../database/connection');
 
 async function getJobsWithOffsetAndLimit(offset, limit){
     return await Job.findAndCountAll({offset, limit, include: [{model: CompanyProfile}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
@@ -27,7 +30,7 @@ async function editJobById(id, newJob){
 }
 
 async function getJobById(id){
-    return Job.findOne({where: {id}}).catch(err => console.log(err));
+    return Job.findOne({where: {id}, include: [{model: CompanyProfile}, {model: Location}]}).catch(err => console.log(err));
 }
 
 function getApplicationByProfileIdAndJobId(JobId, ApplicantProfileId){
@@ -42,6 +45,10 @@ function getEmployerJobApplications(JobId, CompanyProfileId){
     return JobApplication.findAll({where: {JobId, CompanyProfileId}, include: [{model: CompanyProfile}, {model: ApplicantProfile}, {model: Job}]}).catch(err => console.log(err));
 }
 
+function getJobsWithApplications(CompanyProfileId){
+    return sequelize.query(`SELECT * FROM view_job_applications WHERE CompanyProfileId='${CompanyProfileId}'`, { type: sequelize.QueryTypes.SELECT})
+}
+
 module.exports = {
     getJobsWithOffsetAndLimit,
     addJob,
@@ -51,5 +58,7 @@ module.exports = {
     addJobApplication,
     getApplicationByProfileIdAndJobId,
     getApplicantApplications,
-    getEmployerJobApplications
+    getEmployerJobApplications,
+    getJobsWithApplications,
+    // getApplicantApplication
 }

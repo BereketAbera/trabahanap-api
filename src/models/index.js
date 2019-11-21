@@ -9,6 +9,7 @@ const Country = sequelize.import("./countries.js");
 const Job = sequelize.import("./jobs.js");
 const Location = sequelize.import("./locations.js");
 const JobApplication = sequelize.import("./job_applications.js");
+const Indutry = sequelize.import("./industries.js");
 
 ApplicantProfile.belongsTo(User);
 ApplicantProfile.belongsTo(City);
@@ -48,5 +49,6 @@ module.exports = {
     Country,
     Job,
     Location,
-    JobApplication
+    JobApplication,
+    Indutry
 }
