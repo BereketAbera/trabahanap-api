@@ -49,6 +49,18 @@ function getJobsWithApplications(CompanyProfileId){
     return sequelize.query(`SELECT * FROM view_job_applications WHERE CompanyProfileId='${CompanyProfileId}'`, { type: sequelize.QueryTypes.SELECT})
 }
 
+function getJobApplications(JobId){
+    return JobApplication.findAll({where: {JobId}, include: [{model: ApplicantProfile}]}).catch(err => console.log(err));
+}
+
+function getApplicantById(applicantId){
+    return ApplicantProfile.findOne({where: {id: applicantId}});
+}
+
+function getJobApplicants(jobId){
+    return sequelize.query(`SELECT a.currentEmployer, a.gender, a.dateOfBirth, a.address, u.email, u.firstName, u.lastName from job_applications ja LEFT JOIN applicant_profiles a ON a.id = ja.applicantProfileId LEFT JOIN users u ON u.id = a.userId where ja.jobId = '${jobId}'`)
+}
+
 module.exports = {
     getJobsWithOffsetAndLimit,
     addJob,
@@ -60,5 +72,8 @@ module.exports = {
     getApplicantApplications,
     getEmployerJobApplications,
     getJobsWithApplications,
+    getJobApplications,
+    getApplicantById,
+    getJobApplicants,
     // getApplicantApplication
 }

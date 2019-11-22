@@ -120,6 +120,13 @@ function getJobWithApplications(req, res, next){
         .catch(err => next(err));
 }
 
+function getJobApplicants(req, res, next){
+    getEmployerGetJobApplicants(req.params.id, req.user.sub)
+        .then(applicants => applicants ? res.status(200).json({success: true, applicants}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .catch(err => next(err));
+}
+
+
 async function getJobById(id){
     return await jobsService.getJobById(id);
 }
@@ -208,6 +215,18 @@ async function getEmployerJobWithApplications(user_id){
     return false;
 }
 
+async function getEmployerGetJobApplicants(jobId, userId){
+    const user = await userService.getUserById(userId);
+    const job = await jobsService.getJobById(jobId);
+
+    if(user && job && user.companyProfileId == job.companyProfileId){
+        const applicants = await jobsService.getJobApplicants(jobId);
+        if(applicants[0]){
+            return applicants[0];
+        }
+    }
+}
+
 module.exports = {
     getAllJobs,
     addJob,
@@ -217,5 +236,6 @@ module.exports = {
     applyJob,
     getApplicantApplications,
     getJobWithApplications,
-    getApplicantJob
+    getApplicantJob,
+    getJobApplicants
 }

@@ -9,7 +9,7 @@ console.log("running seedr");
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const industries = [];
-    const ind = ["Agriculture", "Airline", "Arts", "Automovtive", "Banking/Financial",
+    const ind = ["Agriculture", "Airline", "Arts", "Automotive", "Banking/Financial",
      "Call Center", "Communication", "Construction", "Distribution", "Education", "Energy",
      "Engineering", "Fast Food", "Gaming", "HealthCare", "Hospitality", "Hotel", "Human Resources",
      "Information Technology", "Insurance", "Landscaping", "Manpower Services", "Manufacturing",
