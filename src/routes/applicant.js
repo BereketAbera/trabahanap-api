@@ -10,7 +10,8 @@ app.post('/jobs/apply', jobsController.applyJob);
 app.get('/jobs/applications', jobsController.getApplicantApplications)
 app.get('/jobs/:id', jobsController.getApplicantJob);
 
-app.post('/profile', userController.createApplicantProfileWithCV);
+app.post('/profile', userController.createApplicantProfileWithCVAndPicture);
 app.get('/profile', userController.getApplicantProfile);
 app.post('/profile/cv', userController.updateApplicantCV);
+app.post('/profile/picture', userController.updateApplicantPicture);
 app.put('/profile/:id', userController.editApplicantProfile);

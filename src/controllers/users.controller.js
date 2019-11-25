@@ -36,7 +36,13 @@ const {
 
 function authenticate(req, res, next) {
     authenticateUsers(req.body)
-        .then(user => user ? res.status(200).json({success: true, user}) : res.status(200).json({ success: false, error: 'username or password is incorrect' }))
+        .then(user => {
+            if(user && user.error){
+                res.status(200).json({success: false, error: user.error});
+                return;
+            }
+            user ? res.status(200).json({success: true, user}) : res.status(200).json({ success: false, error: 'username or password is incorrect' })
+        })
         .catch(err => next(err));
 }
 
@@ -210,6 +216,38 @@ function updateApplicantCV(req, res, next){
     });
 }
 
+function updateApplicantPicture(req, res, next){
+    console.log(req);
+    var fileNameApplicantPicture = "";
+    var form = new formidable.IncomingForm();
+    form.multiples = true;
+
+    form.on('fileBegin', function (name, file){
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        let fileName = '';
+        fileName = fileNameApplicantPicture = Date.now() + "applicant-picture";
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
+    });
+    form.parse(req, (err, fields, files) => {
+        var applicantPicture = files['applicantPicture'];
+        console.log("console.log");
+        if(applicantPicture && applicantPicture.path){
+            uploadFilePromise(applicantPicture.path, 'th-employer-logo', fileNameApplicantPicture)
+                .then(data => {
+                    return updateApplicantField(data.Location, "applicantPicture", req.user.sub);
+                })
+                .then(applicantProfile => {
+                    fs.unlinkSync(applicantPicture.path);
+                    applicantProfile ? res.status(200).json({success: true, applicantProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'})
+                })
+                .catch(err => next(err));
+        }else{
+            res.status(200).json({success: false});
+        }
+
+    });
+}
+
 function editApplicantProfile(req, res, next){
     const valid = validateApplicantProfile(req.body);
     
@@ -225,15 +263,21 @@ function editApplicantProfile(req, res, next){
         .catch(err => next(err));
 }
 
-function createApplicantProfileWithCV(req, res, next){
+function createApplicantProfileWithCVAndPicture(req, res, next){
     var fileNameCV = "";
+    var fileNameProfilePicture = "";
     var form = new formidable.IncomingForm();
     form.multiples = true;
 
     form.on('fileBegin', function (name, file){
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         let fileName = '';
-        fileName = fileNameCV = Date.now() + "applicant-cv";
+        if(name=="cv"){
+            fileName = fileNameCV = Date.now() + "applicant-cv";
+        }else{
+            fileName = fileNameProfilePicture = Date.now() + "applicant-profile"; 
+        }
+
         file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
     });
 
@@ -252,10 +296,15 @@ function createApplicantProfileWithCV(req, res, next){
         }
 
         var cvFile = files['cv'];
-        if(cvFile){
+        var profilePictureFile = files['applicantPicture']
+        if(cvFile && profilePictureFile){
             uploadFilePromise(cvFile.path, 'th-applicant-cv', fileNameCV)
                 .then(data => {
                     applicantProfile['cv'] = data.Location;
+                    return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                })
+                .then(data => {
+                    applicantProfile['applicantPicture'] = data.Location;
                     return createUserApplicantProfile(applicantProfile);
                 })
                 .then(applicantProfile => {
@@ -305,6 +354,10 @@ async function authenticateUsers({ email, password }) {
     if (user) {
         const pass = bcryptjs.compareSync(password, user.password);
         if(pass){
+
+            if(!user.emailVerified){
+                return {error: "Verify you email first"}
+            }
             const token = jwt.sign({ sub: user.id, role: user.role }, config.secret, { expiresIn: '24h' });
             const userWithoutPassword = {};
             _.map(user.dataValues, (value, key) => {
@@ -432,15 +485,15 @@ async function editUserCompanyProfile(body, id){
 }
 
 async function verifyUserEmail(req){
-    const user = await userService.getUserByEmailToken(req.query.emailVerificationToken);
+    const user = await userService.getUserByEmailToken(req.query.token);
     if(user){
         const updated = await userService.updateUserById(user.id, {emailVerified: true});
         if(updated){
-            return {success: true, message: "Email verifyed successfully.", HOST_URL: process.env.HOST_URL_FRONTEND}
+            return {success: true, message: "Email verifyed successfully.", HOST_URL: CONSTANTS.HOST_URL_FRONTEND}
         }
     }
 
-    return { success: false, message: "Cannot varify account.", HOST_URL: process.env.HOST_URL_FRONTEND}
+    return { success: false, message: "Cannot varify account.", HOST_URL: CONSTANTS.HOST_URL_FRONTEND}
 }
 
 async function isEmailUnique({ email }){
@@ -480,9 +533,10 @@ module.exports = {
     editCompanyProfile,
     createCompanyProfileWithBusinessLicenseAndLogo,
     getApplicantProfile,
-    createApplicantProfileWithCV,
+    createApplicantProfileWithCVAndPicture,
     updateCompanyLogo,
     editApplicantProfile,
     updateApplicantCV,
+    updateApplicantPicture,
     updateCompanyBusinessLicense
 }

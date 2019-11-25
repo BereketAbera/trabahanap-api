@@ -9,7 +9,7 @@ const morgan = require('morgan');
 const errorHandler = require('./_helpers/error_handler');
 const routes = require('./routes');
 
-const CONSTANTS = require('../constants');
+// const CONSTANTS = require('../constants');
 // const fileUpload = require('./_helpers/file_upload');
 
 const PORT = process.env.PORT || 3000;

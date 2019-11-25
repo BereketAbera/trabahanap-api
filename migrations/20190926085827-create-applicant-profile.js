@@ -11,6 +11,9 @@ module.exports = {
       cv: {
         type: Sequelize.STRING
       },
+      applicantPicture:{
+        type: Sequelize.STRING
+      },
       currentEmployer: {
         type: Sequelize.STRING
       },

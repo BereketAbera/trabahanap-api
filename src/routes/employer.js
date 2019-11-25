@@ -7,6 +7,7 @@ app.get('/locations/:companyProfileId', locationController.getCompanyLocations);
 app.post('/location', locationController.addLocationWithImage);
 
 app.get('/jobs/applications', jobsController.getJobWithApplications);
+app.get('/jobs/applications/applicant/:id', jobsController.getJobApplicant)
 app.get('/jobs/applicants/:id', jobsController.getJobApplicants);
 app.put('/jobs/:id', jobsController.editJob);
 app.get('/jobs', jobsController.getAllCompanyJobs);
