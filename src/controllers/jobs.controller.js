@@ -132,6 +132,24 @@ function getJobApplicant(req, res, next){
         .catch(err => next(err));
 }
 
+function getApplicantAppliedJobs(req, res, next){
+    getApplicantJobs(req.user.sub)
+        .then(jobs => jobs ? res.status(200).json({success: true, jobs}) : res.status(200).json({success: false, error: 'Something went wrong'}))
+        .catch(err => next(err));
+}
+
+function saveForLaterReview(req, res, next){
+    saveJobForLaterReview(req.user.sub, req.body.JobId)
+        .then(success => res.status(200).json({success}))
+        .catch(err => next(err));
+}
+
+function getJobsLaterReview(req, res, next){
+    getApplicantLaterReviewJobs(req.user.sub)
+        .then(jobs => jobs ? res.status(200).json({success: true, jobs}) : res.status(200).json({success: false, error: 'Something went wrong'}))
+        .catch(err => next(err));
+}
+
 async function getJobById(id){
     return await jobsService.getJobById(id);
 }
@@ -143,7 +161,8 @@ async function getApplicantJobById(jobId, userId){
     if(job && applicantProfile){
         // console.log(job);
         const applied = await jobsService.getApplicationByProfileIdAndJobId(jobId, applicantProfile.id);
-        const newJob = { ...job.dataValues, applied: applied ? true : false };
+        const saved  = await jobsService.getSavedJob(applicantProfile.id, jobId);
+        const newJob = { ...job.dataValues, applied: applied ? true : false, saved: saved ? true : false };
 
         return newJob;
     }
@@ -240,6 +259,49 @@ async function getJobApplicantById(applicantId){
     }
 }
 
+async function getApplicantJobs(userId){
+    const applicant = await userService.getApplicantProfileByUserId(userId);
+    if(applicant){
+        const jobs = await jobsService.getApplicantJobs(applicant.id);
+        if(jobs[0]){
+            return jobs[0];
+        }
+    }
+    
+}
+
+async function saveJobForLaterReview(userId, jobId){
+    const applicant = await userService.getApplicantProfileByUserId(userId);
+    const job = await jobsService.getJobById(jobId);
+    // console.log(job, applicant);
+    if(applicant && job){
+        const alreadySaved = await jobsService.getSavedJob(applicant.id, job.id)
+        if(alreadySaved){
+            const remove = await jobsService.removeJobFromLaterReview(applicant.id, job.id);
+            if(remove){
+                return true;
+            }
+        }else{
+            const saved = await jobsService.saveJobForLaterReview(applicant.id, job.id);
+            if(saved){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+async function getApplicantLaterReviewJobs(userId){
+    const applicant = await userService.getApplicantProfileByUserId(userId);
+
+    if(applicant){
+        const jobs = await jobsService.getApplicantSavedJobs(applicant.id);
+        if(jobs[0]){
+            return jobs[0];
+        }
+    }
+}
+
 module.exports = {
     getAllJobs,
     addJob,
@@ -251,5 +313,8 @@ module.exports = {
     getJobWithApplications,
     getApplicantJob,
     getJobApplicants,
-    getJobApplicant
+    getJobApplicant,
+    getApplicantAppliedJobs,
+    saveForLaterReview,
+    getJobsLaterReview
 }

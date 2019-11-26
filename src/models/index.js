@@ -10,6 +10,7 @@ const Job = sequelize.import("./jobs.js");
 const Location = sequelize.import("./locations.js");
 const JobApplication = sequelize.import("./job_applications.js");
 const Indutry = sequelize.import("./industries.js");
+const JobLaterReview = sequelize.import("./job_later_reviews.js");
 
 ApplicantProfile.belongsTo(User);
 ApplicantProfile.belongsTo(City);
@@ -39,6 +40,11 @@ Job.belongsTo(CompanyProfile);
 Job.belongsTo(Location);
 Job.hasMany(JobApplication);
 
+JobLaterReview.belongsTo(ApplicantProfile);
+JobLaterReview.belongsTo(Job);
+
+
+
 
 module.exports = {
     User,
@@ -50,5 +56,6 @@ module.exports = {
     Job,
     Location,
     JobApplication,
-    Indutry
+    Indutry,
+    JobLaterReview
 }

@@ -3,7 +3,8 @@ const {
     CompanyProfile,
     JobApplication,
     ApplicantProfile,
-    Location
+    Location,
+    JobLaterReview
 } = require('../models');
 
 const sequelize = require('../database/connection');
@@ -58,7 +59,27 @@ function getApplicantById(applicantId){
 }
 
 function getJobApplicants(jobId){
-    return sequelize.query(`SELECT a.id, a.currentEmployer, a.gender, a.dateOfBirth, a.address, u.email, u.firstName, u.lastName from job_applications ja LEFT JOIN applicant_profiles a ON a.id = ja.applicantProfileId LEFT JOIN users u ON u.id = a.userId where ja.jobId = '${jobId}'`)
+    return sequelize.query(`SELECT a.id, a.currentEmployer, a.gender, a.dateOfBirth, a.address, u.email, u.firstName, u.lastName from job_applications ja LEFT JOIN applicant_profiles a ON a.id = ja.applicantProfileId LEFT JOIN users u ON u.id = a.userId where ja.jobId = '${jobId}'`);
+}
+
+function getApplicantJobs(applicantId){
+    return sequelize.query(`SELECT j.id, j.jobTitle, j.jobDescription, j.industry, j.position, j.educationAttainment, j.salaryRange, j.employmentType, j.vacancies, j.additionalQualifications, j.applicationEndDate, j.applicationStartDate, j.companyProfileId, cp.companyName, cp.contactNumber, cp.industryType, cp.companyLogo, cp.companyAddress, ja.applicationDate from job_applications ja LEFT JOIN jobs j ON j.id = ja.jobId LEFT JOIN company_profiles cp ON cp.id = j.companyProfileId where ja.applicantProfileId = '${applicantId}'`);
+}
+
+function getApplicantSavedJobs(applicantId){
+    return sequelize.query(`SELECT j.id, j.jobTitle, j.jobDescription, j.industry, j.position, j.educationAttainment, j.salaryRange, j.employmentType, j.vacancies, j.additionalQualifications, j.applicationEndDate, j.applicationStartDate, j.companyProfileId, cp.companyName, cp.contactNumber, cp.industryType, cp.companyLogo, cp.companyAddress from job_later_reviews jl LEFT JOIN jobs j ON j.id = jl.jobId LEFT JOIN company_profiles cp ON cp.id = j.companyProfileId where jl.applicantProfileId = '${applicantId}'`);
+}
+
+function saveJobForLaterReview(ApplicantProfileId, JobId){
+    return JobLaterReview.create({ApplicantProfileId, JobId}).catch(err => console.log(err));
+}
+
+function getSavedJob(ApplicantProfileId, JobId){
+    return JobLaterReview.findOne({where: {JobId, ApplicantProfileId}});
+}
+
+function removeJobFromLaterReview(ApplicantProfileId, JobId){
+    return JobLaterReview.destroy({where: {JobId, ApplicantProfileId}});
 }
 
 module.exports = {
@@ -75,5 +96,10 @@ module.exports = {
     getJobApplications,
     getApplicantById,
     getJobApplicants,
+    getApplicantJobs,
+    saveJobForLaterReview,
+    getSavedJob,
+    removeJobFromLaterReview,
+    getApplicantSavedJobs,
     // getApplicantApplication
 }
