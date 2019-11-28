@@ -28,13 +28,13 @@ function addApplicantProfile(applicantProfile){
     return ApplicantProfile.create(applicantProfile).catch(err => console.log(err));
 }
 
-function updateUserById(id, newUser){
-    let user = User.findOne({where: { id }}).catch(err => console.log(err));
+async function updateUserById(id, newUser){
+    let user = await User.findOne({where: { id }}).catch(err => console.log(err));
     return user.update(newUser);
 }
 
-function updateCompanyProfileById(id, companyProfile){
-    let compProfile = CompanyProfile.findOne({where: { id }}).catch(err => console.log(err));
+async function updateCompanyProfileById(id, companyProfile){
+    let compProfile = await CompanyProfile.findOne({where: { id }}).catch(err => console.log(err));
     return compProfile.update(companyProfile)
 }
 

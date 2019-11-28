@@ -1,5 +1,7 @@
 const expressJwt = require('express-jwt');
-const { secret } = require('../../config.json');
+// const { secret } = require('../../config.json');
+
+const CONSTANTS = require('../../constants');
 
 module.exports = authorize;
 
@@ -9,7 +11,7 @@ function authorize(roles = []) {
     }
 
     return [
-        expressJwt({ secret }),
+        expressJwt({ secret: CONSTANTS.JWTSECRET }),
 
         (req, res, next) => {
             if (roles.length && !roles.includes(req.user.role)) {

@@ -358,7 +358,7 @@ async function authenticateUsers({ email, password }) {
             if(!user.emailVerified){
                 return {error: "Verify you email first"}
             }
-            const token = jwt.sign({ sub: user.id, role: user.role }, config.secret, { expiresIn: '24h' });
+            const token = jwt.sign({ sub: user.id, role: user.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
             const userWithoutPassword = {};
             _.map(user.dataValues, (value, key) => {
                 if(key == 'password'){

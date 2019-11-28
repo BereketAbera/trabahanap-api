@@ -50,6 +50,10 @@ function getJobsWithApplications(CompanyProfileId){
     return sequelize.query(`SELECT * FROM view_job_applications WHERE CompanyProfileId='${CompanyProfileId}'`, { type: sequelize.QueryTypes.SELECT})
 }
 
+function getFilteredJobsWithApplications(CompanyProfileId){
+    return sequelize.query(`SELECT * FROM view_filtered_job_applications WHERE CompanyProfileId='${CompanyProfileId}'`, { type: sequelize.QueryTypes.SELECT})
+}
+
 function getJobApplications(JobId){
     return JobApplication.findAll({where: {JobId}, include: [{model: ApplicantProfile}]}).catch(err => console.log(err));
 }
@@ -60,6 +64,10 @@ function getApplicantById(applicantId){
 
 function getJobApplicants(jobId){
     return sequelize.query(`SELECT a.id, a.currentEmployer, a.gender, a.dateOfBirth, a.address, u.email, u.firstName, u.lastName from job_applications ja LEFT JOIN applicant_profiles a ON a.id = ja.applicantProfileId LEFT JOIN users u ON u.id = a.userId where ja.jobId = '${jobId}'`);
+}
+
+function getFilteredJobApplicants(jobId){
+    return sequelize.query(`SELECT a.id, a.currentEmployer, a.gender, a.dateOfBirth, a.address, u.email, ja.id as applicationId, u.firstName, u.lastName from job_applications ja LEFT JOIN applicant_profiles a ON a.id = ja.applicantProfileId LEFT JOIN users u ON u.id = a.userId where ja.jobId = '${jobId}' AND ja.filtered = true`);
 }
 
 function getApplicantJobs(applicantId){
@@ -82,6 +90,10 @@ function removeJobFromLaterReview(ApplicantProfileId, JobId){
     return JobLaterReview.destroy({where: {JobId, ApplicantProfileId}});
 }
 
+function updateJobApplication(jobApplication, body){
+    return jobApplication.update(body);
+}
+
 module.exports = {
     getJobsWithOffsetAndLimit,
     addJob,
@@ -101,5 +113,8 @@ module.exports = {
     getSavedJob,
     removeJobFromLaterReview,
     getApplicantSavedJobs,
+    getFilteredJobApplicants,
+    getFilteredJobsWithApplications,
+    updateJobApplication
     // getApplicantApplication
 }

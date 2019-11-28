@@ -46,7 +46,7 @@ app.use(routes);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-    console.log(`server running at ${PORT}`);
+    console.log(`server running at port ${PORT}`);
 })
 
 module.exports = {app};

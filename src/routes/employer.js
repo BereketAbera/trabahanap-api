@@ -7,8 +7,11 @@ app.get('/locations/:companyProfileId', locationController.getCompanyLocations);
 app.post('/location', locationController.addLocationWithImage);
 
 app.get('/jobs/applications', jobsController.getJobWithApplications);
-app.get('/jobs/applications/applicant/:id', jobsController.getJobApplicant)
+app.post('/jobs/applications/filter', jobsController.filterJobApplication);
+app.get('/jobs/filtered/applications', jobsController.getFilteredJobWithApplications);
+app.get('/jobs/applications/applicant/:id', jobsController.getJobApplicant);
 app.get('/jobs/applicants/:id', jobsController.getJobApplicants);
+app.get('/jobs/filtered/applicants/:id', jobsController.getFilteredJobApplicants);
 app.put('/jobs/:id', jobsController.editJob);
 app.get('/jobs', jobsController.getAllCompanyJobs);
 app.post('/jobs', jobsController.addJob);

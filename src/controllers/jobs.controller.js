@@ -120,8 +120,20 @@ function getJobWithApplications(req, res, next){
         .catch(err => next(err));
 }
 
+function getFilteredJobWithApplications(req, res, next){
+    getEmployerFilteredJobWithApplications(req.user.sub)
+        .then(applications => applications ? res.status(200).json({success: true, applications}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .catch(err => next(err));
+}
+
 function getJobApplicants(req, res, next){
     getEmployerGetJobApplicants(req.params.id, req.user.sub)
+        .then(applicants => applicants ? res.status(200).json({success: true, applicants}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .catch(err => next(err));
+}
+
+function getFilteredJobApplicants(req, res, next){
+    getEmployerFilteredJobApplicants(req.params.id, req.user.sub)
         .then(applicants => applicants ? res.status(200).json({success: true, applicants}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
         .catch(err => next(err));
 }
@@ -147,6 +159,12 @@ function saveForLaterReview(req, res, next){
 function getJobsLaterReview(req, res, next){
     getApplicantLaterReviewJobs(req.user.sub)
         .then(jobs => jobs ? res.status(200).json({success: true, jobs}) : res.status(200).json({success: false, error: 'Something went wrong'}))
+        .catch(err => next(err));
+}
+
+function filterJobApplication(req, res, next){
+    filterApplication(req.user.sub, jobId = req.body.jobId, applicantId = req.body.applicantId)
+        .then(success => res.status(200).json({success}))
         .catch(err => next(err));
 }
 
@@ -239,6 +257,23 @@ async function getEmployerJobWithApplications(user_id){
     return false;
 }
 
+async function getEmployerFilteredJobWithApplications(user_id){
+    const user = await userService.getUserById(user_id);
+    if(user && user.companyProfileId){
+        const jobWithApplications = await jobsService.getFilteredJobsWithApplications(user.companyProfileId);
+        // console.log(jobWithApplications);
+        if(jobWithApplications){
+            return jobWithApplications;
+        }
+        // const applications = await jobsService.getEmployerJobApplications(JobId, user.companyProfileId);
+        // if(applications){
+        //     return applications;
+        // }
+    }
+
+    return false;
+}
+
 async function getEmployerGetJobApplicants(jobId, userId){
     const user = await userService.getUserById(userId);
     const job = await jobsService.getJobById(jobId);
@@ -246,6 +281,19 @@ async function getEmployerGetJobApplicants(jobId, userId){
     if(user && job && user.companyProfileId == job.companyProfileId){
         const applicants = await jobsService.getJobApplicants(jobId);
         if(applicants[0]){
+            return applicants[0];
+        }
+    }
+}
+
+async function getEmployerFilteredJobApplicants(jobId, userId){
+    const user = await userService.getUserById(userId);
+    const job = await jobsService.getJobById(jobId);
+
+    if(user && job && user.companyProfileId == job.companyProfileId){
+        const applicants = await jobsService.getFilteredJobApplicants(jobId);
+        if(applicants[0]){
+            console.log(applicants);
             return applicants[0];
         }
     }
@@ -295,11 +343,45 @@ async function getApplicantLaterReviewJobs(userId){
     const applicant = await userService.getApplicantProfileByUserId(userId);
 
     if(applicant){
+        const applications = await jobsService.getApplicantApplications(applicant.id);
         const jobs = await jobsService.getApplicantSavedJobs(applicant.id);
-        if(jobs[0]){
-            return jobs[0];
+        if(jobs[0] && applications){
+            const applicationIds = applications.map(application => {
+                return application.JobId;
+            })
+            const unappliedSavedJobs = jobs[0].filter(job => {
+                return !applicationIds.includes(job.id);
+            })
+            if(unappliedSavedJobs){
+                return unappliedSavedJobs;
+            }
         }
     }
+}
+
+async function filterApplication(userId, jobId, applicantId){
+    const user = await userService.getUserById(userId);
+    const job = await jobsService.getJobById(jobId);
+    const applicant = await userService.getApplicantById(applicantId);
+    if(user && job && applicant && user.company_profile && user.applicantPRofileId == job.companyProfileId.id){
+        console.log('from filter application');
+        const jobApplication = await jobsService.getApplicationByProfileIdAndJobId(jobId, applicantId);
+        if(jobApplication){
+            if(!jobApplication.filtered){
+                const filtered = await jobsService.updateJobApplication(jobApplication, {filtered: true});
+                if(filtered){
+                    return true;
+                }
+            }else {
+                const filtered = await jobsService.updateJobApplication(jobApplication, {filtered: false});
+                if(filtered){
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 module.exports = {
@@ -316,5 +398,8 @@ module.exports = {
     getJobApplicant,
     getApplicantAppliedJobs,
     saveForLaterReview,
-    getJobsLaterReview
+    getJobsLaterReview,
+    getFilteredJobApplicants,
+    getFilteredJobWithApplications,
+    filterJobApplication
 }
