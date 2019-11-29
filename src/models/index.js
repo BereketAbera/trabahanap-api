@@ -11,6 +11,8 @@ const Location = sequelize.import("./locations.js");
 const JobApplication = sequelize.import("./job_applications.js");
 const Indutry = sequelize.import("./industries.js");
 const JobLaterReview = sequelize.import("./job_later_reviews.js");
+const Issue = sequelize.import("./issues.js");
+const IssueResponse = sequelize.import("./issue_responses.js");
 
 ApplicantProfile.belongsTo(User);
 ApplicantProfile.belongsTo(City);
@@ -44,6 +46,11 @@ JobLaterReview.belongsTo(ApplicantProfile);
 JobLaterReview.belongsTo(Job);
 
 
+Issue.belongsTo(ApplicantProfile);
+
+IssueResponse.belongsTo(Issue);
+IssueResponse.belongsTo(User);
+
 
 
 module.exports = {
@@ -57,5 +64,7 @@ module.exports = {
     Location,
     JobApplication,
     Indutry,
-    JobLaterReview
+    JobLaterReview,
+    Issue,
+    IssueResponse
 }

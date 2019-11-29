@@ -1,6 +1,7 @@
 const app = module.exports = require('express')();
 const userController = require('../controllers/users.controller');
 const jobsController = require('../controllers/jobs.controller');
+const otherController = require('../controllers/other.controller');
 
 // app.get('/jobs', (req, res) => {
 //     res.send({msg: 'from applicant'})
@@ -17,3 +18,7 @@ app.get('/profile', userController.getApplicantProfile);
 app.post('/profile/cv', userController.updateApplicantCV);
 app.post('/profile/picture', userController.updateApplicantPicture);
 app.put('/profile/:id', userController.editApplicantProfile);
+
+app.get('/issues', otherController.getIssues);
+app.get('/issues/:id', otherController.getIssue);
+app.post('/issues', otherController.addIssue);
