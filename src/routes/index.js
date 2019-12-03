@@ -7,8 +7,7 @@ require('../database/connection');
 
 app.use('/api/auth', require('./auth'));
 app.use('/api/applicant', autorize(ROLE.APPLICANT), require('./applicant'));
-app.use('/api/employer', autorize(ROLE.EMPLOYER), require('./employer'));
-app.use('/api/staffer', autorize(ROLE.STAFFER), require('./employer'));
+app.use('/api/employer', autorize([ROLE.EMPLOYER, ROLE.STAFFER]), require('./employer'));
 app.use('/api/admin', autorize(ROLE.ADMIN), require('./admin'));
 app.use('/api/', require('./anonymous'));
 
