@@ -25,7 +25,7 @@ const jobService = require('../services/job.service');
 const formidable = require('formidable');
 const CONSTANTS = require('../../constants.js');
 
-sgMail.setApiKey(config.sendGridApiKey);
+sgMail.setApiKey(CONSTANTS.SENDGRID_KEY);
 
 
 const {
@@ -53,6 +53,8 @@ function signUpApplicant(req, res, next){
         return;
     }
 
+    req.body.username = req.body.email;
+
     signUpUserApplicant(req.body)
         .then(applicant => applicant ? res.status(200).json({success: true, applicant}) : res.status(200).json({ success: false, error: 'email is not unique'}))
         .catch(err => next(err));
@@ -66,6 +68,8 @@ function signUpEmployer(req, res, next){
         res.status(200).json({success: false, validationError: valid});
         return;
     }
+
+    req.body.username = req.body.email;
 
     signUpUserEmployer(req.body)
         .then(employer => employer ? res.status(200).json({success: true, employer}) : res.status(200).json({ success: false, error: 'email is not unique'}))

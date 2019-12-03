@@ -2,16 +2,16 @@
 
 
 const baseDir = __dirname;
-// const HOST_URL = "https://trabahanap-backend.herokuapp.com";
-// const HOST_URL_FRONTEND = "https://dev-traba.netlify.com";
 
-const HOST_URL = "192.168.1.106:3000/api";
-const HOST_URL_FRONTEND = "localhost:4200";
+const HOST_URL = "https://8thdd.com/api";
+const HOST_URL_FRONTEND = "https://8thdd.com";
 const JWTSECRET = "ad4f783b-bbc9-43a1-88a4-1bec8da0f363";
+const SENDGRID_KEY = "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";
 
 module.exports = {
     baseDir,
     HOST_URL,
     HOST_URL_FRONTEND,
-    JWTSECRET
+    JWTSECRET,
+    SENDGRID_KEY
 }

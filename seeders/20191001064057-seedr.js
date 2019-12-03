@@ -132,12 +132,13 @@ module.exports = {
     let users = [];
     for(var i = 0; i<15; i++){
       var role = ROLES[i%3];
+      var email = faker.internet.email();
       var user = {
         id: faker.random.uuid(),
-        username: faker.name.firstName().toLocaleLowerCase(),
+        username: email,
         phoneNumber: faker.phone.phoneNumberFormat(),
         password: bcryptjs.hashSync('password', 10),
-        email: faker.internet.email(),
+        email,
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
         role: role,

@@ -1,7 +1,14 @@
 const otherService = require('../services/other.service');
 const userService = require('../services/user.service');
+const ROLE = require('../_helpers/role');
 
 const { validateIssue } = require('../_helpers/validators');
+const constractStafferEmail = require('../_helpers/construct_staffer_email');
+const uuidv4 = require('uuid/v4');
+const sgMail = require('@sendgrid/mail');
+const CONSTANTS = require('../../constants');
+const bcryptjs = require('bcryptjs');
+sgMail.setApiKey(CONSTANTS.SENDGRID_KEY);
 
 
 function getAllIndustries(req, res, next){
@@ -28,9 +35,56 @@ function getIssues(req, res, next){
         .catch(err => next(err));
 }
 
+function getStaffs(req, res, next){
+    getEmployerStaffs(req.user.sub)
+        .then(staffs => staffs ? res.status(200).send({success: true, staffs}) : res.status(200).send({success: false, error: "Something went wrong!"}))
+        .catch(err => next(err));
+}
+
 function getIssue(req, res, next){
     getApplicantIssue(req.user.sub, req.params.id)
         .then(issue => issue ? res.status(200).send({success: true, issue}) : res.status(200).send({success: false, error: "Something went wrong!"}))
+        .catch(err => next(err));
+}
+
+function addStaff(req, res, next){
+    addCompanyStaffer(req.body, req.user.sub)
+        .then(success => res.status(200).send({success}))
+        .catch(err => next(err));
+}
+
+function addNewStaffer(req, res, next){
+    renderNewStafferPassword(req)
+        .then(response => res.render('addNewStaffer', {layout: 'main', response}))
+        .catch(err => next(err));
+}
+
+function changeStafferPassword(req, res, next){
+    var response = {...req.body, error: "", passwordChanged: false, processed: false};
+    if(req.body.password.length < 5){
+        response.error = "Password must be at list 6 characters";
+        res.render('addNewStaffer', {layout: 'main', response});
+        return;
+    }else if(req.body.password != req.body.comfirm_password){
+        response.error = "Passwords does not much";
+        res.render('addNewStaffer', {layout: 'main', response});
+        return;
+    }
+
+    console.log(response);
+    
+    changeNewStafferPassword(req.body, response.token)
+        .then(success => {
+            response.processed = true;
+            if(success){
+                response.passwordChanged = true;
+            }else{
+                response.passwordChanged = false;
+            }
+
+            res.render('addNewStaffer', {layout: 'main', response});
+            return;
+        })
         .catch(err => next(err));
 }
 
@@ -62,6 +116,16 @@ async function getApplicantIssues(userId){
     }
 }
 
+async function getEmployerStaffs(userId){
+    const user = await userService.getUserById(userId);
+    if(user && user.company_profile){
+        const staffs = await otherService.getCompanyStaffs(user.companyProfileId);
+        if(staffs){
+            return staffs;
+        }
+    }
+}
+
 async function getApplicantIssue(userId, issueId){
     const applicant = await userService.getApplicantProfileByUserId(userId);
     if(applicant){
@@ -72,10 +136,59 @@ async function getApplicantIssue(userId, issueId){
     }
 }
 
+async function addCompanyStaffer(body, userId){
+    const user = await userService.getUserById(userId);
+    if(user && user.companyProfileId, body.email){
+        const userExists = await userService.getUserByEmail(body.email);
+        const tokenExists = await otherService.getTokenEmail(body.email);
+        if(userExists || tokenExists){
+            return false;
+        }
+        const token = uuidv4();
+        const saveToken = await otherService.saveToken(token, body.email);
+        const newUser = await userService.createUser({...body, role: ROLE.STAFFER, companyProfileId: user.companyProfileId, password: uuidv4(), username: body.email, hasFinishedProfile: true});
+        if(saveToken && newUser){
+            const message = constractStafferEmail(body.email, token);
+            sgMail.send(message);
+            return true;
+        }
+    }
+    return false;
+}
+
+async function renderNewStafferPassword(req){
+    if(req.params.token && req.params.token){
+        const exists = await otherService.getToken(req.params.token)
+        if(exists){
+            return {...req.params, verified: true, passwordChanged: false, processed: false}
+        }
+    }
+    return {...req.params, verified: false, passwordChanged: false, processed: false}
+}
+
+async function changeNewStafferPassword(body, token){
+    // console.log(token);
+    const user = await userService.getUserByEmail(body.email);
+    if(user){
+        // const updatedUser = await userService.updateUserField(bcryptjs.hashSync(body.password, 10), 'password', user.id);
+        const updatedUser = await userService.updateUserById(user.id, {password: bcryptjs.hashSync(body.password, 10), emailVerified: true});
+        const updateToken = await otherService.updateToken(token, {expired: true});
+        if(updatedUser && updateToken){
+            return true;
+        }
+    }
+
+    return false;
+}
+
 
 module.exports = {
     getAllIndustries,
     addIssue,
     getIssues,
-    getIssue
+    getIssue,
+    addStaff,
+    addNewStaffer,
+    changeStafferPassword,
+    getStaffs
 }

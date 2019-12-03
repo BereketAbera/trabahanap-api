@@ -8,8 +8,13 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      email:{
+        type: Sequelize.STRING,
+        allowNull: false
+      },
       token: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: false
       },
       expired: {
         type: Sequelize.BOOLEAN,
