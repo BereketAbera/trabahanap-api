@@ -71,7 +71,7 @@ function changeStafferPassword(req, res, next){
         return;
     }
 
-    console.log(response);
+    // console.log(response);
     
     changeNewStafferPassword(req.body, response.token)
         .then(success => {
@@ -85,6 +85,24 @@ function changeStafferPassword(req, res, next){
             res.render('addNewStaffer', {layout: 'main', response});
             return;
         })
+        .catch(err => next(err));
+}
+
+function getEmployers(req, res, next){
+    getAllEmployers()
+        .then(employers => employers ? res.status(200).send({success: true, employers}) : res.status(200).send({success: false, error: "Something went wrong!"}))
+        .catch(err => next(err));
+}
+
+function verifyEmployer(req, res, next){
+    verifyEmployerLicense(req.params.id)
+        .then(success => res.status(200).send({success}))
+        .catch(err => next(err));
+}
+
+function getAllIssues(req, res, next){
+    getAllReportedIssues()
+        .then(issues => issues ? res.status(200).send({success: true, issues}) : res.status(200).send({success: false, error: "Something went wrong!"}))
         .catch(err => next(err));
 }
 
@@ -181,6 +199,31 @@ async function changeNewStafferPassword(body, token){
     return false;
 }
 
+async function getAllEmployers(){
+    const employers = await otherService.getAllEmployers();
+    if(employers){
+        return employers;
+    }
+}
+
+async function verifyEmployerLicense(id){
+    const companyProfile = await userService.getCompanyProfileById(id);
+    if(companyProfile){
+        const verified = await userService.updateCompanyField(true, 'verified', id);
+        if(verified[0] > 0){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+async function getAllReportedIssues(){
+    const issues = await otherService.getAllReportedIssues();
+    if(issues){
+        return issues;
+    }
+}
 
 module.exports = {
     getAllIndustries,
@@ -190,5 +233,8 @@ module.exports = {
     addStaff,
     addNewStaffer,
     changeStafferPassword,
-    getStaffs
+    getStaffs,
+    getEmployers,
+    verifyEmployer,
+    getAllIssues
 }

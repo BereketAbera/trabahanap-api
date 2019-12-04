@@ -2,7 +2,8 @@ const {
     Indutry,
     Issue,
     Token,
-    User
+    User,
+    CompanyProfile
 } = require('../models');
 
 const ROLE = require('../_helpers/role');
@@ -45,6 +46,14 @@ function getCompanyStaffs(CompanyProfileId){
     return User.findAll({where: {role: ROLE.STAFFER, CompanyProfileId, emailVerified: true}}).catch(err => console.log(err));
 }
 
+function getAllEmployers(){
+    return User.findAll({where: {role: ROLE.EMPLOYER}, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
+}
+
+function getAllReportedIssues(){
+    return Issue.findAll().catch(err => console.log(err));
+}
+
 module.exports = {
     getAllIndustries,
     addIssue,
@@ -54,5 +63,7 @@ module.exports = {
     getToken,
     getTokenEmail,
     updateToken,
-    getCompanyStaffs
+    getCompanyStaffs,
+    getAllEmployers,
+    getAllReportedIssues
 }
