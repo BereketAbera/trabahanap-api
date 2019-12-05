@@ -3,7 +3,8 @@ const {
     Issue,
     Token,
     User,
-    CompanyProfile
+    CompanyProfile,
+    IssueResponse
 } = require('../models');
 
 const ROLE = require('../_helpers/role');
@@ -17,11 +18,11 @@ function addIssue(issue){
 }
 
 function getApplicantIssues(ApplicantProfileId){
-    return Issue.findAll({where: {ApplicantProfileId}}).catch(err => console.log(err));
+    return Issue.findAll({where: {ApplicantProfileId}, include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
 
 function getApplicantIssueById(ApplicantProfileId, id){
-    return Issue.findOne({where: {ApplicantProfileId, id}}).catch(err => console.log(err)); 
+    return Issue.findOne({where: {ApplicantProfileId, id}, include: [{model: IssueResponse}]}).catch(err => console.log(err)); 
 }
 
 function saveToken(token, email){
@@ -51,7 +52,19 @@ function getAllEmployers(){
 }
 
 function getAllReportedIssues(){
-    return Issue.findAll().catch(err => console.log(err));
+    return Issue.findAll({include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
+
+function addIssueResponse(issueResponse){
+    return IssueResponse.create(issueResponse).catch(err => console.log(err));
+}
+
+function updateIssueField(value, fieldName, issueId){
+    return Issue.update({[fieldName]: value},{where: {id: issueId}});
+}
+
+function getIssueById(issueId){
+    return Issue.findOne({where: {id: issueId}}).catch(err => console.log(err));
 }
 
 module.exports = {
@@ -65,5 +78,8 @@ module.exports = {
     updateToken,
     getCompanyStaffs,
     getAllEmployers,
-    getAllReportedIssues
+    getAllReportedIssues,
+    addIssueResponse,
+    updateIssueField,
+    getIssueById
 }

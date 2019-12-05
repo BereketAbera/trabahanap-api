@@ -5,3 +5,4 @@ app.get('/employers', otherController.getEmployers);
 app.put('/employers/verify/:id', otherController.verifyEmployer);
 
 app.get('/issues', otherController.getAllIssues);
+app.post('/issue_responses', otherController.addIssueResponse);

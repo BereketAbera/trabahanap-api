@@ -1,7 +1,7 @@
 /* jshint indent: 2 */
 
 module.exports = function(sequelize, DataTypes) {
-    return sequelize.define('issues', {
+    return sequelize.define('issue_responses', {
       id: {
         primaryKey: true,
         type: DataTypes.UUID,

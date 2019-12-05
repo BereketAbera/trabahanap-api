@@ -106,6 +106,12 @@ function getAllIssues(req, res, next){
         .catch(err => next(err));
 }
 
+function addIssueResponse(req, res, next){
+    postIssueResponse(req.body, req.user.sub)
+        .then(issueResponse => issueResponse ? res.status(200).send({success: true, issueResponse}) : res.status(200).send({success: false, error: "Something went wrong!"}))
+        .catch(err => next(err));
+}
+
 
 async function getIndutries(){
     const industries = await otherService.getAllIndustries();
@@ -209,9 +215,16 @@ async function getAllEmployers(){
 async function verifyEmployerLicense(id){
     const companyProfile = await userService.getCompanyProfileById(id);
     if(companyProfile){
-        const verified = await userService.updateCompanyField(true, 'verified', id);
-        if(verified[0] > 0){
-            return true;
+        if(companyProfile.verified){
+            const verified = await userService.updateCompanyField(false, 'verified', id);
+            if(verified[0] > 0){
+                return true;
+            }
+        }else{
+            const verified = await userService.updateCompanyField(true, 'verified', id);
+            if(verified[0] > 0){
+                return true;
+            }
         }
     }
 
@@ -222,6 +235,23 @@ async function getAllReportedIssues(){
     const issues = await otherService.getAllReportedIssues();
     if(issues){
         return issues;
+    }
+}
+
+async function postIssueResponse(issueResponse, userId){
+    
+    if(issueResponse.issueResponse && issueResponse.issueId){
+        const existingIssue = await otherService.getIssueById(issueResponse.issueId);
+        if(existingIssue){
+            const savedIssueResponse = await otherService.addIssueResponse({...issueResponse, userId});
+            if(savedIssueResponse){
+                const updatedIssue = await otherService.updateIssueField(savedIssueResponse.id, "IssueResponseId", existingIssue.id);
+                console.log(updatedIssue);
+                if(updatedIssue[0] > 0){
+                    return savedIssueResponse;
+                }
+            }
+        }
     }
 }
 
@@ -236,5 +266,6 @@ module.exports = {
     getStaffs,
     getEmployers,
     verifyEmployer,
-    getAllIssues
+    getAllIssues,
+    addIssueResponse
 }

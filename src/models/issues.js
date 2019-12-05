@@ -17,6 +17,14 @@ module.exports = function(sequelize, DataTypes) {
       issueDescription:{
         type: DataTypes.STRING
       },
+      IssueResponseId: {
+        type: DataTypes.CHAR(36),
+        allowNull: true,
+        references: {
+          model: 'issue_responses',
+          key: 'id'
+        }
+      },
       ApplicantProfileId: {
         type: DataTypes.CHAR(36),
         allowNull: true,
