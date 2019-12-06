@@ -32,6 +32,7 @@
     "pg": "^7.12.1",
     "pg-hstore": "^2.3.3",
     "sequelize": "^5.19.0",
+    "sequelize-cli": "^5.5.1",
     "uuid": "^3.3.3",
     "validatory": "^0.3.1"
   },

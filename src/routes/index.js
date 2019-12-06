@@ -3,8 +3,6 @@ const ROLE = require('../_helpers/role');
 const autorize = require('../_helpers/autorize');
 require('../database/connection');
 
-
-
 app.use('/api/auth', require('./auth'));
 app.use('/api/applicant', autorize(ROLE.APPLICANT), require('./applicant'));
 app.use('/api/employer', autorize([ROLE.EMPLOYER, ROLE.STAFFER]), require('./employer'));

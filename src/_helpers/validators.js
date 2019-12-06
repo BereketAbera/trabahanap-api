@@ -56,7 +56,7 @@ function validateUser(data){
     _.map(data, (value, key) => {
         if(key == 'email'){
             if(!validator.isEmail(value+'')){
-                errors[key] = "email is not valid";
+                errors[key] = "email is not valid"; 
                 valid = false;
             }
         }else{
