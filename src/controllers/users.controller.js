@@ -3,10 +3,6 @@ var fs = require('fs');
 var path = require('path');
 var AWS = require('aws-sdk');
 const _ = require('lodash');
-// var credentials = {
-//     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-//     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-// };
 var credentials = new AWS.SharedIniFileCredentials({ profile: 'liguam' });
 AWS.config.credentials = credentials;
 // Set the region 
@@ -130,6 +126,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next){
     });
 }
 
+
 function updateCompanyLogo(req, res, next){
     var fileNameLogo = "";
     var form = new formidable.IncomingForm();
@@ -221,7 +218,7 @@ function updateApplicantCV(req, res, next){
 }
 
 function updateApplicantPicture(req, res, next){
-    console.log(req);
+    // console.log(req);
     var fileNameApplicantPicture = "";
     var form = new formidable.IncomingForm();
     form.multiples = true;
@@ -234,7 +231,7 @@ function updateApplicantPicture(req, res, next){
     });
     form.parse(req, (err, fields, files) => {
         var applicantPicture = files['applicantPicture'];
-        console.log("console.log");
+        // console.log("console.log");
         if(applicantPicture && applicantPicture.path){
             uploadFilePromise(applicantPicture.path, 'th-employer-logo', fileNameApplicantPicture)
                 .then(data => {
@@ -321,6 +318,72 @@ function createApplicantProfileWithCVAndPicture(req, res, next){
     });
 }
 
+function createApplicant(req, res, next){
+    var fileNameCV = "";
+    var fileNameProfilePicture = "";
+    var form = new formidable.IncomingForm();
+    form.multiples = true;
+
+    form.on('fileBegin', function (name, file){
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        let fileName = '';
+        if(name=="cv"){
+            fileName = fileNameCV = Date.now() + "applicant-cv";
+        }else{
+            fileName = fileNameProfilePicture = Date.now() + "applicant-profile"; 
+        }
+
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
+    });
+
+    form.parse(req, (err, fields, files) => {
+        let applicantProfile = {};
+        _.map(fields, (value, key) => {
+            applicantProfile[key] = value;
+        })
+
+        applicantProfile["password"] = uuidv4();
+
+        applicantProfile = {...applicantProfile, UserId: req.user.sub};
+        const valid = validateApplicantProfile(applicantProfile);
+        const validUser = validateUser(applicantProfile);
+
+        if(valid != true || validUser != true){
+            if(typeof(valid) == "string" || typeof(validUser) == "string"){
+                res.status(200).json({success: false, validationError: "some required fields are not present"});
+                return;
+            }
+            res.status(200).json({success: false, validationError: {...valid, ...validUser}});
+            return;
+        }
+        const user = _.pick(applicantProfile, ['username', 'firstName', 'lastName', 'email', 'phoneNumber', 'password']);
+        applicantProfile = _.omit(applicantProfile, ['username', 'firstName', 'lastName', 'email', 'phoneNumber', 'password']);
+
+        var cvFile = files['cv'];
+        var profilePictureFile = files['applicantPicture'];
+        if(cvFile && profilePictureFile && cvFile.path && profilePictureFile.path){
+            uploadFilePromise(cvFile.path, 'th-applicant-cv', fileNameCV)
+                .then(data => {
+                    applicantProfile['cv'] = data.Location;
+                    return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                })
+                .then(data => {
+                    applicantProfile['applicantPicture'] = data.Location;
+                    return signUpUserApplicantFromAdmin(user);
+                })
+                .then(user => {
+                    return createUserApplicantProfileAdmin({...applicantProfile, UserId: user.id});
+                })
+                .then(applicant => {
+                    fs.unlinkSync(cvFile.path);
+                    applicant ? res.status(200).json({success: true, applicant}) : res.status(200).json({sucess: false, error: 'Something went wrong'})
+                })
+                .catch(err => next(err));
+        }
+
+    });
+}
+
 function getApplicantProfile(req, res, next){
     getUserApplicantProfile(req.user.sub)
         .then(applicantProfile => {
@@ -349,6 +412,12 @@ function editCompanyProfile(req, res, next){
 
     editUserCompanyProfile({...req.body, user_id: req.user.sub}, req.params.id)
         .then(companyProfile => companyProfile ? res.status(200).json({success: true, companyProfile}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .catch(err => next(err));
+}
+
+function getApplicants(req, res, next){
+    getAllApplicants()
+        .then(applicants => applicants ? res.status(200).json({success: true, applicants}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
         .catch(err => next(err));
 }
 
@@ -389,6 +458,22 @@ async function signUpUserApplicant(body){
     
 }
 
+async function signUpUserApplicantFromAdmin(body){
+    const unique = await isEmailUnique(body);
+    if(unique){
+        body["role"] = ROLE.APPLICANT;
+        body["emailVerified"] = true;
+        
+        const user = await userService.createUser(body);
+        if(user){
+            return user;
+        }
+        throw "Something went wrong.";
+    }else{
+        throw "Email is not unique";
+    }
+}
+
 async function signUpUserEmployer(body){
     const unique = await isEmailUnique(body);
     if(unique){
@@ -402,7 +487,6 @@ async function signUpUserEmployer(body){
 
 async function editUserApplicantProfile(body, id){
     body = {...body, cityId: body.CityId, countryId: body.countryId, regionId: body.regionId};
-    // console.log("from edit user applicant profile", body);  
     let applicantProfile = await userService.getApplicantProfileByUserId(body.user_id);
     if(applicantProfile && applicantProfile.id == id){
         const updatedProfile = await userService.updateApplicantProfile(applicantProfile, body);
@@ -445,6 +529,22 @@ async function createUserApplicantProfile(body){
             // if(user)
             if(newUser){
                 return newUser;
+            }
+        }
+    }
+}
+
+async function createUserApplicantProfileAdmin(body){
+    const user = await userService.getUserByIdAndRole(body.UserId, ROLE.APPLICANT);
+    if(user){
+        const appProfile = await userService.addApplicantProfile({...body});
+        if(appProfile){
+            const newUser = await user.update({hasFinishedProfile: true});
+            if(newUser){
+                const newApplicantProfile = await userService.getApplicantById(appProfile.id);
+                if(newApplicantProfile){
+                    return newApplicantProfile;
+                }
             }
         }
     }
@@ -508,6 +608,13 @@ async function isEmailUnique({ email }){
     return true;
 }
 
+async function getAllApplicants(){
+    const employers = await userService.getAllApplicants();
+    if(employers){
+        return employers;
+    }
+}
+
 function uploadFilePromise(file, bucketName, fileName) {
     var uploadParams = { Bucket: bucketName, Key: fileName, Body: '', ACL: 'public-read' };
     var fileStream = fs.createReadStream(file);
@@ -542,5 +649,7 @@ module.exports = {
     editApplicantProfile,
     updateApplicantCV,
     updateApplicantPicture,
-    updateCompanyBusinessLicense
+    updateCompanyBusinessLicense,
+    createApplicant,
+    getApplicants
 }

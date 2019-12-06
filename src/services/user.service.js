@@ -62,6 +62,10 @@ function getApplicantById(id){
     return ApplicantProfile.findOne({where: {id}, include: [{model: User}]})
 }
 
+function getAllApplicants(){
+    return ApplicantProfile.findAll({include: [{model: User}]});
+}
+
 
 module.exports = {
     updateUserById,
@@ -78,5 +82,6 @@ module.exports = {
     updateCompanyField,
     updateUserField,
     updateApplicantProfile,
-    getApplicantById
+    getApplicantById,
+    getAllApplicants
 };
