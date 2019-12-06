@@ -187,7 +187,7 @@ async function getApplicantJobById(jobId, userId){
 }
 
 async function addEmployerJob(body){
-    const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
+    const user = await userService.getUserById(body.user_id);
     if(user){
         
         const compProfileId = user.company_profile.id;

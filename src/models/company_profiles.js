@@ -36,6 +36,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: true
     },
+    verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     companyDescription: {
       type: DataTypes.TEXT,
       allowNull: true

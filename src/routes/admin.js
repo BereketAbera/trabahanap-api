@@ -1,12 +1,13 @@
 const app = module.exports = require('express')();
+const otherController = require('../controllers/other.controller');
 const userController = require('../controllers/users.controller');
-const locationController = require('../controllers/locations.controller')
 
-// app.get('/employers', (req, res) => {
-//     res.send({msg: 'list of employers from admin here'})
-// })
-
-app.get('/employers',userController.getAllEmployers);
+app.get('/employers', otherController.getEmployers);
 app.post('/employer',userController.admnCreateCompanyProfileWithBusinessLicenseAndLogo);
-app.get('/employer_password/:email/:token', userController.addNewEmployerPassword)
-app.post('/employer_password/:email/:token', userController.changeEmployerPassword)
+app.put('/employers/verify/:id', otherController.verifyEmployer);
+
+app.get('/issues', otherController.getAllIssues);
+app.post('/issue_responses', otherController.addIssueResponse);
+
+app.post('/applicants', userController.createApplicant)
+app.get('/applicants', userController.getApplicants)

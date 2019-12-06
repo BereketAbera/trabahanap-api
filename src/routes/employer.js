@@ -3,6 +3,8 @@ const userController = require('../controllers/users.controller');
 const locationController = require('../controllers/locations.controller');
 const jobsController = require('../controllers/jobs.controller');
 const otherController = require('../controllers/other.controller');
+const empAutorize = require('../_helpers/empAutorize');
+const ROLE = require('../_helpers/role');
 
 app.get('/locations/:companyProfileId', locationController.getCompanyLocations);
 app.post('/location', locationController.addLocationWithImage);
@@ -25,8 +27,8 @@ app.post('/profile/businessLicense', userController.updateCompanyBusinessLicense
 app.put('/profile/:id', userController.editCompanyProfile);
 app.post('/profile',  userController.createCompanyProfileWithBusinessLicenseAndLogo);
 
-app.post('/staff/add', otherController.addStaff)
-app.get('/staff', otherController.getStaffs)
+app.post('/staff/add', empAutorize(ROLE.EMPLOYER), otherController.addStaff)
+app.get('/staff', empAutorize(ROLE.EMPLOYER), otherController.getStaffs)
 
 
 

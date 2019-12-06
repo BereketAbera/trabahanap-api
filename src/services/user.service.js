@@ -65,6 +65,10 @@ function getApplicantById(id){
 async function getEmployersWithOffsetAndLimit(offset, limit){
     return await User.findAndCountAll({offset, limit, include: [{model: CompanyProfile}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
+function getAllApplicants(){
+    return ApplicantProfile.findAll({include: [{model: User}]});
+}
+
 
 module.exports = {
     updateUserById,
@@ -82,5 +86,6 @@ module.exports = {
     updateUserField,
     updateApplicantProfile,
     getApplicantById,
-    getEmployersWithOffsetAndLimit
+    getEmployersWithOffsetAndLimit,
+    getAllApplicants
 };

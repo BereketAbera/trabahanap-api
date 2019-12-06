@@ -71,7 +71,7 @@ function changeStafferPassword(req, res, next){
         return;
     }
 
-    console.log(response);
+    // console.log(response);
     
     changeNewStafferPassword(req.body, response.token)
         .then(success => {
@@ -85,6 +85,30 @@ function changeStafferPassword(req, res, next){
             res.render('addNewStaffer', {layout: 'main', response});
             return;
         })
+        .catch(err => next(err));
+}
+
+function getEmployers(req, res, next){
+    getAllEmployers()
+        .then(employers => employers ? res.status(200).send({success: true, employers}) : res.status(200).send({success: false, error: "Something went wrong!"}))
+        .catch(err => next(err));
+}
+
+function verifyEmployer(req, res, next){
+    verifyEmployerLicense(req.params.id)
+        .then(success => res.status(200).send({success}))
+        .catch(err => next(err));
+}
+
+function getAllIssues(req, res, next){
+    getAllReportedIssues()
+        .then(issues => issues ? res.status(200).send({success: true, issues}) : res.status(200).send({success: false, error: "Something went wrong!"}))
+        .catch(err => next(err));
+}
+
+function addIssueResponse(req, res, next){
+    postIssueResponse(req.body, req.user.sub)
+        .then(issueResponse => issueResponse ? res.status(200).send({success: true, issueResponse}) : res.status(200).send({success: false, error: "Something went wrong!"}))
         .catch(err => next(err));
 }
 
@@ -181,6 +205,55 @@ async function changeNewStafferPassword(body, token){
     return false;
 }
 
+async function getAllEmployers(){
+    const employers = await otherService.getAllEmployers();
+    if(employers){
+        return employers;
+    }
+}
+
+async function verifyEmployerLicense(id){
+    const companyProfile = await userService.getCompanyProfileById(id);
+    if(companyProfile){
+        if(companyProfile.verified){
+            const verified = await userService.updateCompanyField(false, 'verified', id);
+            if(verified[0] > 0){
+                return true;
+            }
+        }else{
+            const verified = await userService.updateCompanyField(true, 'verified', id);
+            if(verified[0] > 0){
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+async function getAllReportedIssues(){
+    const issues = await otherService.getAllReportedIssues();
+    if(issues){
+        return issues;
+    }
+}
+
+async function postIssueResponse(issueResponse, userId){
+    
+    if(issueResponse.issueResponse && issueResponse.issueId){
+        const existingIssue = await otherService.getIssueById(issueResponse.issueId);
+        if(existingIssue){
+            const savedIssueResponse = await otherService.addIssueResponse({...issueResponse, userId});
+            if(savedIssueResponse){
+                const updatedIssue = await otherService.updateIssueField(savedIssueResponse.id, "IssueResponseId", existingIssue.id);
+                console.log(updatedIssue);
+                if(updatedIssue[0] > 0){
+                    return savedIssueResponse;
+                }
+            }
+        }
+    }
+}
 
 module.exports = {
     getAllIndustries,
@@ -190,5 +263,9 @@ module.exports = {
     addStaff,
     addNewStaffer,
     changeStafferPassword,
-    getStaffs
+    getStaffs,
+    getEmployers,
+    verifyEmployer,
+    getAllIssues,
+    addIssueResponse
 }
