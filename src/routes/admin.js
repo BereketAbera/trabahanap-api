@@ -3,7 +3,7 @@ const otherController = require('../controllers/other.controller');
 const userController = require('../controllers/users.controller');
 
 app.get('/employers', otherController.getEmployers);
-app.post('/employer',userController.admnCreateCompanyProfileWithBusinessLicenseAndLogo);
+app.post('/employers',userController.admnCreateCompanyProfileWithBusinessLicenseAndLogo);
 app.put('/employers/verify/:id', otherController.verifyEmployer);
 
 app.get('/issues', otherController.getAllIssues);

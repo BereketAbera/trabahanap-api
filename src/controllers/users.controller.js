@@ -16,6 +16,7 @@ const sgMail = require('@sendgrid/mail');
 const uuidv4 = require('uuid/v4');
 const ROLE = require('../_helpers/role');
 const constructEmail = require('../_helpers/construct_email');
+const constructApplicantEmail = require('../_helpers/construct_applicant_email');
 const construct_employer_email = require('../_helpers/construct_employer_email');
 const userService = require('../services/user.service');
 const jobService = require('../services/job.service');
@@ -164,21 +165,22 @@ async function adminSignUpEmployerUser(body) {
         body['hasFinishedProfile'] = true;
         body['password'] = uuidv4();
 
-        const valid = validateUser(body);
-        if (valid != true) {
-            res.status(200).json({ success: false, validationError: valid });
-            return;
-        }
+        // const valid = validateUser(body);
+        // if (valid != true) {
+        //     res.status(200).json({ success: false, validationError: valid });
+        //     return;
+        // }
 
-        const tokenExists = await otherService.getTokenEmail(body.email);
+        // const tokenExists = await otherService.getTokenEmail(body.email);
         // if(userExists || tokenExists){
         //     return false;
         // }
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
+        body.username = body.email;
         const { email, username, phoneNumber, password, firstName, lastName, gender,role,emailVerified,hasFinishedProfile } = { ...body };
         const user = await userService.createUser({ email, username, phoneNumber, password, firstName, lastName, gender,role,emailVerified,hasFinishedProfile } );
-        console.log(user);
+        // console.log(user);
         if(saveToken && user){
             const message = construct_employer_email(body.email, token);
             sgMail.send(message);
@@ -754,7 +756,11 @@ async function createUserApplicantProfileAdmin(body){
             const newUser = await user.update({hasFinishedProfile: true});
             if(newUser){
                 const newApplicantProfile = await userService.getApplicantById(appProfile.id);
-                if(newApplicantProfile){
+                const token = uuidv4();
+                const saveToken = await otherService.saveToken(token, user.email);
+                if(newApplicantProfile && saveToken){
+                    const message = constructApplicantEmail(user.email, token);
+                    sgMail.send(message);
                     return newApplicantProfile;
                 }
             }

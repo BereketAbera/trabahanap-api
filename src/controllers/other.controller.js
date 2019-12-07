@@ -59,15 +59,22 @@ function addNewStaffer(req, res, next){
         .catch(err => next(err));
 }
 
+function addNewApplicant(req, res, next){
+    renderNewApplicantPassword(req)
+        .then(response => res.render('addNewApplicant', {layout: 'main', response}))
+        .catch(err => next(err));
+}
+
+
 function changeStafferPassword(req, res, next){
     var response = {...req.body, error: "", passwordChanged: false, processed: false};
     if(req.body.password.length < 5){
         response.error = "Password must be at list 6 characters";
-        res.render('addNewStaffer', {layout: 'main', response});
+        res.render('addNewApplicant', {layout: 'main', response});
         return;
     }else if(req.body.password != req.body.comfirm_password){
         response.error = "Passwords does not much";
-        res.render('addNewStaffer', {layout: 'main', response});
+        res.render('addNewApplicant', {layout: 'main', response});
         return;
     }
 
@@ -82,7 +89,36 @@ function changeStafferPassword(req, res, next){
                 response.passwordChanged = false;
             }
 
-            res.render('addNewStaffer', {layout: 'main', response});
+            res.render('addNewApplicant', {layout: 'main', response});
+            return;
+        })
+        .catch(err => next(err));
+}
+
+function changeApplicantPassword(req, res, next){
+    var response = {...req.body, error: "", passwordChanged: false, processed: false};
+    if(req.body.password.length < 5){
+        response.error = "Password must be at list 6 characters";
+        res.render('addNewApplicant', {layout: 'main', response});
+        return;
+    }else if(req.body.password != req.body.comfirm_password){
+        response.error = "Passwords does not much";
+        res.render('addNewApplicant', {layout: 'main', response});
+        return;
+    }
+
+    // console.log(response);
+    
+    changeNewStafferPassword(req.body, response.token)
+        .then(success => {
+            response.processed = true;
+            if(success){
+                response.passwordChanged = true;
+            }else{
+                response.passwordChanged = false;
+            }
+
+            res.render('addNewApplicant', {layout: 'main', response});
             return;
         })
         .catch(err => next(err));
@@ -190,6 +226,16 @@ async function renderNewStafferPassword(req){
     return {...req.params, verified: false, passwordChanged: false, processed: false}
 }
 
+async function renderNewApplicantPassword(req){
+    if(req.params.token && req.params.token){
+        const exists = await otherService.getToken(req.params.token)
+        if(exists){
+            return {...req.params, verified: true, passwordChanged: false, processed: false}
+        }
+    }
+    return {...req.params, verified: false, passwordChanged: false, processed: false}
+}
+
 async function changeNewStafferPassword(body, token){
     // console.log(token);
     const user = await userService.getUserByEmail(body.email);
@@ -246,7 +292,7 @@ async function postIssueResponse(issueResponse, userId){
             const savedIssueResponse = await otherService.addIssueResponse({...issueResponse, userId});
             if(savedIssueResponse){
                 const updatedIssue = await otherService.updateIssueField(savedIssueResponse.id, "IssueResponseId", existingIssue.id);
-                console.log(updatedIssue);
+                // console.log(updatedIssue);
                 if(updatedIssue[0] > 0){
                     return savedIssueResponse;
                 }
@@ -262,7 +308,9 @@ module.exports = {
     getIssue,
     addStaff,
     addNewStaffer,
+    addNewApplicant,
     changeStafferPassword,
+    changeApplicantPassword,
     getStaffs,
     getEmployers,
     verifyEmployer,
