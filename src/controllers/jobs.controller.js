@@ -76,6 +76,8 @@ async function getCompanyJobsWithPagination(page, pageSize, user_id){
     }
 }
 
+
+
 function addJob(req, res, next){
     const valid = validateJob(req.body);
     if(valid != true){
@@ -88,6 +90,22 @@ function addJob(req, res, next){
         .catch(err => next(err));
 
 }
+
+function adminAddJob(req, res, next){
+    const valid = validateJob(req.body);
+    if(valid != true){
+        res.status(200).json({success: false, validationError: valid});
+        return; 
+    }
+
+    const userId = req.params.user_id;
+   
+    addEmployerJob({...req.body,user_id:userId})
+        .then(job => job ? res.status(200).json({success: true, job}) : res.status(200).json({ success: false, error: 'something is wrong'}))
+        .catch(err => next(err));
+
+}
+
 
 function editJob(req, res, next){
     const valid = validateJob(req.body);
@@ -188,12 +206,15 @@ async function getApplicantJobById(jobId, userId){
 
 async function addEmployerJob(body){
     const user = await userService.getUserById(body.user_id);
+    
     if(user){
         
         const compProfileId = user.company_profile.id;
+        console.log(compProfileId)
         if(compProfileId){
             const job = await jobsService.addJob({...body, companyProfileId: compProfileId});
             if(job){
+                
                 return job;
             }
         }
@@ -387,6 +408,7 @@ async function filterApplication(userId, jobId, applicantId){
 module.exports = {
     getAllJobs,
     addJob,
+    adminAddJob,
     getAllCompanyJobs,
     editJob,
     getJob,
