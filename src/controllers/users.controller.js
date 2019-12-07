@@ -16,6 +16,7 @@ const sgMail = require('@sendgrid/mail');
 const uuidv4 = require('uuid/v4');
 const ROLE = require('../_helpers/role');
 const constructEmail = require('../_helpers/construct_email');
+const constructApplicantEmail = require('../_helpers/construct_applicant_email');
 const construct_employer_email = require('../_helpers/construct_employer_email');
 const userService = require('../services/user.service');
 const jobService = require('../services/job.service');
@@ -757,7 +758,11 @@ async function createUserApplicantProfileAdmin(body) {
             const newUser = await user.update({ hasFinishedProfile: true });
             if (newUser) {
                 const newApplicantProfile = await userService.getApplicantById(appProfile.id);
-                if (newApplicantProfile) {
+                const token = uuidv4();
+                const saveToken = await otherService.saveToken(token, user.email);
+                if(newApplicantProfile && saveToken){
+                    const message = constructApplicantEmail(user.email, token);
+                    sgMail.send(message);
                     return newApplicantProfile;
                 }
             }

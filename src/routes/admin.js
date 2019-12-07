@@ -5,7 +5,7 @@ const locationController = require('../controllers/locations.controller')
 const jobsController = require('../controllers/jobs.controller')
 
 app.get('/employers', otherController.getEmployers);
-app.post('/employer',userController.admnCreateCompanyProfileWithBusinessLicenseAndLogo);
+app.post('/employers',userController.admnCreateCompanyProfileWithBusinessLicenseAndLogo);
 app.put('/employers/verify/:id', otherController.verifyEmployer);
 
 app.get('/issues', otherController.getAllIssues);

@@ -1,0 +1,41 @@
+<div class="varification_container">
+    {{#unless response.processed}}
+        {{#if response.verified}}
+            <div>
+                <form action="/api/auth/new_staffer/{{response.email}}/{{response.token}}" method="post" class="form">
+                    <h3 class="form__header">Set Password For your Account</h3>
+                    <div style="display: flex; flex-direction: column; width: 50%; overflow: hidden; padding: 2rem 0rem;">
+                        <div class="form__group">
+                            <input class="form__input" id="password" type="password" name="password" placeholder="Enter Password">
+                            <label class="form__label" for="password">Enter Password</label>
+                        </div>
+                        <div class="form__group">
+                            <input class="form__input" id="comfirm_password" type="password" name="comfirm_password" placeholder="Comfirm Password">
+                            <label class="form__label" for="comfirm_password">Comfirm Password</label>
+                        </div>
+                        <input name="verified" type="text" hidden value={{response.verified}}>
+                        <input name="email" type="text" hidden value={{response.email}}>
+                        <input name="token" type="text" hidden value={{response.token}}>
+                    </div>
+                    <h5 class="form__error">{{response.error}}</h5>
+                    <input class="th-btn th-btn--primary form__btn" type="submit" value="Set Password">
+                </form>
+            </div>
+        {{else}}
+            <div class="error">
+                We can not verify your account.
+            </div>
+        {{/if}}
+    {{else}}
+        {{#if response.passwordChanged}}
+            <div class="success">
+                You have successfully changed your password!
+                <a href="https://8thdd.com/login">Go To Login</a>
+            </div>
+        {{else}}
+            <div class="error">
+                Sorry we can not change your password
+            </div>
+        {{/if}}
+    {{/unless}}
+</div>
