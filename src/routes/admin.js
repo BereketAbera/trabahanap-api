@@ -17,5 +17,3 @@ app.get('/applicants', userController.getApplicants)
 app.post('/location', locationController.addLocationWithImage);
 app.post('/jobs/:user_id', jobsController.adminAddJob);
 
-
-
