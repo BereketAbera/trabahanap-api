@@ -15,7 +15,7 @@ app.post('/applicants', userController.createApplicant)
 app.get('/applicants', userController.getApplicants)
 
 app.post('/location', locationController.addLocationWithImage);
-app.post('/jobs', jobsController.addJob);
+app.post('/jobs/:user_id', jobsController.adminAddJob);
 
 
 
