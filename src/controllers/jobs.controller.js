@@ -82,7 +82,7 @@ function addJob(req, res, next){
         res.status(200).json({success: false, validationError: valid});
         return;
     }
-
+    
     addEmployerJob({...req.body, user_id: req.user.sub})
         .then(job => job ? res.status(200).json({success: true, job}) : res.status(200).json({ success: false, error: 'something is wrong'}))
         .catch(err => next(err));
