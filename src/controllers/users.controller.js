@@ -97,7 +97,7 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
         let companyProfile = {};
         _.map(fields, (value, key) => {
             companyProfile[key] = value;
-        }) 
+        })
 
         companyProfile = { ...companyProfile, CityId: companyProfile.cityId, RegionId: companyProfile.regionId, CountryId: companyProfile.countryId };
         const valid = validateCompanyProfile(companyProfile);
@@ -107,13 +107,22 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
             return;
         }
 
-        // var unique1 = isEmailUnique(companyProfile).then(unique1=true).catch(err => next(err));
-        // if (unique1 != true) {
-        //     res.status(200).json({ success: false, Error:"email must be unique" });
-        //     return;
-        // }
+        const valid_user = validateUser({ ...companyProfile, password: '1234' });
+        if (valid_user != true) {
+            res.status(200).json({ success: false, validationError: valid_user });
+            return;
+        }
 
-        let employer ={};
+        var unique = false;
+        isEmailUnique(companyProfile).then(data => {
+            unique = data; 
+            if (unique != true) {
+                res.status(200).json({ success: false, Error: "email must be unique" });
+                return;
+            }
+        }).catch(err => next(err));
+
+
         var fileLogo = files["companyLogo"];
         var fileLicense = files["businessLicense"];
         if (fileLogo && fileLicense && fileLogo.path && fileLicense.path) {
@@ -126,7 +135,7 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
                     companyProfile["businessLicense"] = data.Location;
                     fs.unlinkSync(fileLogo.path);
                     fs.unlinkSync(fileLicense.path);
-                    return adminSignUpEmployerUser(companyProfile); 
+                    return adminSignUpEmployerUser(companyProfile);
                 })
                 .then(data => {
                     return adminEmployerProfile({ ...companyProfile, user_id: req.user.sub });
@@ -141,11 +150,11 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
     });
 }
 
-async function adminEmployerProfile(body){
+async function adminEmployerProfile(body) {
     const user = await userService.getUserByEmail(body.email);
     if (user) {
-        
-        const compProfile = await userService.addCompanyProfile({zipcode,companyName,contactPerson,contactNumber,websiteURL,industryType,companyDescription,companyAddress}=body);
+
+        const compProfile = await userService.addCompanyProfile({ zipcode, companyName, contactPerson, contactNumber, websiteURL, industryType, companyDescription, companyAddress } = body);
         if (compProfile) {
             const updated = await userService.updateUserById(user.id, { companyProfileId: compProfile.id, hasFinishedProfile: true });
             if (updated) {
@@ -164,28 +173,22 @@ async function adminSignUpEmployerUser(body) {
         body['hasFinishedProfile'] = true;
         body['password'] = uuidv4();
 
-        const valid = validateUser(body);
-        if (valid != true) {
-            res.status(200).json({ success: false, validationError: valid });
-            return;
-        }
-
         const tokenExists = await otherService.getTokenEmail(body.email);
-        // if(userExists || tokenExists){
-        //     return false;
-        // }
+        if (tokenExists) {
+            return false;
+        }
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
-        const { email, username, phoneNumber, password, firstName, lastName, gender,role,emailVerified,hasFinishedProfile } = { ...body };
-        const user = await userService.createUser({ email, username, phoneNumber, password, firstName, lastName, gender,role,emailVerified,hasFinishedProfile } );
-        console.log(user);
-        if(saveToken && user){
+        const { email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile } = { ...body };
+        const user = await userService.createUser({ email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile });
+      
+        if (saveToken && user) {
             const message = construct_employer_email(body.email, token);
             sgMail.send(message);
             return user;
         }
     }
-    else{
+    else {
         return "Email is not unique"
     }
 }
@@ -218,43 +221,43 @@ async function getEmployersWithPagination(page) {
     }
 }
 
-function changeEmployerPassword(req, res, next){
-    var response = {...req.body, error: "", passwordChanged: false, processed: false};
-    if(req.body.password.length < 5){
+function changeEmployerPassword(req, res, next) {
+    var response = { ...req.body, error: "", passwordChanged: false, processed: false };
+    if (req.body.password.length < 5) {
         response.error = "Password must be at list 6 characters";
-        res.render('setEmployerPassword', {layout: 'main', response});
+        res.render('setEmployerPassword', { layout: 'main', response });
         return;
-    }else if(req.body.password != req.body.comfirm_password){
+    } else if (req.body.password != req.body.comfirm_password) {
         response.error = "Passwords does not much";
-        res.render('setEmployerPassword', {layout: 'main', response});
+        res.render('setEmployerPassword', { layout: 'main', response });
         return;
     }
 
     console.log(response);
-    
+
     changeNewEmployerPassword(req.body, response.token)
         .then(success => {
             response.processed = true;
-            if(success){
+            if (success) {
                 response.passwordChanged = true;
-            }else{
+            } else {
                 response.passwordChanged = false;
             }
 
-            res.render('setEmployerPassword', {layout: 'main', response});
+            res.render('setEmployerPassword', { layout: 'main', response });
             return;
         })
         .catch(err => next(err));
 }
 
-async function changeNewEmployerPassword(body, token){
+async function changeNewEmployerPassword(body, token) {
     // console.log(token);
     const user = await userService.getUserByEmail(body.email);
-    if(user){
+    if (user) {
         // const updatedUser = await userService.updateUserField(bcryptjs.hashSync(body.password, 10), 'password', user.id);
-        const updatedUser = await userService.updateUserById(user.id, {password: bcryptjs.hashSync(body.password, 10), emailVerified: true});
-        const updateToken = await otherService.updateToken(token, {expired: true});
-        if(updatedUser && updateToken){
+        const updatedUser = await userService.updateUserById(user.id, { password: bcryptjs.hashSync(body.password, 10), emailVerified: true });
+        const updateToken = await otherService.updateToken(token, { expired: true });
+        if (updatedUser && updateToken) {
             return true;
         }
     }
@@ -262,20 +265,20 @@ async function changeNewEmployerPassword(body, token){
     return false;
 }
 
-function addNewEmployerPassword(req, res, next){
+function addNewEmployerPassword(req, res, next) {
     renderNewEmployerPassword(req)
-        .then(response => res.render('addNewStaffer', {layout: 'main', response}))
+        .then(response => res.render('setEmployerPassword', { layout: 'main', response }))
         .catch(err => next(err));
 }
 
-async function renderNewEmployerPassword(req){
-    if(req.params.token && req.params.token){
+async function renderNewEmployerPassword(req) {
+    if (req.params.token && req.params.token) {
         const exists = await otherService.getToken(req.params.token)
-        if(exists){
-            return {...req.params, verified: true, passwordChanged: false, processed: false}
+        if (exists) {
+            return { ...req.params, verified: true, passwordChanged: false, processed: false }
         }
     }
-    return {...req.params, verified: false, passwordChanged: false, processed: false}
+    return { ...req.params, verified: false, passwordChanged: false, processed: false }
 }
 
 function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
@@ -335,7 +338,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
 }
 
 
-function updateCompanyLogo(req, res, next){
+function updateCompanyLogo(req, res, next) {
     var fileNameLogo = "";
     var form = new formidable.IncomingForm();
     form.multiples = true;
@@ -427,7 +430,7 @@ function updateApplicantCV(req, res, next) {
     });
 }
 
-function updateApplicantPicture(req, res, next){
+function updateApplicantPicture(req, res, next) {
     // console.log(req);
     var fileNameApplicantPicture = "";
     var form = new formidable.IncomingForm();
@@ -442,7 +445,7 @@ function updateApplicantPicture(req, res, next){
     form.parse(req, (err, fields, files) => {
         var applicantPicture = files['applicantPicture'];
         // console.log("console.log");
-        if(applicantPicture && applicantPicture.path){
+        if (applicantPicture && applicantPicture.path) {
             uploadFilePromise(applicantPicture.path, 'th-employer-logo', fileNameApplicantPicture)
                 .then(data => {
                     return updateApplicantField(data.Location, "applicantPicture", req.user.sub);
@@ -528,19 +531,19 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
     });
 }
 
-function createApplicant(req, res, next){
+function createApplicant(req, res, next) {
     var fileNameCV = "";
     var fileNameProfilePicture = "";
     var form = new formidable.IncomingForm();
     form.multiples = true;
 
-    form.on('fileBegin', function (name, file){
+    form.on('fileBegin', function (name, file) {
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         let fileName = '';
-        if(name=="cv"){
+        if (name == "cv") {
             fileName = fileNameCV = Date.now() + "applicant-cv";
-        }else{
-            fileName = fileNameProfilePicture = Date.now() + "applicant-profile"; 
+        } else {
+            fileName = fileNameProfilePicture = Date.now() + "applicant-profile";
         }
 
         file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
@@ -554,16 +557,16 @@ function createApplicant(req, res, next){
 
         applicantProfile["password"] = uuidv4();
 
-        applicantProfile = {...applicantProfile, UserId: req.user.sub};
+        applicantProfile = { ...applicantProfile, UserId: req.user.sub };
         const valid = validateApplicantProfile(applicantProfile);
         const validUser = validateUser(applicantProfile);
 
-        if(valid != true || validUser != true){
-            if(typeof(valid) == "string" || typeof(validUser) == "string"){
-                res.status(200).json({success: false, validationError: "some required fields are not present"});
+        if (valid != true || validUser != true) {
+            if (typeof (valid) == "string" || typeof (validUser) == "string") {
+                res.status(200).json({ success: false, validationError: "some required fields are not present" });
                 return;
             }
-            res.status(200).json({success: false, validationError: {...valid, ...validUser}});
+            res.status(200).json({ success: false, validationError: { ...valid, ...validUser } });
             return;
         }
         const user = _.pick(applicantProfile, ['username', 'firstName', 'lastName', 'email', 'phoneNumber', 'password']);
@@ -571,7 +574,7 @@ function createApplicant(req, res, next){
 
         var cvFile = files['cv'];
         var profilePictureFile = files['applicantPicture'];
-        if(cvFile && profilePictureFile && cvFile.path && profilePictureFile.path){
+        if (cvFile && profilePictureFile && cvFile.path && profilePictureFile.path) {
             uploadFilePromise(cvFile.path, 'th-applicant-cv', fileNameCV)
                 .then(data => {
                     applicantProfile['cv'] = data.Location;
@@ -582,11 +585,11 @@ function createApplicant(req, res, next){
                     return signUpUserApplicantFromAdmin(user);
                 })
                 .then(user => {
-                    return createUserApplicantProfileAdmin({...applicantProfile, UserId: user.id});
+                    return createUserApplicantProfileAdmin({ ...applicantProfile, UserId: user.id });
                 })
                 .then(applicant => {
                     fs.unlinkSync(cvFile.path);
-                    applicant ? res.status(200).json({success: true, applicant}) : res.status(200).json({sucess: false, error: 'Something went wrong'})
+                    applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
                 .catch(err => next(err));
         }
@@ -594,7 +597,7 @@ function createApplicant(req, res, next){
     });
 }
 
-function getApplicantProfile(req, res, next){
+function getApplicantProfile(req, res, next) {
     getUserApplicantProfile(req.user.sub)
         .then(applicantProfile => {
             if (applicantProfile) {
@@ -625,9 +628,9 @@ function editCompanyProfile(req, res, next) {
         .catch(err => next(err));
 }
 
-function getApplicants(req, res, next){
+function getApplicants(req, res, next) {
     getAllApplicants()
-        .then(applicants => applicants ? res.status(200).json({success: true, applicants}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .then(applicants => applicants ? res.status(200).json({ success: true, applicants }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
@@ -669,23 +672,23 @@ async function signUpUserApplicant(body) {
 }
 
 
-async function signUpUserApplicantFromAdmin(body){
+async function signUpUserApplicantFromAdmin(body) {
     const unique = await isEmailUnique(body);
-    if(unique){
+    if (unique) {
         body["role"] = ROLE.APPLICANT;
         body["emailVerified"] = true;
-        
+
         const user = await userService.createUser(body);
-        if(user){
+        if (user) {
             return user;
         }
         throw "Something went wrong.";
-    }else{
+    } else {
         throw "Email is not unique";
     }
 }
 
-async function signUpUserEmployer(body){
+async function signUpUserEmployer(body) {
     const unique = await isEmailUnique(body);
     if (unique) {
 
@@ -697,8 +700,8 @@ async function signUpUserEmployer(body){
     }
 }
 
-async function editUserApplicantProfile(body, id){
-    body = {...body, cityId: body.CityId, countryId: body.countryId, regionId: body.regionId};
+async function editUserApplicantProfile(body, id) {
+    body = { ...body, cityId: body.CityId, countryId: body.countryId, regionId: body.regionId };
     let applicantProfile = await userService.getApplicantProfileByUserId(body.user_id);
     if (applicantProfile && applicantProfile.id == id) {
         const updatedProfile = await userService.updateApplicantProfile(applicantProfile, body);
@@ -746,15 +749,15 @@ async function createUserApplicantProfile(body) {
     }
 }
 
-async function createUserApplicantProfileAdmin(body){
+async function createUserApplicantProfileAdmin(body) {
     const user = await userService.getUserByIdAndRole(body.UserId, ROLE.APPLICANT);
-    if(user){
-        const appProfile = await userService.addApplicantProfile({...body});
-        if(appProfile){
-            const newUser = await user.update({hasFinishedProfile: true});
-            if(newUser){
+    if (user) {
+        const appProfile = await userService.addApplicantProfile({ ...body });
+        if (appProfile) {
+            const newUser = await user.update({ hasFinishedProfile: true });
+            if (newUser) {
                 const newApplicantProfile = await userService.getApplicantById(appProfile.id);
-                if(newApplicantProfile){
+                if (newApplicantProfile) {
                     return newApplicantProfile;
                 }
             }
@@ -762,7 +765,7 @@ async function createUserApplicantProfileAdmin(body){
     }
 }
 
-async function getUserApplicantProfile(id){
+async function getUserApplicantProfile(id) {
     let user = await userService.getUserById(id);
     if (user && user.role == "APPLICANT") {
         let applicantProfile = await userService.getApplicantProfileByUserId(user.id);
@@ -820,9 +823,9 @@ async function isEmailUnique({ email }) {
     return true;
 }
 
-async function getAllApplicants(){
+async function getAllApplicants() {
     const employers = await userService.getAllApplicants();
-    if(employers){
+    if (employers) {
         return employers;
     }
 }
@@ -837,7 +840,7 @@ function uploadFilePromise(file, bucketName, fileName) {
             if (err) {
                 reject(err)
             } if (data) {
-                
+
                 resolve(data);
             } else {
                 reject("system error");
