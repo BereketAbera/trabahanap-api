@@ -46,12 +46,23 @@ function getCompanyProfileById(id){
     return CompanyProfile.findOne({where: {id}}).catch(err => console.log(err));
 }
 
+function getAllCompanyProfile(){
+    return CompanyProfile.findAll({include: [{model: User}],order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
+
 function updateUserField(value, fieldName, userId){
     return User.update({[fieldName]: value},{where: {id: userId}});
 }
 
 function getApplicantProfileByUserId(userId){
     return ApplicantProfile.findOne({where: {userId}}).catch(err => console.log(err));
+}
+function getUserbyCompanyProfileId(id){
+    return CompanyProfile.findOne({where:{id}}).catch(err => console.log(err));
+}
+
+function getUserAndCompanyProfile(){
+    return sequelize.query(`SELECT cp.id, cp.zipcode, cp.companyName, cp.contactPerson, cp.contactNumber,cp.websiteURL,cp.verified, cp.companyLogo,cp.companyDescription,cp.businessLicense,cp.businessLicenseNumber,cp.industryType,cp.companyAddress, u.email,u.username, u.phoneNumber,u.firstName,u.lastName from company_profiles cp INNER JOIN users u ON u.CompanyProfileid = cp.id`,{ type: sequelize.QueryTypes.SELECT});
 }
 
 function updateApplicantProfile(applicantProfile, body){
@@ -65,10 +76,10 @@ function getApplicantById(id){
 async function getEmployersWithOffsetAndLimit(offset, limit){
     return await User.findAndCountAll({offset, limit, include: [{model: CompanyProfile}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
+
 function getAllApplicants(){
     return ApplicantProfile.findAll({include: [{model: User}]});
 }
-
 
 module.exports = {
     updateUserById,
@@ -87,5 +98,8 @@ module.exports = {
     updateApplicantProfile,
     getApplicantById,
     getEmployersWithOffsetAndLimit,
-    getAllApplicants
+    getAllApplicants,
+    getAllCompanyProfile,
+    getUserbyCompanyProfileId,
+    getUserAndCompanyProfile
 };

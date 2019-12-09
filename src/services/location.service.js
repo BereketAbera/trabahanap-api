@@ -34,7 +34,7 @@ function getCountries(){
 }
 
 function getCompanyLocations(companyProfileId){
-    return Location.findAll({where: {companyProfileId}}).catch(err => console.log(err));
+    return Location.findAll({where: {companyProfileId},include: [{model: CompanyProfile}]}).catch(err => console.log(err));
 }
 
 function updateLocation(location, newLocation){

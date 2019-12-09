@@ -46,14 +46,11 @@ Job.hasMany(JobApplication);
 JobLaterReview.belongsTo(ApplicantProfile);
 JobLaterReview.belongsTo(Job);
 
-
 Issue.belongsTo(ApplicantProfile);
 Issue.belongsTo(IssueResponse);
 
 // IssueResponse.belongsTo(Issue);
 IssueResponse.belongsTo(User);
-
-
 
 module.exports = {
     User,

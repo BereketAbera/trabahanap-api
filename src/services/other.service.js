@@ -51,6 +51,7 @@ function getAllEmployers(){
     return User.findAll({where: {role: ROLE.EMPLOYER}, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
 }
 
+
 function getAllReportedIssues(){
     return Issue.findAll({include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
@@ -66,6 +67,7 @@ function updateIssueField(value, fieldName, issueId){
 function getIssueById(issueId){
     return Issue.findOne({where: {id: issueId}}).catch(err => console.log(err));
 }
+
 
 module.exports = {
     getAllIndustries,

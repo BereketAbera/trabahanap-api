@@ -76,8 +76,6 @@ async function getCompanyJobsWithPagination(page, pageSize, user_id){
     }
 }
 
-
-
 function addJob(req, res, next){
     const valid = validateJob(req.body);
     if(valid != true){
@@ -105,7 +103,6 @@ function adminAddJob(req, res, next){
         .catch(err => next(err));
 
 }
-
 
 function editJob(req, res, next){
     const valid = validateJob(req.body);

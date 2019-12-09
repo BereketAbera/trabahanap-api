@@ -252,7 +252,9 @@ async function changeNewStafferPassword(body, token){
 }
 
 async function getAllEmployers(){
-    const employers = await otherService.getAllEmployers();
+   
+    //const company_profile = await userService.getAllCompanyProfile();
+    const employers = await userService.getUserAndCompanyProfile();
     if(employers){
         return employers;
     }
