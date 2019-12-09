@@ -17,4 +17,4 @@ app.get('/applicants', userController.getApplicants)
 app.post('/location', locationController.addLocationWithImage);
 app.post('/jobs/:user_id', jobsController.adminAddJob);
 app.get('/location/:companyProfileId',locationController.getLocationByCompanyProfile);
-app.get('/jobs',jobsController.getAllCompanyJobs)
+app.get('/jobs/:companyProfileId',jobsController.adminGetAllCompanyJob)

@@ -7,45 +7,51 @@ const {
     validateJob
 } = require('../_helpers/validators');
 
-function getAllJobs(req, res, next){
+function getAllJobs(req, res, next) {
     getJobsWithPagination(req.query.page || 1)
-        .then(jobs => res.status(200).send({success: true, jobs}))
+        .then(jobs => res.status(200).send({ success: true, jobs }))
         .catch(err => next(err));
 }
 
-function getJob(req, res, next){
+function getJob(req, res, next) {
     getJobById(req.params.id)
-        .then(job => res.status(200).send({success: true, job}))
+        .then(job => res.status(200).send({ success: true, job }))
         .catch(err => next(err));
 }
 
-function getApplicantJob(req, res, next){
+function getApplicantJob(req, res, next) {
     getApplicantJobById(req.params.id, req.user.sub)
-        .then(job => res.status(200).send({success: true, job}))
+        .then(job => res.status(200).send({ success: true, job }))
         .catch(err => next(err));
 }
 
-function getAllCompanyJobs(req, res, next){
+function getAllCompanyJobs(req, res, next) {
     getCompanyJobsWithPagination(req.query.page || 1, req.query.pageSize || 8, req.user.sub)
-        .then(jobs => res.status(200).send({success: true, jobs}))
+        .then(jobs => res.status(200).send({ success: true, jobs }))
         .catch(err => next(err));
 }
 
-async function getJobsWithPagination(page){
+function adminGetAllCompanyJob(req, res, next) {
+    adminGetCompanyJobsWithPagination(req.query.page || 1, req.query.pageSize || 8, req.companyProfileId)
+        .then(jobs => res.status(200).send({ success: true, jobs }))
+        .catch(err => next(err));
+}
+
+async function getJobsWithPagination(page) {
     const pager = {
         pageSize: 5,
         totalItems: 0,
         totalPages: 0,
         currentPage: parseInt(page)
     }
-    const offset = (page-1)*pager.pageSize;
+    const offset = (page - 1) * pager.pageSize;
     const limit = pager.pageSize;
 
     const jobs = await jobsService.getJobsWithOffsetAndLimit(offset, limit);
 
-    if(jobs){
+    if (jobs) {
         pager.totalItems = jobs.count;
-        pager.totalPages = Math.ceil(jobs.count/pager.pageSize);
+        pager.totalPages = Math.ceil(jobs.count / pager.pageSize);
         return {
             pager,
             rows: jobs.rows
@@ -53,22 +59,24 @@ async function getJobsWithPagination(page){
     }
 }
 
-async function getCompanyJobsWithPagination(page, pageSize, user_id){
+
+
+async function getCompanyJobsWithPagination(page, pageSize, user_id) {
     const pager = {
-        pageSize : parseInt(pageSize),
+        pageSize: parseInt(pageSize),
         totalItems: 0,
         totalPages: 0,
         currentPage: parseInt(page)
     }
-    const offset = (page-1)*pager.pageSize;
+    const offset = (page - 1) * pager.pageSize;
     const limit = pager.pageSize;
 
     const user = await userService.getUserById(user_id);
     const jobs = await jobsService.getCompanyJobsWithOffsetAndLimit(offset, limit, user.companyProfileId);
 
-    if(jobs){
+    if (jobs) {
         pager.totalItems = jobs.count;
-        pager.totalPages = Math.ceil(jobs.count/pager.pageSize);
+        pager.totalPages = Math.ceil(jobs.count / pager.pageSize);
         return {
             pager,
             rows: jobs.rows
@@ -76,181 +84,204 @@ async function getCompanyJobsWithPagination(page, pageSize, user_id){
     }
 }
 
-function addJob(req, res, next){
+async function adminGetCompanyJobsWithPagination(page, pageSize, companyProfileId) {
+    const pager = {
+        pageSize: parseInt(pageSize),
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
+    const user = await userService.getUserById(user_id);
+    const jobs = await jobsService.getCompanyJobsWithOffsetAndLimit(offset, limit, companyProfileId);
+
+    if (jobs) {
+        pager.totalItems = jobs.count;
+        pager.totalPages = Math.ceil(jobs.count / pager.pageSize);
+        return {
+            pager,
+            rows: jobs.rows
+        }
+    }
+}
+
+function addJob(req, res, next) {
     const valid = validateJob(req.body);
-    if(valid != true){
-        res.status(200).json({success: false, validationError: valid});
+    if (valid != true) {
+        res.status(200).json({ success: false, validationError: valid });
         return;
     }
-    
-    addEmployerJob({...req.body, user_id: req.user.sub})
-        .then(job => job ? res.status(200).json({success: true, job}) : res.status(200).json({ success: false, error: 'something is wrong'}))
+
+    addEmployerJob({ ...req.body, user_id: req.user.sub })
+        .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
         .catch(err => next(err));
 
 }
 
-function adminAddJob(req, res, next){
+function adminAddJob(req, res, next) {
     const valid = validateJob(req.body);
-    if(valid != true){
-        res.status(200).json({success: false, validationError: valid});
-        return; 
+    if (valid != true) {
+        res.status(200).json({ success: false, validationError: valid });
+        return;
     }
 
     const userId = req.params.user_id;
-   
-    addEmployerJob({...req.body,user_id:userId})
-        .then(job => job ? res.status(200).json({success: true, job}) : res.status(200).json({ success: false, error: 'something is wrong'}))
+
+    addEmployerJob({ ...req.body, user_id: userId })
+        .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
         .catch(err => next(err));
 
 }
 
-function editJob(req, res, next){
+function editJob(req, res, next) {
     const valid = validateJob(req.body);
-    if(valid != true){
-        res.status(200).json({success: false, validationError: valid});
+    if (valid != true) {
+        res.status(200).json({ success: false, validationError: valid });
         return;
     }
 
-    editEmployerJob({...req.body, user_id: req.user.sub, id: req.params.id})
-        .then(job => job ? res.status(200).json({success: true, job}) : res.status(200).json({ success: false, error: 'something is wrong'}))
+    editEmployerJob({ ...req.body, user_id: req.user.sub, id: req.params.id })
+        .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
         .catch(err => next(err));
 
 }
 
-function applyJob(req, res, next){
-    addJobApplication({...req.body, user_id: req.user.sub})
-        .then(response => response ? res.status(200).json({success: true}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+function applyJob(req, res, next) {
+    addJobApplication({ ...req.body, user_id: req.user.sub })
+        .then(response => response ? res.status(200).json({ success: true }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
-function getApplicantApplications(req, res, next){
+function getApplicantApplications(req, res, next) {
     getUserApplicantApplications(req.user.sub)
-        .then(applications => applications ? res.status(200).json({success: true, applications}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
-function getJobWithApplications(req, res, next){
+function getJobWithApplications(req, res, next) {
     getEmployerJobWithApplications(req.user.sub)
-        .then(applications => applications ? res.status(200).json({success: true, applications}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
-function getFilteredJobWithApplications(req, res, next){
+function getFilteredJobWithApplications(req, res, next) {
     getEmployerFilteredJobWithApplications(req.user.sub)
-        .then(applications => applications ? res.status(200).json({success: true, applications}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
-function getJobApplicants(req, res, next){
+function getJobApplicants(req, res, next) {
     getEmployerGetJobApplicants(req.params.id, req.user.sub)
-        .then(applicants => applicants ? res.status(200).json({success: true, applicants}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .then(applicants => applicants ? res.status(200).json({ success: true, applicants }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
-function getFilteredJobApplicants(req, res, next){
+function getFilteredJobApplicants(req, res, next) {
     getEmployerFilteredJobApplicants(req.params.id, req.user.sub)
-        .then(applicants => applicants ? res.status(200).json({success: true, applicants}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .then(applicants => applicants ? res.status(200).json({ success: true, applicants }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
-function getJobApplicant(req, res, next){
+function getJobApplicant(req, res, next) {
     getJobApplicantById(req.params.id)
-        .then(applicant => applicant ? res.status(200).json({success: true, applicant}) : res.status(200).json({sucess: false, error: 'Something went wrong'}))
+        .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
-function getApplicantAppliedJobs(req, res, next){
+function getApplicantAppliedJobs(req, res, next) {
     getApplicantJobs(req.user.sub)
-        .then(jobs => jobs ? res.status(200).json({success: true, jobs}) : res.status(200).json({success: false, error: 'Something went wrong'}))
+        .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
-function saveForLaterReview(req, res, next){
+function saveForLaterReview(req, res, next) {
     saveJobForLaterReview(req.user.sub, req.body.JobId)
-        .then(success => res.status(200).json({success}))
+        .then(success => res.status(200).json({ success }))
         .catch(err => next(err));
 }
 
-function getJobsLaterReview(req, res, next){
+function getJobsLaterReview(req, res, next) {
     getApplicantLaterReviewJobs(req.user.sub)
-        .then(jobs => jobs ? res.status(200).json({success: true, jobs}) : res.status(200).json({success: false, error: 'Something went wrong'}))
+        .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
-function filterJobApplication(req, res, next){
+function filterJobApplication(req, res, next) {
     filterApplication(req.user.sub, jobId = req.body.jobId, applicantId = req.body.applicantId)
-        .then(success => res.status(200).json({success}))
+        .then(success => res.status(200).json({ success }))
         .catch(err => next(err));
 }
 
-async function getJobById(id){
+async function getJobById(id) {
     return await jobsService.getJobById(id);
 }
 
-async function getApplicantJobById(jobId, userId){
+async function getApplicantJobById(jobId, userId) {
     const job = await jobsService.getJobById(jobId);
     const applicantProfile = await userService.getApplicantProfileByUserId(userId);
     // console.log(jobId, userId);
-    if(job && applicantProfile){
+    if (job && applicantProfile) {
         // console.log(job);
         const applied = await jobsService.getApplicationByProfileIdAndJobId(jobId, applicantProfile.id);
-        const saved  = await jobsService.getSavedJob(applicantProfile.id, jobId);
+        const saved = await jobsService.getSavedJob(applicantProfile.id, jobId);
         const newJob = { ...job.dataValues, applied: applied ? true : false, saved: saved ? true : false };
 
         return newJob;
     }
 }
 
-async function addEmployerJob(body){
+async function addEmployerJob(body) {
     const user = await userService.getUserById(body.user_id);
-    
-    if(user){
-        
+
+    if (user) {
+
         const compProfileId = user.company_profile.id;
         console.log(compProfileId)
-        if(compProfileId){
-            const job = await jobsService.addJob({...body, companyProfileId: compProfileId});
-            if(job){
-                
+        if (compProfileId) {
+            const job = await jobsService.addJob({ ...body, companyProfileId: compProfileId });
+            if (job) {
+
                 return job;
             }
         }
     }
 }
 
-async function editEmployerJob(body){
+async function editEmployerJob(body) {
     const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
     const job = await jobsService.getJobById(body.id);
-    if(user && job){
+    if (user && job) {
         const updatedJob = jobsService.editJobById(job.id, body);
-        if(updatedJob){
+        if (updatedJob) {
             return updatedJob;
         }
     }
 }
 
-async function addJobApplication(body){
+async function addJobApplication(body) {
     const job = await jobsService.getJobById(body.JobId);
     const applicantProfile = await userService.getApplicantProfileByUserId(body.user_id);
-    
-    if(job && applicantProfile){
+
+    if (job && applicantProfile) {
         const applied = await jobsService.getApplicationByProfileIdAndJobId(job.id, applicantProfile.id);
-        if(applied){
+        if (applied) {
             return false;
         }
-        const jobApplication = jobsService.addJobApplication({JobId: job.id, ApplicantProfileId: applicantProfile.id, CompanyProfileId: job.CompanyProfileId, applicationDate: new Date()});
-        if(jobApplication){
+        const jobApplication = jobsService.addJobApplication({ JobId: job.id, ApplicantProfileId: applicantProfile.id, CompanyProfileId: job.CompanyProfileId, applicationDate: new Date() });
+        if (jobApplication) {
             return true;
         }
     }
     return false;
 }
 
-async function getUserApplicantApplications(user_id){
+async function getUserApplicantApplications(user_id) {
     const applicantProfile = await userService.getApplicantProfileByUserId(user_id);
-    if(applicantProfile){
+    if (applicantProfile) {
         const applications = await jobsService.getApplicantApplications(applicantProfile.id);
-        if(applications){
+        if (applications) {
             return applications;
         }
     }
@@ -258,12 +289,12 @@ async function getUserApplicantApplications(user_id){
     return false;
 }
 
-async function getEmployerJobWithApplications(user_id){
+async function getEmployerJobWithApplications(user_id) {
     const user = await userService.getUserById(user_id);
-    if(user && user.companyProfileId){
+    if (user && user.companyProfileId) {
         const jobWithApplications = await jobsService.getJobsWithApplications(user.companyProfileId);
         // console.log(jobWithApplications);
-        if(jobWithApplications){
+        if (jobWithApplications) {
             return jobWithApplications;
         }
         // const applications = await jobsService.getEmployerJobApplications(JobId, user.companyProfileId);
@@ -275,12 +306,12 @@ async function getEmployerJobWithApplications(user_id){
     return false;
 }
 
-async function getEmployerFilteredJobWithApplications(user_id){
+async function getEmployerFilteredJobWithApplications(user_id) {
     const user = await userService.getUserById(user_id);
-    if(user && user.companyProfileId){
+    if (user && user.companyProfileId) {
         const jobWithApplications = await jobsService.getFilteredJobsWithApplications(user.companyProfileId);
         // console.log(jobWithApplications);
-        if(jobWithApplications){
+        if (jobWithApplications) {
             return jobWithApplications;
         }
         // const applications = await jobsService.getEmployerJobApplications(JobId, user.companyProfileId);
@@ -292,64 +323,64 @@ async function getEmployerFilteredJobWithApplications(user_id){
     return false;
 }
 
-async function getEmployerGetJobApplicants(jobId, userId){
+async function getEmployerGetJobApplicants(jobId, userId) {
     const user = await userService.getUserById(userId);
     const job = await jobsService.getJobById(jobId);
 
-    if(user && job && user.companyProfileId == job.companyProfileId){
+    if (user && job && user.companyProfileId == job.companyProfileId) {
         const applicants = await jobsService.getJobApplicants(jobId);
-        if(applicants[0]){
+        if (applicants[0]) {
             return applicants[0];
         }
     }
 }
 
-async function getEmployerFilteredJobApplicants(jobId, userId){
+async function getEmployerFilteredJobApplicants(jobId, userId) {
     const user = await userService.getUserById(userId);
     const job = await jobsService.getJobById(jobId);
 
-    if(user && job && user.companyProfileId == job.companyProfileId){
+    if (user && job && user.companyProfileId == job.companyProfileId) {
         const applicants = await jobsService.getFilteredJobApplicants(jobId);
-        if(applicants[0]){
+        if (applicants[0]) {
             console.log(applicants);
             return applicants[0];
         }
     }
 }
 
-async function getJobApplicantById(applicantId){
+async function getJobApplicantById(applicantId) {
     const applicant = await userService.getApplicantById(applicantId);
 
-    if(applicant){
+    if (applicant) {
         return applicant;
     }
 }
 
-async function getApplicantJobs(userId){
+async function getApplicantJobs(userId) {
     const applicant = await userService.getApplicantProfileByUserId(userId);
-    if(applicant){
+    if (applicant) {
         const jobs = await jobsService.getApplicantJobs(applicant.id);
-        if(jobs[0]){
+        if (jobs[0]) {
             return jobs[0];
         }
     }
-    
+
 }
 
-async function saveJobForLaterReview(userId, jobId){
+async function saveJobForLaterReview(userId, jobId) {
     const applicant = await userService.getApplicantProfileByUserId(userId);
     const job = await jobsService.getJobById(jobId);
     // console.log(job, applicant);
-    if(applicant && job){
+    if (applicant && job) {
         const alreadySaved = await jobsService.getSavedJob(applicant.id, job.id)
-        if(alreadySaved){
+        if (alreadySaved) {
             const remove = await jobsService.removeJobFromLaterReview(applicant.id, job.id);
-            if(remove){
+            if (remove) {
                 return true;
             }
-        }else{
+        } else {
             const saved = await jobsService.saveJobForLaterReview(applicant.id, job.id);
-            if(saved){
+            if (saved) {
                 return true;
             }
         }
@@ -357,42 +388,42 @@ async function saveJobForLaterReview(userId, jobId){
     return false;
 }
 
-async function getApplicantLaterReviewJobs(userId){
+async function getApplicantLaterReviewJobs(userId) {
     const applicant = await userService.getApplicantProfileByUserId(userId);
 
-    if(applicant){
+    if (applicant) {
         const applications = await jobsService.getApplicantApplications(applicant.id);
         const jobs = await jobsService.getApplicantSavedJobs(applicant.id);
-        if(jobs[0] && applications){
+        if (jobs[0] && applications) {
             const applicationIds = applications.map(application => {
                 return application.JobId;
             })
             const unappliedSavedJobs = jobs[0].filter(job => {
                 return !applicationIds.includes(job.id);
             })
-            if(unappliedSavedJobs){
+            if (unappliedSavedJobs) {
                 return unappliedSavedJobs;
             }
         }
     }
 }
 
-async function filterApplication(userId, jobId, applicantId){
+async function filterApplication(userId, jobId, applicantId) {
     const user = await userService.getUserById(userId);
     const job = await jobsService.getJobById(jobId);
     const applicant = await userService.getApplicantById(applicantId);
-    if(user && job && applicant && user.company_profile && user.applicantPRofileId == job.companyProfileId.id){
+    if (user && job && applicant && user.company_profile && user.applicantPRofileId == job.companyProfileId.id) {
         console.log('from filter application');
         const jobApplication = await jobsService.getApplicationByProfileIdAndJobId(jobId, applicantId);
-        if(jobApplication){
-            if(!jobApplication.filtered){
-                const filtered = await jobsService.updateJobApplication(jobApplication, {filtered: true});
-                if(filtered){
+        if (jobApplication) {
+            if (!jobApplication.filtered) {
+                const filtered = await jobsService.updateJobApplication(jobApplication, { filtered: true });
+                if (filtered) {
                     return true;
                 }
-            }else {
-                const filtered = await jobsService.updateJobApplication(jobApplication, {filtered: false});
-                if(filtered){
+            } else {
+                const filtered = await jobsService.updateJobApplication(jobApplication, { filtered: false });
+                if (filtered) {
                     return true;
                 }
             }
@@ -420,5 +451,6 @@ module.exports = {
     getJobsLaterReview,
     getFilteredJobApplicants,
     getFilteredJobWithApplications,
-    filterJobApplication
+    filterJobApplication,
+    adminGetAllCompanyJob
 }
