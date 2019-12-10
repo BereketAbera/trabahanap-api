@@ -62,7 +62,8 @@ function getUserbyCompanyProfileId(id){
 }
 
 function getUserAndCompanyProfile(){
-    return sequelize.query(`SELECT cp.id, cp.zipcode, cp.companyName, cp.contactPerson, cp.contactNumber,cp.websiteURL,cp.verified, cp.companyLogo,cp.companyDescription,cp.businessLicense,cp.businessLicenseNumber,cp.industryType,cp.companyAddress, u.email,u.username, u.phoneNumber,u.firstName,u.lastName from company_profiles cp INNER JOIN users u ON u.CompanyProfileid = cp.id`,{ type: sequelize.QueryTypes.SELECT});
+    //sequelize.query(`SELECT DISTINCT cp.id, cp.zipcode, cp.companyName, cp.contactPerson, cp.contactNumber,cp.websiteURL,cp.verified, cp.companyLogo,cp.companyDescription,cp.businessLicense,cp.hasLocations, cp.businessLicenseNumber,cp.industryType,cp.companyAddress, u.email,u.username, u.phoneNumber,u.firstName,u.lastName from company_profiles cp INNER JOIN users u ON u.CompanyProfileid = cp.id`,{ type: sequelize.QueryTypes.SELECT});
+    return CompanyProfile.findAll( {order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
 
 function updateApplicantProfile(applicantProfile, body){

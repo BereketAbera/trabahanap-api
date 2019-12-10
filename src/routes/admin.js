@@ -15,6 +15,7 @@ app.post('/applicants', userController.createApplicant)
 app.get('/applicants', userController.getApplicants)
 
 app.post('/location', locationController.addLocationWithImage);
-app.post('/jobs/:user_id', jobsController.adminAddJob);
+app.post('/jobs/:companyProfileId', jobsController.adminAddJob);
+app.put('/jobs/:id', jobsController.editCompanyJob);
 app.get('/location/:companyProfileId',locationController.getLocationByCompanyProfile);
 app.get('/jobs/:companyProfileId',jobsController.adminGetAllCompanyJob)

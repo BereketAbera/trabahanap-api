@@ -32,7 +32,7 @@ function getAllCompanyJobs(req, res, next) {
 }
 
 function adminGetAllCompanyJob(req, res, next) {
-    adminGetCompanyJobsWithPagination(req.query.page || 1, req.query.pageSize || 8, req.companyProfileId)
+    adminGetCompanyJobsWithPagination(req.query.page || 1, req.query.pageSize || 8, req.params.companyProfileId)
         .then(jobs => res.status(200).send({ success: true, jobs }))
         .catch(err => next(err));
 }
@@ -94,7 +94,7 @@ async function adminGetCompanyJobsWithPagination(page, pageSize, companyProfileI
     const offset = (page - 1) * pager.pageSize;
     const limit = pager.pageSize;
 
-    const user = await userService.getUserById(user_id);
+    // const user = await userService.getUserById(user_id);
     const jobs = await jobsService.getCompanyJobsWithOffsetAndLimit(offset, limit, companyProfileId);
 
     if (jobs) {
@@ -126,13 +126,10 @@ function adminAddJob(req, res, next) {
         res.status(200).json({ success: false, validationError: valid });
         return;
     }
-
-    const userId = req.params.user_id;
-
-    addEmployerJob({ ...req.body, user_id: userId })
+    const companyProfileId = req.params.companyProfileId;
+    addCompanyJob(req.body, companyProfileId)
         .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
         .catch(err => next(err));
-
 }
 
 function editJob(req, res, next) {
@@ -214,6 +211,13 @@ function filterJobApplication(req, res, next) {
         .catch(err => next(err));
 }
 
+function editCompanyJob(req,res,next) {
+    const updatedJob = jobsService.editJobById(job.id,req.body);
+        if (updatedJob) {
+            return updatedJob;
+        }
+}
+
 async function getJobById(id) {
     return await jobsService.getJobById(id);
 }
@@ -248,6 +252,17 @@ async function addEmployerJob(body) {
         }
     }
 }
+
+
+async function addCompanyJob(body, compProfileId) {
+    const job = await jobsService.addJob({ ...body, companyProfileId: compProfileId });
+    if (job) {
+
+        return job;
+    }
+}
+
+
 
 async function editEmployerJob(body) {
     const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
@@ -452,5 +467,7 @@ module.exports = {
     getFilteredJobApplicants,
     getFilteredJobWithApplications,
     filterJobApplication,
-    adminGetAllCompanyJob
+    adminGetAllCompanyJob,
+    editCompanyJob
+
 }

@@ -144,6 +144,7 @@ module.exports = {
         role: role,
         lastLoggedIn: new Date(),
         emailVerified: false,
+        hasFinishedProfile: role == 'EMPLOYER' ? 1:0,
         CompanyProfileId: role == 'EMPLOYER' ? companyProfileIds[0][getRandomInt(companyProfileIds[0].length-1)].id : null,
         createdAt: new Date(),
         updatedAt: new Date()
