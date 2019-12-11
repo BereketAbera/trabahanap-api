@@ -125,7 +125,7 @@ function changeApplicantPassword(req, res, next){
 }
 
 function getEmployers(req, res, next){
-    getAllEmployers()
+    getAllEmployers(req.query.page || 1, req.query.pageSize || 8)
         .then(employers => employers ? res.status(200).send({success: true, employers}) : res.status(200).send({success: false, error: "Something went wrong!"}))
         .catch(err => next(err));
 }
@@ -251,12 +251,28 @@ async function changeNewStafferPassword(body, token){
     return false;
 }
 
-async function getAllEmployers(){
-   
+async function getAllEmployers(page,pageSize){
+    const pager = {
+        pageSize: parseInt(pageSize),
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
+    console.log(offset)
+    console.log(pager)
     //const company_profile = await userService.getAllCompanyProfile();
-    const employers = await userService.getUserAndCompanyProfile();
+    const employers = await userService.getCompanyWithOffsetAndLimit(offset, limit);
     if(employers){
-        return employers;
+        pager.totalItems = employers.count;
+        pager.totalPages = Math.ceil(employers.count / pager.pageSize);
+        return {
+            pager,
+            rows: employers.rows
+        }
+        
     }
 }
 

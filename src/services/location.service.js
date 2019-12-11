@@ -34,7 +34,11 @@ function getCountries(){
 }
 
 function getCompanyLocations(companyProfileId){
-    return Location.findAll({where: {companyProfileId},include: [{model: CompanyProfile}]}).catch(err => console.log(err));
+    return Location.findAll({where: {companyProfileId}}).catch(err => console.log(err));
+}
+
+async function getCompanyLocationsByOffsetAndLimit(offset, limit, companyProfileId){
+ return await Location.findAndCountAll({where: {companyProfileId}, offset, limit, order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
 
 function updateLocation(location, newLocation){
@@ -50,5 +54,6 @@ module.exports = {
     addLocation,
     getCityByRegionId,
     getCompanyLocations,
-    updateLocation
+    updateLocation,
+    getCompanyLocationsByOffsetAndLimit
 }

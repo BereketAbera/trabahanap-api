@@ -128,7 +128,7 @@ function getCompanyLocations(req, res, next) {
 }
 
 function getLocationByCompanyProfile(req, res, next) {
-    getLocationsByCompanyProfileId(req.params.companyProfileId)
+    adminGetLocationsByCompanyProfileId(req.query.page || 1, req.query.pageSize || 3, req.params.companyProfileId)
         .then(locations => res.status(200).send({ success: true, locations }))
         .catch(err => next(err));
 }
@@ -189,10 +189,25 @@ async function getLocationByCompanyProfileId(companyProfileId, user_id) {
     }
 }
 
-async function getLocationsByCompanyProfileId(companyProfileId) {
-    const location = await locationService.getCompanyLocations(companyProfileId).catch(err => console.log(err));
+async function adminGetLocationsByCompanyProfileId(page, pageSize, companyProfileId) {
+    const pager = {
+        pageSize: parseInt(pageSize),
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
+    const location = await locationService.getCompanyLocationsByOffsetAndLimit(offset, limit, companyProfileId).catch(err => console.log(err));
     if (location) {
-        return location;
+        pager.totalItems = location.count;
+        pager.totalPages = Math.ceil(location.count / pager.pageSize);
+        const company_profile = await userService.getCompanyProfileById(companyProfileId);
+        return {
+            company_profile, pager,
+            rows: location.rows
+        };
     }
 }
 

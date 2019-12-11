@@ -78,6 +78,10 @@ async function getEmployersWithOffsetAndLimit(offset, limit){
     return await User.findAndCountAll({offset, limit, include: [{model: CompanyProfile}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
 
+async function getCompanyWithOffsetAndLimit(offset, limit){
+    return await CompanyProfile.findAndCountAll({offset, limit,order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
+
 function getAllApplicants(){
     return ApplicantProfile.findAll({include: [{model: User}]});
 }
@@ -102,5 +106,6 @@ module.exports = {
     getAllApplicants,
     getAllCompanyProfile,
     getUserbyCompanyProfileId,
-    getUserAndCompanyProfile
+    getUserAndCompanyProfile,
+    getCompanyWithOffsetAndLimit
 };
