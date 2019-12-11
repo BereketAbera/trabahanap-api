@@ -18,4 +18,6 @@ app.post('/location', locationController.addLocationWithImage);
 app.post('/jobs/:companyProfileId', jobsController.adminAddJob);
 app.put('/jobs/:id', jobsController.editCompanyJob);
 app.get('/location/:companyProfileId',locationController.getLocationByCompanyProfile);
-app.get('/jobs/:companyProfileId',jobsController.adminGetAllCompanyJob)
+app.get('/location/company/:companyProfileId',locationController.getLocatiosForCompany);
+app.get('/jobs/:companyProfileId',jobsController.adminGetAllCompanyJob);
+app.get('/employers/:companyProfileId',otherController.getCompanyDetails);

@@ -4,6 +4,7 @@ const {
     Token,
     User,
     CompanyProfile,
+    ApplicantProfile,
     IssueResponse
 } = require('../models');
 
@@ -53,7 +54,7 @@ function getAllEmployers(){
 
 
 function getAllReportedIssues(){
-    return Issue.findAll({include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+    return Issue.findAll({include: [{model: IssueResponse},{model: ApplicantProfile,include:[{model:User}]}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
 
 function addIssueResponse(issueResponse){

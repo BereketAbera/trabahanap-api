@@ -46,12 +46,20 @@ function getEmployerJobApplications(JobId, CompanyProfileId){
     return JobApplication.findAll({where: {JobId, CompanyProfileId}, include: [{model: CompanyProfile}, {model: ApplicantProfile}, {model: Job}]}).catch(err => console.log(err));
 }
 
-function getJobsWithApplications(CompanyProfileId){
-    return sequelize.query(`SELECT * FROM view_job_applications WHERE CompanyProfileId='${CompanyProfileId}'`, { type: sequelize.QueryTypes.SELECT})
+function getJobsWithApplications(CompanyProfileId,offset,limit){
+    return sequelize.query(`SELECT * FROM view_job_applications WHERE CompanyProfileId='${CompanyProfileId}' LIMIT ${limit} offset ${offset}`, { type: sequelize.QueryTypes.SELECT})
 }
 
-function getFilteredJobsWithApplications(CompanyProfileId){
-    return sequelize.query(`SELECT * FROM view_filtered_job_applications WHERE CompanyProfileId='${CompanyProfileId}'`, { type: sequelize.QueryTypes.SELECT})
+function getCountJobsWithApplication(CompanyProfileId){
+    return sequelize.query(`SELECT COUNT(*) FROM view_job_applications AS count WHERE CompanyProfileId='${CompanyProfileId}' `)
+}
+
+function getFilteredJobsWithApplications(CompanyProfileId,offset,limit){
+    return sequelize.query(`SELECT * FROM view_filtered_job_applications WHERE CompanyProfileId='${CompanyProfileId}' LIMIT ${limit} offset ${offset}`, { type: sequelize.QueryTypes.SELECT})
+}
+
+function getCountFilteredJobsWithApplication(CompanyProfileId){
+    return sequelize.query(`SELECT COUNT(*) FROM view_filtered_job_applications AS count WHERE CompanyProfileId='${CompanyProfileId}' `)
 }
 
 function getJobApplications(JobId){
@@ -115,6 +123,8 @@ module.exports = {
     getApplicantSavedJobs,
     getFilteredJobApplicants,
     getFilteredJobsWithApplications,
-    updateJobApplication
+    updateJobApplication,
+    getCountJobsWithApplication,
+    getCountFilteredJobsWithApplication
     // getApplicantApplication
 }

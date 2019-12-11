@@ -158,13 +158,13 @@ function getApplicantApplications(req, res, next) {
 }
 
 function getJobWithApplications(req, res, next) {
-    getEmployerJobWithApplications(req.user.sub)
+    getEmployerJobWithApplications(req.user.sub, req.query.page || 1, req.query.pageSize || 5)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
 function getFilteredJobWithApplications(req, res, next) {
-    getEmployerFilteredJobWithApplications(req.user.sub)
+    getEmployerFilteredJobWithApplications(req.user.sub, req.query.page || 1, req.query.pageSize || 5)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -211,11 +211,11 @@ function filterJobApplication(req, res, next) {
         .catch(err => next(err));
 }
 
-function editCompanyJob(req,res,next) {
-    const updatedJob = jobsService.editJobById(job.id,req.body);
-        if (updatedJob) {
-            return updatedJob;
-        }
+function editCompanyJob(req, res, next) {
+    const updatedJob = jobsService.editJobById(job.id, req.body);
+    if (updatedJob) {
+        return updatedJob;
+    }
 }
 
 async function getJobById(id) {
@@ -304,13 +304,32 @@ async function getUserApplicantApplications(user_id) {
     return false;
 }
 
-async function getEmployerJobWithApplications(user_id) {
+async function getEmployerJobWithApplications(user_id, page, pageSize) {
+    const pager = {
+        pageSize: parseInt(pageSize),
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
+
     const user = await userService.getUserById(user_id);
     if (user && user.companyProfileId) {
-        const jobWithApplications = await jobsService.getJobsWithApplications(user.companyProfileId);
-        // console.log(jobWithApplications);
+
+        const jobWithApplications = await jobsService.getJobsWithApplications(user.companyProfileId, offset, limit).catch(err => console.log(err));;
+        const jobscount = await jobsService.getCountJobsWithApplication(user.companyProfileId);
+       
         if (jobWithApplications) {
-            return jobWithApplications;
+            pager.totalItems = Object.values(jobscount[0][0])[0];
+            pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+           
+            return {
+                pager,
+                rows: jobWithApplications
+            }
         }
         // const applications = await jobsService.getEmployerJobApplications(JobId, user.companyProfileId);
         // if(applications){
@@ -321,13 +340,29 @@ async function getEmployerJobWithApplications(user_id) {
     return false;
 }
 
-async function getEmployerFilteredJobWithApplications(user_id) {
+async function getEmployerFilteredJobWithApplications(user_id, page, pageSize) {
     const user = await userService.getUserById(user_id);
+    const pager = {
+        pageSize: parseInt(pageSize),
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
     if (user && user.companyProfileId) {
-        const jobWithApplications = await jobsService.getFilteredJobsWithApplications(user.companyProfileId);
-        // console.log(jobWithApplications);
+        const jobscount = await jobsService.getCountFilteredJobsWithApplication(user.companyProfileId);
+        const jobWithApplications = await jobsService.getFilteredJobsWithApplications(user.companyProfileId, offset, limit);
         if (jobWithApplications) {
-            return jobWithApplications;
+            pager.totalItems = Object.values(jobscount[0][0])[0];
+            pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+          
+            return {
+                pager,
+                rows: jobWithApplications
+            }
         }
         // const applications = await jobsService.getEmployerJobApplications(JobId, user.companyProfileId);
         // if(applications){

@@ -20,6 +20,10 @@ function getUserByIdAndRole(id, role){
     return User.findOne({where: { id, role}, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
 }
 
+function getAllByCompanyProfileId(companyProfileId){
+    return User.findAll({where: {companyProfileId}}).catch(err => console.log(err));
+}
+
 function addCompanyProfile(companyprofile){
     return CompanyProfile.create(companyprofile).catch(err => console.log(err));
 }
@@ -107,5 +111,6 @@ module.exports = {
     getAllCompanyProfile,
     getUserbyCompanyProfileId,
     getUserAndCompanyProfile,
-    getCompanyWithOffsetAndLimit
+    getCompanyWithOffsetAndLimit,
+    getAllByCompanyProfileId
 };

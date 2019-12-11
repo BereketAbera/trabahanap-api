@@ -127,6 +127,12 @@ function getCompanyLocations(req, res, next) {
         .catch(err => next(err));
 }
 
+function getLocatiosForCompany(req, res, next) {
+    adminGetLocations(req.params.companyProfileId)
+        .then(locations => res.status(200).send({ success: true, locations }))
+        .catch(err => next(err));
+}
+
 function getLocationByCompanyProfile(req, res, next) {
     adminGetLocationsByCompanyProfileId(req.query.page || 1, req.query.pageSize || 3, req.params.companyProfileId)
         .then(locations => res.status(200).send({ success: true, locations }))
@@ -189,6 +195,17 @@ async function getLocationByCompanyProfileId(companyProfileId, user_id) {
     }
 }
 
+
+async function adminGetLocations(companyProfileId) {
+    const location = await locationService.getCompanyLocations(companyProfileId).catch(err => console.log(err));
+    if (location) {
+        return {
+            location
+        };
+    }
+}
+
+
 async function adminGetLocationsByCompanyProfileId(page, pageSize, companyProfileId) {
     const pager = {
         pageSize: parseInt(pageSize),
@@ -200,6 +217,7 @@ async function adminGetLocationsByCompanyProfileId(page, pageSize, companyProfil
     const limit = pager.pageSize;
 
     const location = await locationService.getCompanyLocationsByOffsetAndLimit(offset, limit, companyProfileId).catch(err => console.log(err));
+  
     if (location) {
         pager.totalItems = location.count;
         pager.totalPages = Math.ceil(location.count / pager.pageSize);
@@ -277,5 +295,6 @@ module.exports = {
     addLocationWithImage,
     getLocation,
     updateLocation,
-    updateLocationPicture
+    updateLocationPicture,
+    getLocatiosForCompany
 }
