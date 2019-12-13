@@ -37,6 +37,13 @@ function adminGetAllCompanyJob(req, res, next) {
         .catch(err => next(err));
 }
 
+function adminGetAllJobs(req, res, next) {
+    getJobsWithPagination(req.query.page || 1)
+        .then(jobs => res.status(200).send({ success: true, jobs }))
+        .catch(err => next(err));
+}
+
+
 async function getJobsWithPagination(page) {
     const pager = {
         pageSize: 5,
@@ -218,6 +225,110 @@ function editCompanyJob(req, res, next) {
     }
 }
 
+function searchCities(req,res,next){
+    searchAllCities(req.query.city)
+        .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
+function searchByCity(req, res, next) {
+    getSearchInCity(req.query.key, req.query.city,req.query.page || 1)
+        .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
+function searchByLocation(req, res, next) {
+    searchJobsByLocation(req.query.key || '', req.query.latitude, req.query.longitude,req.query.distance || 10)
+        .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
+
+async function getSearchInCity(search, cityName,page) {
+    console.log(search);
+    console.log(cityName);
+
+    const pager = {
+        pageSize: 5,
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
+
+    if (cityName == undefined && search == undefined) {
+        console.log('BOTH NO')
+        const jobs = await jobsService.getJobsWithOffsetAndLimit(offset, limit);
+        if (jobs) {
+            pager.totalItems = jobs.count;
+            pager.totalPages = Math.ceil(jobs.count / pager.pageSize);
+            return {
+                pager,
+                rows: jobs
+            };
+        }
+    } else if (cityName == undefined && !(search == undefined)) {
+        console.log("no city")
+        const jobs = await jobsService.searchInAll(search,offset, limit);
+        if (jobs) {
+           
+            return {
+                pager,
+                rows: jobs
+            };
+        }
+    } else if (cityName != undefined && (search == undefined)) {
+        console.log("no city")
+        const jobs = await jobsService.searchAllInCity(cityName,offset, limit);
+        if (jobs) {
+           
+            return {
+                pager,
+                rows: jobs
+            };
+        }
+    } else if (cityName != undefined && (search != undefined)) {
+        console.log('both')
+        const jobs = await jobsService.searchInCity(search, cityName,offset, limit);
+        const jobscount = await jobsService.countsearchInCity(search,cityName);
+        console.log(jobscount)
+        pager.totalItems = Object.values(jobscount[0])[0];
+        pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+        console.log(jobs)
+        if (jobs) {
+            return {
+                pager,
+                rows: jobs
+            };
+        }
+    }
+    else {
+        return {};
+    }
+}
+
+async function searchJobsByLocation(key,latitude,longitude,distance) {
+    console.log(`${ key}, ${latitude},${longitude},${distance}`);
+    if(key != undefined && latitude != undefined && longitude != undefined){
+        const jobs = await jobsService.getJobsInLocations(key,latitude,longitude,distance)
+        if(jobs){
+            return jobs;
+        }
+    } 
+    else{
+        return {};
+    } 
+}
+
+async function searchAllCities(city){
+    const cities = await jobsService.getCitySearch(city);
+    if(cities){
+        return cities;
+    }
+}
+
 async function getJobById(id) {
     return await jobsService.getJobById(id);
 }
@@ -261,7 +372,6 @@ async function addCompanyJob(body, compProfileId) {
         return job;
     }
 }
-
 
 
 async function editEmployerJob(body) {
@@ -321,11 +431,11 @@ async function getEmployerJobWithApplications(user_id, page, pageSize) {
 
         const jobWithApplications = await jobsService.getJobsWithApplications(user.companyProfileId, offset, limit).catch(err => console.log(err));;
         const jobscount = await jobsService.getCountJobsWithApplication(user.companyProfileId);
-       
+
         if (jobWithApplications) {
             pager.totalItems = Object.values(jobscount[0][0])[0];
             pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
-           
+
             return {
                 pager,
                 rows: jobWithApplications
@@ -358,7 +468,7 @@ async function getEmployerFilteredJobWithApplications(user_id, page, pageSize) {
         if (jobWithApplications) {
             pager.totalItems = Object.values(jobscount[0][0])[0];
             pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
-          
+
             return {
                 pager,
                 rows: jobWithApplications
@@ -503,6 +613,10 @@ module.exports = {
     getFilteredJobWithApplications,
     filterJobApplication,
     adminGetAllCompanyJob,
-    editCompanyJob
+    editCompanyJob,
+    adminGetAllJobs,
+    searchByCity,
+    searchByLocation,
+    searchCities
 
 }

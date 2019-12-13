@@ -18,3 +18,7 @@ app.get('/location/cities/:regionId', locationsController.getRegionCities);
 
 
 app.get('/other/industries', otherController.getAllIndustries);
+
+app.get('/search',jobsController.searchByCity);
+app.get('/cities',jobsController.searchCities)
+app.get('/search/location',jobsController.searchByLocation);
