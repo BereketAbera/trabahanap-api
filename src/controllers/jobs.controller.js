@@ -225,31 +225,29 @@ function editCompanyJob(req, res, next) {
     }
 }
 
-function searchCities(req,res,next){
-    searchAllCities(req.query.city)
-        .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+function searchCities(req, res, next) {
+    searchAllCities(req.query.search)
+        .then(cities => cities ? res.status(200).json({ success: true, cities }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
 function searchByCity(req, res, next) {
-    getSearchInCity(req.query.key, req.query.city,req.query.page || 1)
+    getSearchInCity(req.query.key || '', req.query.city || '', req.query.page || 1)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
 function searchByLocation(req, res, next) {
-    searchJobsByLocation(req.query.key || '', req.query.latitude, req.query.longitude,req.query.distance || 10)
+    searchJobsByLocation(req.query.key || '', req.query.lat, req.query.long, req.query.distance || 5)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
 
-async function getSearchInCity(search, cityName,page) {
-    console.log(search);
-    console.log(cityName);
+async function getSearchInCity(search, cityName, page) {
 
     const pager = {
-        pageSize: 5,
+        pageSize: 8,
         totalItems: 0,
         totalPages: 0,
         currentPage: parseInt(page)
@@ -258,45 +256,54 @@ async function getSearchInCity(search, cityName,page) {
     const limit = pager.pageSize;
 
 
-    if (cityName == undefined && search == undefined) {
+    if (cityName == '' && search == '') {
         console.log('BOTH NO')
-        const jobs = await jobsService.getJobsWithOffsetAndLimit(offset, limit);
+        const jobs = await jobsService.searchAll(offset, limit);
+        //console.log(jobs)
         if (jobs) {
-            pager.totalItems = jobs.count;
-            pager.totalPages = Math.ceil(jobs.count / pager.pageSize);
+
+            const jobscount = await jobsService.getJobsWithOffsetAndLimit(offset,limit);
+            console.log(jobscount)
+            pager.totalItems = jobscount.count;
+            pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
             return {
                 pager,
                 rows: jobs
             };
         }
-    } else if (cityName == undefined && !(search == undefined)) {
+    } else if (cityName == '' && !(search == '')) {
         console.log("no city")
-        const jobs = await jobsService.searchInAll(search,offset, limit);
+        const jobs = await jobsService.searchInAll(search, offset, limit);
+
         if (jobs) {
-           
+            const jobscount = await jobsService.countsearchAll(search, cityName);
+            pager.totalItems = Object.values(jobscount[0])[0];
+            pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
             return {
                 pager,
                 rows: jobs
             };
         }
-    } else if (cityName != undefined && (search == undefined)) {
-        console.log("no city")
-        const jobs = await jobsService.searchAllInCity(cityName,offset, limit);
+    } else if (cityName != '' && (search == '')) {
+        console.log("no search")
+        const jobs = await jobsService.searchAllInCity(cityName, offset, limit);
         if (jobs) {
-           
+            const jobscount = await jobsService.countsearchAllInCity(search, cityName);
+            pager.totalItems = Object.values(jobscount[0])[0];
+            pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
             return {
                 pager,
                 rows: jobs
             };
         }
-    } else if (cityName != undefined && (search != undefined)) {
+
+    } else if (cityName != '' && (search != '')) {
         console.log('both')
-        const jobs = await jobsService.searchInCity(search, cityName,offset, limit);
-        const jobscount = await jobsService.countsearchInCity(search,cityName);
-        console.log(jobscount)
+        const jobs = await jobsService.searchInCity(search, cityName, offset, limit);
+        const jobscount = await jobsService.countsearchInCity(search, cityName);
         pager.totalItems = Object.values(jobscount[0])[0];
         pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
-        console.log(jobs)
+
         if (jobs) {
             return {
                 pager,
@@ -309,22 +316,22 @@ async function getSearchInCity(search, cityName,page) {
     }
 }
 
-async function searchJobsByLocation(key,latitude,longitude,distance) {
-    console.log(`${ key}, ${latitude},${longitude},${distance}`);
-    if(key != undefined && latitude != undefined && longitude != undefined){
-        const jobs = await jobsService.getJobsInLocations(key,latitude,longitude,distance)
-        if(jobs){
+async function searchJobsByLocation(key, latitude, longitude, distance) {
+    console.log(`${key}, ${latitude},${longitude},${distance}`);
+    if (key != undefined && latitude != undefined && longitude != undefined) {
+        const jobs = await jobsService.getJobsInLocations(key, latitude, longitude, distance)
+        if (jobs) {
             return jobs;
         }
-    } 
-    else{
+    }
+    else {
         return {};
-    } 
+    }
 }
 
-async function searchAllCities(city){
+async function searchAllCities(city) {
     const cities = await jobsService.getCitySearch(city);
-    if(cities){
+    if (cities) {
         return cities;
     }
 }
