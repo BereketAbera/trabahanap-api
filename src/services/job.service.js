@@ -132,9 +132,6 @@ function countsearchAllInCity(search,cityName){
     return sequelize.query(`SELECT COUNT(*) FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industryType like '${search}%')`,{ type: sequelize.QueryTypes.SELECT})
 }
 
-function countsearch(){
-    sequelize.query(`SELECT COUNT(*) FROM view_companies_jobs_search`,{ type: sequelize.QueryTypes.SELECT})
-}
 
 function searchInCity(search,cityName,offset, limit){
     return sequelize.query(`SELECT * FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industryType like '${search}%')  LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
@@ -150,9 +147,12 @@ function searchAllInCity(cityName,offset, limit){
 function searchAll(offset, limit){
     return sequelize.query(`SELECT *  FROM view_companies_jobs_search LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
 }
-function getJobsInLocations(key,latitude,longitude,distance){
-    return  sequelize.query(`SELECT *, ( 6371 * acos( cos( radians(${latitude}) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(${longitude}) ) + sin( radians(${latitude}) ) * sin( radians( latitude ) ) ) ) AS distance FROM view_companies_jobs_search HAVING distance < ${distance} ORDER BY distance LIMIT 0 , 20;`,{ type: sequelize.QueryTypes.SELECT })
-    
+function getJobsInLocations(latitude,longitude,distance){
+    return  sequelize.query(`SELECT *, ( 6371 * acos( cos( radians(${latitude}) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(${longitude}) ) + sin( radians(${latitude}) ) * sin( radians( latitude ) ) ) ) AS distance FROM view_companies_jobs_search HAVING distance < ${distance} ORDER BY distance LIMIT 0 , 20;`,{ type: sequelize.QueryTypes.SELECT })   
+}
+
+function getJobsInLocationsByKey(search,latitude,longitude,distance){
+    return  sequelize.query(`SELECT *, ( 6371 * acos( cos( radians(${latitude}) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(${longitude}) ) + sin( radians(${latitude}) ) * sin( radians( latitude ) ) ) ) AS distance FROM view_companies_jobs_search WHERE (industry like '%${search}%') or (jobTitle like '%${search}%') or (companyName like '${search}%') or (companyDescription like '%${search}%') or (cityName like '%${search}%') HAVING distance < ${distance} ORDER BY distance LIMIT 0 , 20;`,{ type: sequelize.QueryTypes.SELECT })   
 }
 
 function saveJobForLaterReview(ApplicantProfileId, JobId) {
@@ -206,7 +206,7 @@ module.exports = {
     countsearchAll,
     countsearchAllInCity,
     searchAll,
-    countsearch
+    getJobsInLocationsByKey
 
     // getApplicantApplication
 }

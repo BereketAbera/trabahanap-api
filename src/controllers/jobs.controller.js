@@ -262,7 +262,7 @@ async function getSearchInCity(search, cityName, page) {
         //console.log(jobs)
         if (jobs) {
 
-            const jobscount = await jobsService.getJobsWithOffsetAndLimit(offset,limit);
+            const jobscount = await jobsService.getJobsWithOffsetAndLimit(offset, limit);
             console.log(jobscount)
             pager.totalItems = jobscount.count;
             pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
@@ -274,7 +274,6 @@ async function getSearchInCity(search, cityName, page) {
     } else if (cityName == '' && !(search == '')) {
         console.log("no city")
         const jobs = await jobsService.searchInAll(search, offset, limit);
-
         if (jobs) {
             const jobscount = await jobsService.countsearchAll(search, cityName);
             pager.totalItems = Object.values(jobscount[0])[0];
@@ -303,7 +302,6 @@ async function getSearchInCity(search, cityName, page) {
         const jobscount = await jobsService.countsearchInCity(search, cityName);
         pager.totalItems = Object.values(jobscount[0])[0];
         pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
-
         if (jobs) {
             return {
                 pager,
@@ -318,11 +316,24 @@ async function getSearchInCity(search, cityName, page) {
 
 async function searchJobsByLocation(key, latitude, longitude, distance) {
     console.log(`${key}, ${latitude},${longitude},${distance}`);
-    if (key != undefined && latitude != undefined && longitude != undefined) {
-        const jobs = await jobsService.getJobsInLocations(key, latitude, longitude, distance)
-        if (jobs) {
-            return jobs;
+    console.log(key)
+    if (latitude != undefined && longitude != undefined) {
+        console.log('what')
+        if (key == "" || key == null) {
+            console.log('here')
+            const jobs = await jobsService.getJobsInLocations(latitude, longitude, distance)
+            if (jobs) {
+                return jobs;
+            }
         }
+        if (key !="" && key != undefined) {
+            console.log('here is')
+            const jobs = await jobsService.getJobsInLocationsByKey(key, latitude, longitude, distance)
+            return jobs;
+        } else {
+            return {}
+        }
+
     }
     else {
         return {};

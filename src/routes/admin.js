@@ -21,4 +21,6 @@ app.get('/location/:companyProfileId',locationController.getLocationByCompanyPro
 app.get('/location/company/:companyProfileId',locationController.getLocatiosForCompany);
 app.get('/jobs/:companyProfileId',jobsController.adminGetAllCompanyJob);
 app.get('/employers/:companyProfileId',otherController.getCompanyDetails);
+app.get('/staff/:companyProfileId',otherController.getStaffsCompany);
+app.post('/staff/:companyProfileId',otherController.addStaffsCompany)
 app.get('/jobs', jobsController.adminGetAllJobs)

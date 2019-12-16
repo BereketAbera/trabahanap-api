@@ -154,6 +154,17 @@ function addIssueResponse(req, res, next) {
         .catch(err => next(err));
 }
 
+function getStaffsCompany(req, res, next) {
+    adminGetCompanyStaffs(req.params.companyProfileId)
+        .then(staffs => staffs ? res.status(200).send({ success: true, staffs }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function addStaffsCompany(req,res,next){
+    adminAddCompanyStaffs(req.body,req.params.companyProfileId,)
+        .then(staffs => staffs ? res.status(200).send({ success: true, staffs }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
 
 async function getIndutries() {
     const industries = await otherService.getAllIndustries();
@@ -192,11 +203,42 @@ async function getEmployerStaffs(userId) {
     }
 }
 
-async function getCompanyDetailsInfo(companyProfileId){
+async function adminGetCompanyStaffs(companyProfileId) {
+    if (companyProfileId) {
+        const staffs = await otherService.getCompanyStaffs(companyProfileId);
+        if (staffs) {
+            return staffs;
+        }
+    }
+}
+
+async function adminAddCompanyStaffs(body,compProfileId){
+    console.log(body)
+    console.log(compProfileId)
+    if (compProfileId && body.email) {
+        const userExists = await userService.getUserByEmail(body.email);
+        const tokenExists = await otherService.getTokenEmail(body.email);
+        if (userExists || tokenExists) {
+            return false;
+        }
+
+        const token = uuidv4();
+        const saveToken = await otherService.saveToken(token, body.email);
+        const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId:compProfileId, password: uuidv4(), username: body.email, hasFinishedProfile: true });
+        if (saveToken && newUser) {
+            const message = constractStafferEmail(body.email, token);
+            sgMail.send(message);
+            return true;
+        }
+    }
+    return false;
+}
+
+async function getCompanyDetailsInfo(companyProfileId) {
     const user = await userService.getAllByCompanyProfileId(companyProfileId);
     const company = await userService.getCompanyProfileById(companyProfileId);
-    if(company){
-        return {company,user}
+    if (company) {
+        return { company, user }
     }
 }
 
@@ -311,7 +353,7 @@ async function verifyEmployerLicense(id) {
 
 async function getAllReportedIssues() {
     const issues = await otherService.getAllReportedIssues();
-    
+
     if (issues) {
         return issues;
     }
@@ -349,5 +391,7 @@ module.exports = {
     getCompanyDetails,
     verifyEmployer,
     getAllIssues,
-    addIssueResponse
+    addIssueResponse,
+    getStaffsCompany,
+    addStaffsCompany
 }
