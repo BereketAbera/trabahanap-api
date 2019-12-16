@@ -18,6 +18,7 @@ const ROLE = require('../_helpers/role');
 const constructEmail = require('../_helpers/construct_email');
 const constructApplicantEmail = require('../_helpers/construct_applicant_email');
 const construct_employer_email = require('../_helpers/construct_employer_email');
+const construct_email_applicant = require('../_helpers/construct_email_applicant')
 const userService = require('../services/user.service');
 const jobService = require('../services/job.service');
 const otherService = require('../services/other.service');
@@ -102,13 +103,15 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
 
         companyProfile = { ...companyProfile, CityId: companyProfile.cityId, RegionId: companyProfile.regionId, CountryId: companyProfile.countryId };
         const valid = validateCompanyProfile(companyProfile);
+        console.log(companyProfile);
 
         if (valid != true) {
             res.status(200).json({ success: false, validationError: valid });
             return;
         }
+        companyProfile['username'] = companyProfile.email;
 
-        const valid_user = validateUser({ ...companyProfile, password: '1234' });
+        const valid_user = validateUser({ ...companyProfile, password: '1234',username:companyProfile.email });
         if (valid_user != true) {
             res.status(200).json({ success: false, validationError: valid_user });
             return;
@@ -139,6 +142,7 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
                     return adminSignUpEmployerUser(companyProfile);
                 })
                 .then(data => {
+                    console.log(data)
                     return adminEmployerProfile({ ...companyProfile, user_id: req.user.sub });
                 })
                 .then(employer => {
@@ -173,6 +177,7 @@ async function adminSignUpEmployerUser(body) {
         body['emailVerified'] = 1;
         body['hasFinishedProfile'] = true;
         body['password'] = uuidv4();
+        body['username'] = body.email;
 
         const tokenExists = await otherService.getTokenEmail(body.email);
         if (tokenExists) {
@@ -665,7 +670,7 @@ async function signUpUserApplicant(body) {
     if (unique) {
         body["role"] = ROLE.APPLICANT;
         const user = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
-        const message = constructEmail(user);
+        const message = construct_email_applicant(user);
         sgMail.send(message);
         return user;
     }

@@ -2,7 +2,7 @@
 
 const constants = require('./../../constants');
 
-module.exports = function constructEmail(user){
+module.exports = function construct_email_applicant(user){
     const msg = {
         to: user.email,
         from: "support@trabahanap.com",
@@ -13,14 +13,14 @@ module.exports = function constructEmail(user){
 		<tbody>
 			<tr>
 				<td style="margin:0;padding:6px 15px;color:#0e0d0d;font-size:25px;font-family:Verdana" align="left" ><h5>
-						Dear ${user.firstName}, 
+                Magandang araw ${user.firstName}, 
 				</h5> </td>
 				<br/>
 			</tr>
 			<tr>
 	 
 				<td style="margin:0;padding:5px 15px;color:#0e0d0d;font-size:18px;font-family:Verdana" align="left" valign="middle">
-				Thank you for signing up with Trabahanap.com. Please click the button below to verify your Company's email address. By confirming your account, future Trabahanap notifications will be sent to this email.
+				Maraming salamat sa pag-register sa TrabaHanap! I-click ang pulang button sa ibaba upang maumpisahan mo na ang paghahanap ng trabahong swak at malapit sa'yo! 
 				</td>
 			</tr>
 			<tr>
@@ -30,7 +30,7 @@ module.exports = function constructEmail(user){
 							<tr>
 								<td style="padding-top:30px;padding-bottom:20px">
 									<div  style="box-sizing:border-box; width:250px;margin-top:0; margin-bottom:0; margin-left:auto;margin-right:auto;padding:0;font-family:'Open Sans','Helvetica Neue','Helvetica',Helvetica,Arial,sans-serif;font-size:16px;vertical-align:top;background-color:#dd3806;border-radius:3px;text-align:center;border:solid 2px #e2d0cb;" valign="top">
-										<a href="${constants.HOST_URL}/auth/email_verification?token=${user.emailVerificationToken}&email=${user.email}" style="box-sizing:border-box;font-weight:400;text-decoration:none;display:inline-block;margin:0;color:#ffffff;background-color:#dd3806;border-radius:2px;font-size:14px;padding:12px 45px" target="_blank" >Verify</a>
+										<a href="${constants.HOST_URL}/auth/email_verification?token=${user.emailVerificationToken}&email=${user.email}" style="box-sizing:border-box;border-color:#eb0909;font-weight:400;text-decoration:none;display:inline-block;margin:0;color:#ffffff;background-color:#dd3806;border-radius:2px;font-size:14px;padding:12px 45px" target="_blank" >Confirm Email</a>
 									</div>
 								</div>
 						</tbody>
@@ -40,13 +40,13 @@ module.exports = function constructEmail(user){
 			
 			<tr style="margin:0;padding:5px 15px;color:#0e0d0d;font-size:18px;font-family:Verdana" align="left">
 				<td><h6>
-						Link not working? Please paste this into your browser <a href="${constants.HOST_URL}/auth/email_verification?token=${user.emailVerificationToken}&email=${user.email}" target="_blank">${constants.HOST_URL}/auth/email_verification?token=${user.emailVerificationToken}&email=${user.email} </a>
+                    Hindi bumubukas ang confirm email button? I-paste ito sa iyong web browser:  https: <a href="${constants.HOST_URL}/auth/email_verification?token=${user.emailVerificationToken}&email=${user.email}" target="_blank">${constants.HOST_URL}/auth/email_verification?token=${user.emailVerificationToken}&email=${user.email} </a>
 				</h6> 
-					<span>If you didn’t request this please contact us immediately <br/></span></td>
+					<span>Para sa ibang katanungan, maaaring  mag-iwan ng mensahe sa aming support email address.</span></td>
 			</tr>
 			<tr style="margin:0;padding:3px 15px;color:#0e0d0d;font-size:18px;font-family:Verdana">
 			<td>
-				<span>Thank you,<br>
+				<span >Thank you,<br><br>
 						TrabaHanap Team</span>
 			</td>
 		</tr>
