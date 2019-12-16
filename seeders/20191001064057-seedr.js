@@ -42,7 +42,7 @@ module.exports = {
     );
     let regions = [];
     // let rleft = ["Northern Mindanao", "Soccsksargen", "Westerb Visayas", "Zanboanga"];
-    let r = ["ARMM", "Bicol", "Cagayan", "Calabarzon", "CAR", "Caraga", "Central Luzon", "Central Visayas", "Davao", "Eastern Visayas", "Ilocos", "Mimaraopa", "NCR"];
+    let r = ["ARMM", "Bicol", "Cagayan", "Calabarzon", "CAR", "Caraga", "Central Luzon", "Central Visayas", "Davao", "Eastern Visayas", "Ilocos", "Mimaraopa", "NCR","Northern Mindanao","Soccsksargen","Western Visayas","Zamboanga"];
     for(var i = 0; i<r.length; i++){
       var region = {
         regionName: r[i],
@@ -58,7 +58,7 @@ module.exports = {
       ["Albay", "Camarines Norte", "Camarines Sur", "Catanduanes", "Masbate", "Naga", "Sorsogon"], 
       ["Batanes", "Cagayan", "Isabela", "Nueva Vizcaya", "Quirino", "Santiago"], 
       ["Batangas", "Cavite", "Laguna", "Lucena", "Quezon", "Rizal"], 
-      ["Abra", "Apayao", "Baguio", "Ifugao", "Kalinga", "Mt. Province"],
+      ["Abra", "Apayao", "Baguio", "Benguet", "Ifugao", "Kalinga", "Mt. Province"],
       ["Agusan del Norte", "Agusa del Sur", "Butuan", "Dinagat Islands", "Surigao del Norte", "Surigao del Sur"],
       ["Angeles", "Aurora", "Bataan", "Bulacan", "Nueva Ecija", "Olongapo", "Pampanga", "Tarlac", "Zambales"],
       ["Bohol", "Cebu", "Cebu City", "Lapu Lapu", "Negros Oriental", "Siquijor"],
@@ -66,7 +66,11 @@ module.exports = {
       ["Biliran", "Eastern Samar", "Leyte", "Northern Samar", "Ormoc", "Samar", "Southern Leyte", "Tacloban"],
       ["Ilocos Norte", "Ilocos Sur", "La Union", "Pangasinan"],
       ["Marindugue", "Occidental Mindoro", "Oriental Mindoro", "Palawan", "Puerto Princesa", "Romblon"],
-      ["Caloocan", "Las Pinas", "Makati", "Malabon", "Mandaluyong", "Manila", "Marikina", "Muntinlupa", "Navotas", "Paranaque", "Pasay", "Pasig", "Pateros", "Quezon City", "San Juan", "Taguig", "Valenzuela"]
+      ["Caloocan", "Las Pinas", "Makati", "Malabon", "Mandaluyong", "Manila", "Marikina", "Muntinlupa", "Navotas", "Paranaque", "Pasay", "Pasig", "Pateros", "Quezon City", "San Juan", "Taguig", "Valenzuela"],
+      ["Bukidnon","Cagayan de Oro","Camiguin","Iligan","Lanao del Norte","Misamis Occidental","Misamis Oriental"],
+      ["Cotabato","Cotabato City","General Santos","Saranggani","South Cotabato","Sultan Kudarat"],
+      ["Aklan","Antique","Bacolod","Capiz","Guimaras","Iloilo","Iloilo City","Negros Occidental"],
+      ["Isabela City","Zamboanga City","Zamboanga del Norte","Zamboanga del Sur","Zamboanga Sibugay"]
     ]
 
     await queryInterface.bulkInsert('regions', regions, {});
