@@ -53,7 +53,7 @@ function getEmployerJobApplications(JobId, CompanyProfileId) {
 }
 
 function getJobsWithApplications(CompanyProfileId, offset, limit) {
-    return sequelize.query(`SELECT * FROM view_job_applications WHERE CompanyProfileId='${CompanyProfileId}' LIMIT ${limit} offset ${offset}`, { type: sequelize.QueryTypes.SELECT })
+    return sequelize.query(`SELECT * FROM view_job_applications WHERE CompanyProfileId='${CompanyProfileId}' order by createdAt DESC LIMIT ${limit} offset ${offset}`, { type: sequelize.QueryTypes.SELECT })
 }
 
 function getCountJobsWithApplication(CompanyProfileId) {
@@ -61,7 +61,7 @@ function getCountJobsWithApplication(CompanyProfileId) {
 }
 
 function getFilteredJobsWithApplications(CompanyProfileId, offset, limit) {
-    return sequelize.query(`SELECT * FROM view_filtered_job_applications WHERE CompanyProfileId='${CompanyProfileId}'  LIMIT ${limit} offset ${offset}`, { type: sequelize.QueryTypes.SELECT })
+    return sequelize.query(`SELECT * FROM view_filtered_job_applications WHERE CompanyProfileId='${CompanyProfileId}' order by createdAt DESC  LIMIT ${limit} offset ${offset}`, { type: sequelize.QueryTypes.SELECT })
 }
 
 function getCountFilteredJobsWithApplication(CompanyProfileId) {
@@ -134,11 +134,11 @@ function countsearchAllInCity(search,cityName){
 
 
 function searchInCity(search,cityName,offset, limit){
-    return sequelize.query(`SELECT * FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industryType like '${search}%')  LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
+    return sequelize.query(`SELECT * FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industryType like '${search}%') order by createdAt DESC  LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
 }
 
 function searchInAll(search,offset, limit){
-    return sequelize.query(`SELECT *  FROM view_companies_jobs_search WHERE (industry like '%${search}%') or (companyName like '%${search}%') OR (jobTitle like '%${search}%') or (employmentType	like '${search}%') OR companyDescription like '%${search}%'  order by createdAt LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
+    return sequelize.query(`SELECT *  FROM view_companies_jobs_search WHERE (industry like '%${search}%') or (companyName like '%${search}%') OR (jobTitle like '%${search}%') or (employmentType	like '${search}%') OR companyDescription like '%${search}%'  order by createdAt DESC LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
 }
 
 function searchAllInCity(cityName,offset, limit){
