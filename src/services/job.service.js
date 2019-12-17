@@ -61,7 +61,7 @@ function getCountJobsWithApplication(CompanyProfileId) {
 }
 
 function getFilteredJobsWithApplications(CompanyProfileId, offset, limit) {
-    return sequelize.query(`SELECT * FROM view_filtered_job_applications WHERE CompanyProfileId='${CompanyProfileId}' LIMIT ${limit} offset ${offset}`, { type: sequelize.QueryTypes.SELECT })
+    return sequelize.query(`SELECT * FROM view_filtered_job_applications WHERE CompanyProfileId='${CompanyProfileId}'  LIMIT ${limit} offset ${offset}`, { type: sequelize.QueryTypes.SELECT })
 }
 
 function getCountFilteredJobsWithApplication(CompanyProfileId) {
@@ -138,14 +138,14 @@ function searchInCity(search,cityName,offset, limit){
 }
 
 function searchInAll(search,offset, limit){
-    return sequelize.query(`SELECT *  FROM view_companies_jobs_search WHERE (industry like '%${search}%') or (companyName like '%${search}%') OR (jobTitle like '%${search}%') or (employmentType	like '${search}%') OR companyDescription like '%${search}%' LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
+    return sequelize.query(`SELECT *  FROM view_companies_jobs_search WHERE (industry like '%${search}%') or (companyName like '%${search}%') OR (jobTitle like '%${search}%') or (employmentType	like '${search}%') OR companyDescription like '%${search}%'  order by createdAt LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
 }
 
 function searchAllInCity(cityName,offset, limit){
-    return sequelize.query(`SELECT * FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
+    return sequelize.query(`SELECT * FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' order by createdAt DESC LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
 }
 function searchAll(offset, limit){
-    return sequelize.query(`SELECT *  FROM view_companies_jobs_search LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
+    return sequelize.query(`SELECT *  FROM view_companies_jobs_search order by createdAt DESC LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
 }
 function getJobsInLocations(latitude,longitude,distance){
     return  sequelize.query(`SELECT *, ( 6371 * acos( cos( radians(${latitude}) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(${longitude}) ) + sin( radians(${latitude}) ) * sin( radians( latitude ) ) ) ) AS distance FROM view_companies_jobs_search HAVING distance < ${distance} ORDER BY distance LIMIT 0 , 20;`,{ type: sequelize.QueryTypes.SELECT })   

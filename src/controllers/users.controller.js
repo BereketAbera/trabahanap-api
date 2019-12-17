@@ -103,7 +103,7 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
 
         companyProfile = { ...companyProfile, CityId: companyProfile.cityId, RegionId: companyProfile.regionId, CountryId: companyProfile.countryId };
         const valid = validateCompanyProfile(companyProfile);
-        console.log(companyProfile);
+        //console.log(companyProfile);
 
         if (valid != true) {
             res.status(200).json({ success: false, validationError: valid });
@@ -142,7 +142,7 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
                     return adminSignUpEmployerUser(companyProfile);
                 })
                 .then(data => {
-                    console.log(data)
+                    //console.log(data)
                     return adminEmployerProfile({ ...companyProfile, user_id: req.user.sub });
                 })
                 .then(employer => {
@@ -239,7 +239,7 @@ function changeEmployerPassword(req, res, next) {
         return;
     }
 
-    console.log(response);
+    //console.log(response);
 
     changeNewEmployerPassword(req.body, response.token)
         .then(success => {

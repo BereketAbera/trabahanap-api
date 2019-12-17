@@ -213,8 +213,8 @@ async function adminGetCompanyStaffs(companyProfileId) {
 }
 
 async function adminAddCompanyStaffs(body,compProfileId){
-    console.log(body)
-    console.log(compProfileId)
+    //console.log(body)
+    //console.log(compProfileId)
     if (compProfileId && body.email) {
         const userExists = await userService.getUserByEmail(body.email);
         const tokenExists = await otherService.getTokenEmail(body.email);
@@ -317,8 +317,8 @@ async function getAllEmployers(page, pageSize) {
     const offset = (page - 1) * pager.pageSize;
     const limit = pager.pageSize;
 
-    console.log(offset)
-    console.log(pager)
+    //console.log(offset)
+    //console.log(pager)
     //const company_profile = await userService.getAllCompanyProfile();
     const employers = await userService.getCompanyWithOffsetAndLimit(offset, limit);
     if (employers) {

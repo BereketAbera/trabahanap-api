@@ -257,7 +257,7 @@ async function getSearchInCity(search, cityName, page) {
 
 
     if (cityName == '' && search == '') {
-        console.log('BOTH NO')
+        //console.log('BOTH NO')
         const jobs = await jobsService.searchAll(offset, limit);
         //console.log(jobs)
         if (jobs) {
@@ -272,7 +272,7 @@ async function getSearchInCity(search, cityName, page) {
             };
         }
     } else if (cityName == '' && !(search == '')) {
-        console.log("no city")
+        //console.log("no city")
         const jobs = await jobsService.searchInAll(search, offset, limit);
         if (jobs) {
             const jobscount = await jobsService.countsearchAll(search, cityName);
@@ -284,7 +284,7 @@ async function getSearchInCity(search, cityName, page) {
             };
         }
     } else if (cityName != '' && (search == '')) {
-        console.log("no search")
+        //console.log("no search")
         const jobs = await jobsService.searchAllInCity(cityName, offset, limit);
         if (jobs) {
             const jobscount = await jobsService.countsearchAllInCity(search, cityName);
@@ -297,7 +297,7 @@ async function getSearchInCity(search, cityName, page) {
         }
 
     } else if (cityName != '' && (search != '')) {
-        console.log('both')
+        //console.log('both')
         const jobs = await jobsService.searchInCity(search, cityName, offset, limit);
         const jobscount = await jobsService.countsearchInCity(search, cityName);
         pager.totalItems = Object.values(jobscount[0])[0];
@@ -315,19 +315,19 @@ async function getSearchInCity(search, cityName, page) {
 }
 
 async function searchJobsByLocation(key, latitude, longitude, distance) {
-    console.log(`${key}, ${latitude},${longitude},${distance}`);
-    console.log(key)
+    //console.log(`${key}, ${latitude},${longitude},${distance}`);
+    //console.log(key)
     if (latitude != undefined && longitude != undefined) {
-        console.log('what')
+        
         if (key == "" || key == null) {
-            console.log('here')
+            
             const jobs = await jobsService.getJobsInLocations(latitude, longitude, distance)
             if (jobs) {
                 return jobs;
             }
         }
         if (key !="" && key != undefined) {
-            console.log('here is')
+            
             const jobs = await jobsService.getJobsInLocationsByKey(key, latitude, longitude, distance)
             return jobs;
         } else {
@@ -371,7 +371,7 @@ async function addEmployerJob(body) {
     if (user) {
 
         const compProfileId = user.company_profile.id;
-        console.log(compProfileId)
+        //console.log(compProfileId)
         if (compProfileId) {
             const job = await jobsService.addJob({ ...body, companyProfileId: compProfileId });
             if (job) {
@@ -520,7 +520,7 @@ async function getEmployerFilteredJobApplicants(jobId, userId) {
     if (user && job && user.companyProfileId == job.companyProfileId) {
         const applicants = await jobsService.getFilteredJobApplicants(jobId);
         if (applicants[0]) {
-            console.log(applicants);
+            //console.log(applicants);
             return applicants[0];
         }
     }
