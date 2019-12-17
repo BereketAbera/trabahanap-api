@@ -297,6 +297,7 @@ async function getSearchInCity(search, cityName, page) {
         }
 
     } else if (cityName != '' && (search != '')) {
+        //console.log(cityName)
         //console.log('both')
         const jobs = await jobsService.searchInCity(search, cityName, offset, limit);
         const jobscount = await jobsService.countsearchInCity(search, cityName);
