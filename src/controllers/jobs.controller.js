@@ -359,8 +359,9 @@ async function getApplicantJobById(jobId, userId) {
     if (job && applicantProfile) {
         // console.log(job);
         const applied = await jobsService.getApplicationByProfileIdAndJobId(jobId, applicantProfile.id);
+        
         const saved = await jobsService.getSavedJob(applicantProfile.id, jobId);
-        const newJob = { ...job.dataValues, applied: applied ? true : false, saved: saved ? true : false };
+        const newJob = { ...job.dataValues, applied: applied ? true : false, appliedDate:applied ? applied.applicationDate:null, saved: saved ? true : false };
 
         return newJob;
     }
