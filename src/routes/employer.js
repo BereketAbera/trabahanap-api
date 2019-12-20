@@ -11,8 +11,10 @@ app.post('/location', locationController.addLocationWithImage);
 
 app.get('/jobs/applications', jobsController.getJobWithApplications);
 app.post('/jobs/applications/filter', jobsController.filterJobApplication);
+app.post('/jobs/applications/hire', jobsController.hireJobApplication);
 app.get('/jobs/filtered/applications', jobsController.getFilteredJobWithApplications);
 app.get('/jobs/applications/applicant/:id', jobsController.getJobApplicant);
+app.get('/jobs/applications/applicant/hired/:id', jobsController.isHired);
 app.get('/jobs/applicants/:id', jobsController.getJobApplicants);
 app.get('/jobs/filtered/applicants/:id', jobsController.getFilteredJobApplicants);
 app.put('/jobs/:id', jobsController.editJob);

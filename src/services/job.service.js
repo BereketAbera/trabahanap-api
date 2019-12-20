@@ -39,6 +39,9 @@ async function editJobById(id, newJob) {
 async function getJobById(id) {
     return Job.findOne({ where: { id }, include: [{ model: CompanyProfile }, { model: Location }] }).catch(err => console.log(err));
 }
+async function getHiredApplicant(ApplicantProfileId){
+    return JobApplication.findOne({ where: { ApplicantProfileId } }).catch(err => console.log(err));
+}
 
 function getApplicationByProfileIdAndJobId(JobId, ApplicantProfileId) {
     return JobApplication.findOne({ where: { JobId, ApplicantProfileId } }).catch(err => console.log(err));
@@ -50,6 +53,10 @@ function getApplicantApplications(ApplicantProfileId) {
 
 function getEmployerJobApplications(JobId, CompanyProfileId) {
     return JobApplication.findAll({ where: { JobId, CompanyProfileId }, include: [{ model: CompanyProfile }, { model: ApplicantProfile }, { model: Job }] }).catch(err => console.log(err));
+}
+
+function getCompanyAllApplicant(offset,limit,CompanyProfileId){
+    return JobApplication.findAndCountAll({ where: { CompanyProfileId }, offset, limit, include: [{ model: CompanyProfile }, { model: ApplicantProfile }, { model: Job }] }).catch(err => console.log(err));
 }
 
 function getJobsWithApplications(CompanyProfileId, offset, limit) {
@@ -206,7 +213,8 @@ module.exports = {
     countsearchAll,
     countsearchAllInCity,
     searchAll,
-    getJobsInLocationsByKey
-
+    getJobsInLocationsByKey,
+    getCompanyAllApplicant,
+    getHiredApplicant
     // getApplicantApplication
 }
