@@ -411,7 +411,6 @@ async function getAllReportedIssues() {
 
 async function getAllIssuesFromApplicants() {
     const issues = await otherService.getAllReportedApplicantIssues();
-
     if (issues) {
         return issues;
     }

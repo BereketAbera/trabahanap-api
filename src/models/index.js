@@ -48,7 +48,7 @@ JobLaterReview.belongsTo(Job);
 
 Issue.belongsTo(ApplicantProfile);
 Issue.belongsTo(IssueResponse);
-
+Issue.belongsTo(CompanyProfile);
 // IssueResponse.belongsTo(Issue);
 IssueResponse.belongsTo(User);
 

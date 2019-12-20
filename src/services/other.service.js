@@ -66,7 +66,7 @@ function getAllReportedApplicantIssues() {
 }
 
 function getAllReportedCompanyIssues() {
-    return Issue.findAll({where: {ApplicantProfileId: null}, include: [{model: IssueResponse},{model: ApplicantProfile}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+    return Issue.findAll({where: {ApplicantProfileId: null}, include: [{model: IssueResponse},{model: CompanyProfile}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 
 }
 
