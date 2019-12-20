@@ -180,6 +180,7 @@ module.exports = {
         employmentType: empType[getRandomInt(1)],
         additionalQualifications: faker.lorem.paragraph(),
         applicationStartDate: new Date(),
+        pwd: Math.round(Math.random()),
         applicationEndDate: new Date(d.getTime() + 864000000),
         CompanyProfileId: employersCompanyId[0][getRandomInt(employersCompanyId[0].length-1)].CompanyProfileId,
         createdAt: new Date(),

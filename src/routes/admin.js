@@ -8,11 +8,12 @@ app.get('/employers', otherController.getEmployers);
 app.post('/employers',userController.admnCreateCompanyProfileWithBusinessLicenseAndLogo);
 app.put('/employers/verify/:id', otherController.verifyEmployer);
 
-app.get('/issues', otherController.getAllIssues);
+app.get('/issues/applicant', otherController.getApplicantIssuesAdmin);
+app.get('/issues/employer', otherController.getCompanyIssuesAdmin);
 app.post('/issue_responses', otherController.addIssueResponse);
 
-app.post('/applicants', userController.createApplicant)
-app.get('/applicants', userController.getApplicants)
+app.post('/applicants', userController.createApplicant);
+app.get('/applicants', userController.getApplicants);
 
 app.post('/location', locationController.addLocationWithImage);
 app.post('/jobs/:companyProfileId', jobsController.adminAddJob);

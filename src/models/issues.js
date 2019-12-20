@@ -33,6 +33,14 @@ module.exports = function(sequelize, DataTypes) {
           key: 'id'
         }
       },
+      CompanyProfileId: {
+        type: DataTypes.CHAR(36),
+        allowNull: true,
+        references: {
+          model: 'company_profiles',
+          key: 'id'
+        }
+      },
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false

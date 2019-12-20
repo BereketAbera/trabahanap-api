@@ -22,6 +22,10 @@ function getApplicantIssues(ApplicantProfileId){
     return Issue.findAll({where: {ApplicantProfileId}, include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
 
+function getEmployerIssues(CompanyProfileId){
+    return Issue.findAll({where: {CompanyProfileId}, include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
+
 function getApplicantIssueById(ApplicantProfileId, id){
     return Issue.findOne({where: {ApplicantProfileId, id}, include: [{model: IssueResponse}]}).catch(err => console.log(err)); 
 }
@@ -57,6 +61,15 @@ function getAllReportedIssues(){
     return Issue.findAll({include: [{model: IssueResponse},{model: ApplicantProfile,include:[{model:User}]}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
 
+function getAllReportedApplicantIssues() {
+    return Issue.findAll({where: {CompanyProfileId: null}, include: [{model: IssueResponse},{model: ApplicantProfile,include:[{model:User}]}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
+
+function getAllReportedCompanyIssues() {
+    return Issue.findAll({where: {ApplicantProfileId: null}, include: [{model: IssueResponse},{model: ApplicantProfile}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+
+}
+
 function addIssueResponse(issueResponse){
     return IssueResponse.create(issueResponse).catch(err => console.log(err));
 }
@@ -74,6 +87,7 @@ module.exports = {
     getAllIndustries,
     addIssue,
     getApplicantIssues,
+    getEmployerIssues,
     getApplicantIssueById,
     saveToken,
     getToken,
@@ -82,6 +96,8 @@ module.exports = {
     getCompanyStaffs,
     getAllEmployers,
     getAllReportedIssues,
+    getAllReportedApplicantIssues,
+    getAllReportedCompanyIssues,
     addIssueResponse,
     updateIssueField,
     getIssueById

@@ -30,5 +30,6 @@ app.post('/profile',  userController.createCompanyProfileWithBusinessLicenseAndL
 app.post('/staff/add', empAutorize(ROLE.EMPLOYER), otherController.addStaff)
 app.get('/staff', empAutorize(ROLE.EMPLOYER), otherController.getStaffs)
 
-
-
+app.get('/issues', otherController.getEmpIssues);
+// app.get('/issues/:id', otherController.getIssue);
+app.post('/issues', otherController.addEmpIssue);

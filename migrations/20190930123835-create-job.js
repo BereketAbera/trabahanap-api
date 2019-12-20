@@ -41,6 +41,9 @@ module.exports = {
       applicationEndDate: {
         type: Sequelize.DATE
       },
+      pwd: {
+        type: Sequelize.BOOLEAN
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
