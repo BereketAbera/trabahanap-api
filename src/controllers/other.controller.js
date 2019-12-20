@@ -17,6 +17,24 @@ function getAllIndustries(req, res, next) {
         .catch(err => next(err));
 }
 
+function addEmpIssue(req, res, next) {
+    const valid = validateIssue(req.body);
+    if (valid != true) {
+        res.status(200).json({ success: false, validationError: valid });
+        return;
+    }
+
+    addEmployerIssue(req.body, req.user.sub)
+        .then(issue => res ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function getEmpIssues(req, res, next) {
+    getEmployerIssues(req.user.sub)
+        .then(issues => issues ? res.status(200).send({ success: true, issues }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
 function addIssue(req, res, next) {
     const valid = validateIssue(req.body);
     if (valid != true) {
@@ -148,6 +166,18 @@ function getAllIssues(req, res, next) {
         .catch(err => next(err));
 }
 
+function getApplicantIssuesAdmin(req, res, next) {
+    getAllIssuesFromApplicants()
+        .then(issues => issues ? res.status(200).send({ success: true, issues }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function getCompanyIssuesAdmin(req, res, next) {
+    getAllIssuesFromCompany()
+        .then(issues => issues ? res.status(200).send({ success: true, issues }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
 function addIssueResponse(req, res, next) {
     postIssueResponse(req.body, req.user.sub)
         .then(issueResponse => issueResponse ? res.status(200).send({ success: true, issueResponse }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
@@ -170,6 +200,26 @@ async function getIndutries() {
     const industries = await otherService.getAllIndustries();
     if (industries) {
         return industries;
+    }
+}
+
+async function addEmployerIssue(issue, userId) {
+    const user = await userService.getUserById(userId);
+    if (user) {
+        const newIssue = await otherService.addIssue({ ...issue, CompanyProfileId: user.companyProfileId });
+        if (newIssue) {
+            return newIssue;
+        }
+    }
+}
+
+async function getEmployerIssues(userId) {
+    const user = await userService.getUserById(userId);
+    if (user) {
+        const issues = await otherService.getEmployerIssues(user.companyProfileId);
+        if (issues) {
+            return issues;
+        }
     }
 }
 
@@ -359,6 +409,22 @@ async function getAllReportedIssues() {
     }
 }
 
+async function getAllIssuesFromApplicants() {
+    const issues = await otherService.getAllReportedApplicantIssues();
+
+    if (issues) {
+        return issues;
+    }
+}
+
+async function getAllIssuesFromCompany() {
+    const issues = await otherService.getAllReportedCompanyIssues();
+
+    if (issues) {
+        return issues;
+    }
+}
+
 async function postIssueResponse(issueResponse, userId) {
 
     if (issueResponse.issueResponse && issueResponse.issueId) {
@@ -378,6 +444,8 @@ async function postIssueResponse(issueResponse, userId) {
 
 module.exports = {
     getAllIndustries,
+    addEmpIssue,
+    getEmpIssues,
     addIssue,
     getIssues,
     getIssue,
@@ -391,6 +459,8 @@ module.exports = {
     getCompanyDetails,
     verifyEmployer,
     getAllIssues,
+    getApplicantIssuesAdmin,
+    getCompanyIssuesAdmin,
     addIssueResponse,
     getStaffsCompany,
     addStaffsCompany
