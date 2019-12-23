@@ -471,50 +471,34 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
         totalPages: 0,
         currentPage: parseInt(page)
     }
-    if (cityName == "undefined") {
+    if (cityName == "undefined"){
         cityName = '';
     }
-    console.log(search, employType, industry, cityName, page)
-    const offset = (page - 1) * pager.pageSize;
+    if(industry=="undefined"){ 
+        industry='';
+    }
+    if(salaryRange=="undefined") {
+        salaryRange='';
+    }
+
+    //console.log(search, employType, industry, cityName, page)
+    const offset = (page - 2) * pager.pageSize;
+
     const limit = pager.pageSize;
-    //console.log(offset)
+
     queryResult = advancedSearchQueryBuilder(search, employType, industry, salaryRange, cityName, offset, limit);
-    console.log(queryResult.selectQuery)
-    console.log(queryResult.count);
-    //let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industry like '${search}%')`;
-    // let query=`SELECT * FROM view_companies_jobs_search WHERE cityName like '${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%' or industry like '${search}%') order by createdAt DESC  LIMIT ${offset},${limit}`
-
-    // if(employType !='' && industry != ''){
-    //     //console.log('sdljf')
-    //     query=`SELECT * FROM view_companies_jobs_search WHERE industry='${industry}' and employmentType='${employType}' and (cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}`
-    //     QueryCount=`SELECT COUNT(*) FROM view_companies_jobs_search WHERE industry='${industry}' and employmentType='${employType}' and (cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}`
-    // }
-    // else if(employType !='' && industry ==''){
-    //     //console.log('no ind')
-    //     query=`SELECT * FROM view_companies_jobs_search WHERE employmentType='${employType}' and (cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}` 
-    //     QueryCount=`SELECT * FROM view_companies_jobs_search WHERE employmentType='${employType}' and (cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}` 
-
-    // }else if(employType =='' & industry != ''){
-    //     //console.log('no emp')
-    //     query=`SELECT * FROM view_companies_jobs_search WHERE industry='${industry}' and (cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}` 
-    //     QueryCount=`SELECT COUNT(*) FROM view_companies_jobs_search where industry='${industry}' and (cityName like '%${cityName}%' or jobTitle like '%${search}%' or companyName like '${search}%') order by createdAt DESC  LIMIT ${offset},${limit}` 
-
-    // }
-    // else{
-    //     QueryCount=`SELECT COUNT(*)  FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%') order by createdAt`
-
-    //     query=`SELECT * FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%') order by createdAt DESC  LIMIT ${offset},${limit}`
-    // }
+    //console.log(queryResult.selectQuery)
+   // console.log(queryResult.count);
 
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
-    console.log(jobs)
+    //console.log(jobs)
     if (jobs) {
-        console.log('here in')
+        //console.log('here in')
         counts = await jobsService.executeSearchQuery(queryResult.count);
-        console.log(counts)
+        //console.log(counts)
         if(counts){
             pager.totalItems = Object.values(counts[0])[0];
-            console.log(counts)
+            //console.log(counts)
             pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
         }
         return {
@@ -553,8 +537,8 @@ function advancedSearchQueryBuilder(search, employType, industry, salaryRange, c
     } else {
         query = query + ` where cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%')`;
     }
-    let selectQuery=`select * from view_companies_jobs_search `+query;
-    let QueryCount=`SELECT COUNT(*) FROM view_companies_jobs_search`+query;
+    let selectQuery=`select * from view_companies_jobs_search `+query+` LIMIT ${offset},${limit}`;
+    let QueryCount=`SELECT COUNT(*) FROM view_companies_jobs_search`+query+` LIMIT ${offset},${limit}`;
     return {selectQuery:selectQuery,count:QueryCount};
 }
 
