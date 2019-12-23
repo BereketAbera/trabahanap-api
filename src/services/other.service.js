@@ -48,6 +48,10 @@ async function updateToken(token, value){
     return newToken.update(value);
 }
 
+function getAdminStaffs(){
+    return User.findAll({where: {role: ROLE.ADMINSTAFF, emailVerified: true}}).catch(err => console.log(err));
+}
+
 function getCompanyStaffs(CompanyProfileId){
     return User.findAll({where: {role: ROLE.STAFFER, CompanyProfileId, emailVerified: true}}).catch(err => console.log(err));
 }
@@ -93,6 +97,7 @@ module.exports = {
     getToken,
     getTokenEmail,
     updateToken,
+    getAdminStaffs,
     getCompanyStaffs,
     getAllEmployers,
     getAllReportedIssues,

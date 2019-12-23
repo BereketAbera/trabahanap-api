@@ -3,6 +3,8 @@ const otherController = require('../controllers/other.controller');
 const userController = require('../controllers/users.controller');
 const locationController = require('../controllers/locations.controller')
 const jobsController = require('../controllers/jobs.controller')
+const adminAuthorize = require('../_helpers/adminAuthorize');
+const ROLE = require('../_helpers/role');
 
 app.get('/employers', otherController.getEmployers);
 app.post('/employers',userController.admnCreateCompanyProfileWithBusinessLicenseAndLogo);
@@ -11,6 +13,9 @@ app.put('/employers/verify/:id', otherController.verifyEmployer);
 app.get('/issues/applicant', otherController.getApplicantIssuesAdmin);
 app.get('/issues/employer', otherController.getCompanyIssuesAdmin);
 app.post('/issue_responses', otherController.addIssueResponse);
+
+app.post('/staff/add', adminAuthorize(ROLE.ADMIN), otherController.addAdminStaff);
+app.get('/staff', adminAuthorize(ROLE.ADMIN), otherController.getAdminStaff);
 
 app.post('/applicants', userController.createApplicant);
 app.get('/applicants', userController.getApplicants);

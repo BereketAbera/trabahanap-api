@@ -6,7 +6,7 @@ require('../database/connection');
 app.use('/api/auth', require('./auth'));
 app.use('/api/applicant', autorize(ROLE.APPLICANT), require('./applicant'));
 app.use('/api/employer', autorize([ROLE.EMPLOYER, ROLE.STAFFER]), require('./employer'));
-app.use('/api/admin', autorize(ROLE.ADMIN), require('./admin'));
+app.use('/api/admin', autorize([ROLE.ADMIN, ROLE.ADMINSTAFF]), require('./admin'));
 app.use('/api/', require('./anonymous'));
 
 // the catch all route

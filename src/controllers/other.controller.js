@@ -4,6 +4,7 @@ const ROLE = require('../_helpers/role');
 
 const { validateIssue } = require('../_helpers/validators');
 const constractStafferEmail = require('../_helpers/construct_staffer_email');
+const constractAdminStaffEmail = require('../_helpers/construct_adminStaff_email');
 const uuidv4 = require('uuid/v4');
 const sgMail = require('@sendgrid/mail');
 const CONSTANTS = require('../../constants');
@@ -44,6 +45,18 @@ function addIssue(req, res, next) {
 
     addApplicantIssue(req.body, req.user.sub)
         .then(issue => res ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function getAdminStaff(req, res, next) {
+    getAdminStaffers(req.user.sub)
+        .then(staffs => staffs ? res.status(200).send({ success: true, staffs }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function addAdminStaff(req, res, next) {
+    addAdminStaffer(req.body, req.user.sub)
+        .then(success => res.status(200).send({ success }))
         .catch(err => next(err));
 }
 
@@ -302,6 +315,38 @@ async function getApplicantIssue(userId, issueId) {
     }
 }
 
+async function getAdminStaffers(userId) {
+    const user = await userService.getUserById(userId);
+    if (user && user.role === 'ADMIN') {
+        console.log("about to get your staffs")
+        const staffs = await otherService.getAdminStaffs();
+        if (staffs) {
+            return staffs;
+        }
+    }
+}
+
+async function addAdminStaffer(body, userId) {
+    const user = await userService.getUserById(userId);
+    if (user && body.email) {
+        console.log("inside user email logic")
+        const userExists = await userService.getUserByEmail(body.email);
+        const tokenExists = await otherService.getTokenEmail(body.email);
+        if (userExists || tokenExists) {
+            return false;
+        }
+        const token = uuidv4();
+        const saveToken = await otherService.saveToken(token, body.email);
+        const newUser = await userService.createUser({ ...body, role: ROLE.ADMINSTAFF, password: uuidv4(), username: body.email });
+        if (saveToken && newUser) {
+            const message = constractAdminStaffEmail(body.firstName, body.email, token);
+            sgMail.send(message);
+            return true;
+        }
+    }
+    return false;
+}
+
 async function addCompanyStaffer(body, userId) {
     const user = await userService.getUserById(userId);
     if (user && user.companyProfileId, body.email) {
@@ -314,7 +359,7 @@ async function addCompanyStaffer(body, userId) {
         const saveToken = await otherService.saveToken(token, body.email);
         const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: user.companyProfileId, password: uuidv4(), username: body.email, hasFinishedProfile: true });
         if (saveToken && newUser) {
-            const message = constractStafferEmail(body.email, token);
+            const message = constractStafferEmail(body.firstName, body.email, token);
             sgMail.send(message);
             return true;
         }
@@ -448,6 +493,8 @@ module.exports = {
     addIssue,
     getIssues,
     getIssue,
+    getAdminStaff,
+    addAdminStaff,
     addStaff,
     addNewStaffer,
     addNewApplicant,
