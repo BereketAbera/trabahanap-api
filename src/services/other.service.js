@@ -9,9 +9,13 @@ const {
 } = require('../models');
 
 const ROLE = require('../_helpers/role');
+const sequelize = require('../database/connection');
 
 function getAllIndustries(){
     return Indutry.findAll().catch(err => console.log(err));
+}
+function getIndutriesSearch(search){
+    return sequelize.query(`SELECT * FROM industries WHERE industryName like '${search}%'`, { type: sequelize.QueryTypes.SELECT })
 }
 
 function addIssue(issue){
@@ -105,5 +109,6 @@ module.exports = {
     getAllReportedCompanyIssues,
     addIssueResponse,
     updateIssueField,
-    getIssueById
+    getIssueById,
+    getIndutriesSearch
 }

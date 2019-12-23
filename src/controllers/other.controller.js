@@ -1,5 +1,6 @@
 const otherService = require('../services/other.service');
 const userService = require('../services/user.service');
+const jobsService = require('../services/job.service')
 const ROLE = require('../_helpers/role');
 
 const { validateIssue } = require('../_helpers/validators');
@@ -15,6 +16,18 @@ sgMail.setApiKey(CONSTANTS.SENDGRID_KEY);
 function getAllIndustries(req, res, next) {
     getIndutries()
         .then(industries => res.status(200).send({ success: true, industries }))
+        .catch(err => next(err));
+}
+
+function searchIndustry(req, res, next) {
+    getSearchedIndustry(req.query.search)
+        .then(industries => industries ? res.status(200).json({ success: true, industries }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
+function advancedSearchJob(req, res, next) {
+    getAdvancedSearched(req.query.search || "", req.query.et || "", req.query.industry || "", req.query.sr || "", req.query.ct || "", req.query.page || 1)
+        .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
@@ -203,8 +216,8 @@ function getStaffsCompany(req, res, next) {
         .catch(err => next(err));
 }
 
-function addStaffsCompany(req,res,next){
-    adminAddCompanyStaffs(req.body,req.params.companyProfileId,)
+function addStaffsCompany(req, res, next) {
+    adminAddCompanyStaffs(req.body, req.params.companyProfileId)
         .then(staffs => staffs ? res.status(200).send({ success: true, staffs }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
         .catch(err => next(err));
 }
@@ -275,7 +288,7 @@ async function adminGetCompanyStaffs(companyProfileId) {
     }
 }
 
-async function adminAddCompanyStaffs(body,compProfileId){
+async function adminAddCompanyStaffs(body, compProfileId) {
     //console.log(body)
     //console.log(compProfileId)
     if (compProfileId && body.email) {
@@ -287,7 +300,7 @@ async function adminAddCompanyStaffs(body,compProfileId){
 
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
-        const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId:compProfileId, password: uuidv4(), username: body.email, hasFinishedProfile: true });
+        const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: compProfileId, password: uuidv4(), username: body.email, hasFinishedProfile: true });
         if (saveToken && newUser) {
             const message = constractStafferEmail(body.email, token);
             sgMail.send(message);
@@ -486,6 +499,110 @@ async function postIssueResponse(issueResponse, userId) {
     }
 }
 
+async function getSearchedIndustry(search) {
+    if (search) {
+        const industries = await otherService.getIndutriesSearch(search);
+        if (industries) {
+            return industries;
+        }
+    } else return {}
+
+}
+
+async function getAdvancedSearched(search, employType, industry, salaryRange, cityName, page) {
+    const pager = {
+        pageSize: 8,
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    if (cityName == "undefined") {
+        cityName = '';
+    }
+    console.log(search, employType, industry, cityName, page)
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+    //console.log(offset)
+    queryResult = advancedSearchQueryBuilder(search, employType, industry, salaryRange, cityName, offset, limit);
+    console.log(queryResult.selectQuery)
+    console.log(queryResult.count);
+    //let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industry like '${search}%')`;
+    // let query=`SELECT * FROM view_companies_jobs_search WHERE cityName like '${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%' or industry like '${search}%') order by createdAt DESC  LIMIT ${offset},${limit}`
+
+    // if(employType !='' && industry != ''){
+    //     //console.log('sdljf')
+    //     query=`SELECT * FROM view_companies_jobs_search WHERE industry='${industry}' and employmentType='${employType}' and (cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}`
+    //     QueryCount=`SELECT COUNT(*) FROM view_companies_jobs_search WHERE industry='${industry}' and employmentType='${employType}' and (cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}`
+    // }
+    // else if(employType !='' && industry ==''){
+    //     //console.log('no ind')
+    //     query=`SELECT * FROM view_companies_jobs_search WHERE employmentType='${employType}' and (cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}` 
+    //     QueryCount=`SELECT * FROM view_companies_jobs_search WHERE employmentType='${employType}' and (cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}` 
+
+    // }else if(employType =='' & industry != ''){
+    //     //console.log('no emp')
+    //     query=`SELECT * FROM view_companies_jobs_search WHERE industry='${industry}' and (cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}` 
+    //     QueryCount=`SELECT COUNT(*) FROM view_companies_jobs_search where industry='${industry}' and (cityName like '%${cityName}%' or jobTitle like '%${search}%' or companyName like '${search}%') order by createdAt DESC  LIMIT ${offset},${limit}` 
+
+    // }
+    // else{
+    //     QueryCount=`SELECT COUNT(*)  FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%') order by createdAt`
+
+    //     query=`SELECT * FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%') order by createdAt DESC  LIMIT ${offset},${limit}`
+    // }
+
+    const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
+    console.log(jobs)
+    if (jobs) {
+        console.log('here in')
+        counts = await jobsService.executeSearchQuery(queryResult.count);
+        console.log(counts)
+        if(counts){
+            pager.totalItems = Object.values(counts[0])[0];
+            console.log(counts)
+            pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+        }
+        return {
+            pager,
+            rows: jobs
+        };
+    }
+ 
+}
+
+
+function advancedSearchQueryBuilder(search, employType, industry, salaryRange, cityName, offset, limit) {
+    let query = ``;
+    let haveWhere = false;
+    if (employType != "") {
+        query = query + ` where employmentType='${employType}'`;
+        haveWhere = true;
+    } if (industry != "") {
+        if (haveWhere) {
+            query = query + ` and industry='${industry}'`;
+        }else{
+            query = query + ` where industry='${industry}'`;
+            haveWhere = true;
+        }
+    }
+    if (salaryRange != "") {
+        if (haveWhere) {
+            query = query + ` and salaryRange=${salaryRange}`;
+        } else {
+            query = query + ` where salaryRange=${salaryRange}`;
+            haveWhere = true;
+        }
+    }
+    if (haveWhere) {
+        query = query + ` and (cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%'))`;
+    } else {
+        query = query + ` where cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%')`;
+    }
+    let selectQuery=`select * from view_companies_jobs_search `+query;
+    let QueryCount=`SELECT COUNT(*) FROM view_companies_jobs_search`+query;
+    return {selectQuery:selectQuery,count:QueryCount};
+}
+
 module.exports = {
     getAllIndustries,
     addEmpIssue,
@@ -509,5 +626,7 @@ module.exports = {
     getCompanyIssuesAdmin,
     addIssueResponse,
     getStaffsCompany,
-    addStaffsCompany
+    addStaffsCompany,
+    searchIndustry,
+    advancedSearchJob
 }

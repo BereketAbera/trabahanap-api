@@ -127,6 +127,7 @@ function getJobsSearch(search) {
         attributes: ['id','jobTitle','jobDescription','industry']
     }).catch(err => console.log(err));
 }
+
 function countsearchInCity(search,cityName){
     return sequelize.query(`SELECT COUNT(*) FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industryType like '${search}%')`,{ type: sequelize.QueryTypes.SELECT})
 }
@@ -178,6 +179,10 @@ function updateJobApplication(jobApplication, body) {
     return jobApplication.update(body);
 }
 
+function executeSearchQuery(query){
+    return sequelize.query(query,{ type: sequelize.QueryTypes.SELECT });
+}
+
 module.exports = {
     getJobsWithOffsetAndLimit,
     addJob,
@@ -215,6 +220,7 @@ module.exports = {
     searchAll,
     getJobsInLocationsByKey,
     getCompanyAllApplicant,
-    getHiredApplicant
+    getHiredApplicant,
+    executeSearchQuery
     // getApplicantApplication
 }
