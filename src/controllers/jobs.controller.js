@@ -328,7 +328,7 @@ function getAllApplications(req, res, next) {
 async function getAllApplicationsWithPaginations(page) {
 
        const pager = {
-        pageSize: 8,
+        pageSize: 6,
         totalItems: 0,
         totalPages: 0,
         currentPage: parseInt(page)
