@@ -37,11 +37,18 @@ function adminGetAllCompanyJob(req, res, next) {
         .catch(err => next(err));
 }
 
+function adminGetAllCompanyJobFilters(req, res, next) {
+    adminFilterJobsPagination(req.query.industry || '', req.query.et, req.query.salary || '', req.query.search || '', req.query.page || 1)
+        .then(jobs => res.status(200).send({ success: true, jobs }))
+        .catch(err => next(err));
+}
+
 function adminGetAllJobs(req, res, next) {
     getJobsWithPagination(req.query.page || 1)
         .then(jobs => res.status(200).send({ success: true, jobs }))
         .catch(err => next(err));
 }
+
 
 
 async function getJobsWithPagination(page) {
@@ -111,6 +118,48 @@ async function adminGetCompanyJobsWithPagination(page, pageSize, companyProfileI
             pager,
             rows: jobs.rows
         }
+    }
+}
+
+async function adminFilterJobsPagination(industry, employType, salaryRange, search, page) {
+    const pager = {
+        pageSize: 8,
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    if (search == "undefined") {
+        search = '';
+    }
+    if (industry == "undefined") {
+        industry = '';
+    } if (employType == "undefined") {
+        employType = '';
+    }
+    if (salaryRange == "undefined") {
+        salaryRange = '';
+    }
+
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+    
+    queryResult = FiltersJobQueryBuilder(search, employType, industry, salaryRange, offset, limit);
+  
+    const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
+  
+    if (jobs) {
+
+        counts = await jobsService.executeSearchQuery(queryResult.count);
+        //console.log(counts)
+        if (counts) {
+            pager.totalItems = Object.values(counts[0])[0];
+            //console.log(counts)
+            pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+        }
+        return {
+            pager,
+            rows: jobs
+        };
     }
 }
 
@@ -269,6 +318,41 @@ function searchByLocation(req, res, next) {
         .catch(err => next(err));
 }
 
+function getAllApplications(req, res, next) {
+    getAllApplicationsWithPaginations(req.query.page || 1)
+        .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
+
+async function getAllApplicationsWithPaginations(page) {
+
+       const pager = {
+        pageSize: 6,
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
+    const applications = await jobsService.getAllApplications(offset, limit);
+    //console.log(applications)
+    if (applications) {
+
+        const applicationsCount = await jobsService.getAllApplicationsCount();
+        if(applicationsCount){
+            pager.totalItems = Object.values(applicationsCount[0])[0];
+            pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+        }
+
+        return {
+            pager,
+            rows: applications
+        };
+    }
+}
 
 async function getSearchInCity(search, cityName, page) {
 
@@ -701,6 +785,39 @@ async function filterApplication(userId, jobId, applicantId) {
     return false;
 }
 
+
+function FiltersJobQueryBuilder(search, employType, industry, salaryRange, offset, limit) {
+    let query = ``;
+    let haveWhere = false;
+    if (employType != "") {
+        query = query + ` where employmentType='${employType}'`;
+        haveWhere = true;
+    } if (industry != "") {
+        if (haveWhere) {
+            query = query + ` and industry='${industry}'`;
+        } else {
+            query = query + ` where industry='${industry}'`;
+            haveWhere = true;
+        }
+    }
+    if (salaryRange != "") {
+        if (haveWhere) {
+            query = query + ` and salaryRange=${salaryRange}`;
+        } else {
+            query = query + ` where salaryRange=${salaryRange}`;
+            haveWhere = true;
+        }
+    }
+    if (haveWhere) {
+        query = query + ` and (jobTitle like '%${search}%' or companyName like '${search}%')`;
+    } else {
+        query = query + ` where (jobTitle like '%${search}%' or companyName like '${search}%')`;
+    }
+    let selectQuery = `select * from view_companies_jobs_search ` + query + ` LIMIT ${offset},${limit}`;
+    let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search` + query + ` LIMIT ${offset},${limit}`;
+    return { selectQuery: selectQuery, count: QueryCount };
+}
+
 module.exports = {
     getAllJobs,
     addJob,
@@ -728,6 +845,8 @@ module.exports = {
     searchCities,
     getCompanyApplicant,
     hireJobApplication,
-    isHired
+    isHired,
+    adminGetAllCompanyJobFilters,
+    getAllApplications
 
 }

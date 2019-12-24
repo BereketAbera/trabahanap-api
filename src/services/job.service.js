@@ -163,6 +163,14 @@ function getJobsInLocationsByKey(search,latitude,longitude,distance){
     return  sequelize.query(`SELECT *, ( 6371 * acos( cos( radians(${latitude}) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(${longitude}) ) + sin( radians(${latitude}) ) * sin( radians( latitude ) ) ) ) AS distance FROM view_companies_jobs_search WHERE (industry like '%${search}%') or (jobTitle like '%${search}%') or (companyName like '${search}%') or (companyDescription like '%${search}%') or (cityName like '%${search}%') HAVING distance < ${distance} ORDER BY distance LIMIT 0 , 20;`,{ type: sequelize.QueryTypes.SELECT })   
 }
 
+function getAllApplications(offset, limit){
+    return sequelize.query(`SELECT * from view_job_applications_applicant order by createdAt DESC LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
+}
+
+function getAllApplicationsCount(){
+    return sequelize.query(`SELECT COUNT(*) from view_job_applications_applicant`,{ type: sequelize.QueryTypes.SELECT })  
+}
+
 function saveJobForLaterReview(ApplicantProfileId, JobId) {
     return JobLaterReview.create({ ApplicantProfileId, JobId }).catch(err => console.log(err));
 }
@@ -221,6 +229,8 @@ module.exports = {
     getJobsInLocationsByKey,
     getCompanyAllApplicant,
     getHiredApplicant,
-    executeSearchQuery
+    executeSearchQuery,
+    getAllApplications,
+    getAllApplicationsCount
     // getApplicantApplication
 }
