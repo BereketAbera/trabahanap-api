@@ -20,7 +20,7 @@ module.exports = function constractStafferEmail(firstName, email, token){
 			<tr>
 	 
 				<td style="margin:0;padding:5px 15px;color:#0e0d0d;font-size:18px;font-family:Verdana" align="left" valign="middle">
-				Your company is one step away to utilize TrabaHanap.com. Please click the button below to verify your company's email address and reset your password. By confirming your account, future Trabahanap notifications will be sent to this email.
+				Welcome to Trabahanap.com. Please click the button below to verify your email address and reset your password. By confirming your account, future Trabahanap notifications will be sent to this email.
 				</td>
 			</tr>
 			<tr>
