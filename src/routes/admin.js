@@ -31,4 +31,4 @@ app.get('/jobs', jobsController.adminGetAllJobs);
 
 app.get('/filter/jobs',jobsController.adminGetAllCompanyJobFilters);
 app.get('/filter/applications',jobsController.adminGetAllApplicationsFilters);
-// app.get('/filter/employers',jobsController.adminGetAllEmployersFilters);
+app.get('/filter/employers',jobsController.adminGetAllEmployersFilters);

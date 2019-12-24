@@ -43,15 +43,17 @@ function adminGetAllCompanyJobFilters(req, res, next) {
         .catch(err => next(err));
 }
 
+function adminGetAllEmployersFilters(req, res, next) {
+    adminFilterEmployersPagination(req.query.companyName || '', req.query.industry || '', req.query.page || 1)
+        .then(jobs => res.status(200).send({ success: true, jobs }))
+        .catch(err => next(err));
+}
+
 function adminGetAllJobs(req, res, next) {
     getJobsWithPagination(req.query.page || 1)
         .then(jobs => res.status(200).send({ success: true, jobs }))
         .catch(err => next(err));
 }
-
-
-
-
 
 function addJob(req, res, next) {
     const valid = validateJob(req.body);
@@ -114,6 +116,7 @@ function getFilteredJobWithApplications(req, res, next) {
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
+
 
 function getJobApplicants(req, res, next) {
     getEmployerGetJobApplicants(req.params.id, req.user.sub)
@@ -222,7 +225,7 @@ function adminGetAllApplicationsFilters(req, res, next) {
 
 
 
-async function adminFilterApplicationsPagination(applicantName,jobTitle,companyName,hired,page) {
+async function adminFilterApplicationsPagination(applicantName, jobTitle, companyName, hired, page) {
     const pager = {
         pageSize: 6,
         totalItems: 0,
@@ -232,7 +235,7 @@ async function adminFilterApplicationsPagination(applicantName,jobTitle,companyN
     const offset = (page - 1) * pager.pageSize;
     const limit = pager.pageSize;
 
-    queryResult = filterApplicationsBuilder(applicantName || '', jobTitle || '', companyName || '', hired | '', offset || 0, limit|| 6);
+    queryResult = filterApplicationsBuilder(applicantName || '', jobTitle || '', companyName || '', hired | '', offset || 0, limit || 6);
     console.log(queryResult)
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
     if (jobs) {
@@ -249,7 +252,31 @@ async function adminFilterApplicationsPagination(applicantName,jobTitle,companyN
 
 }
 
+async function adminFilterEmployersPagination(companyName,industry,page){
+    const pager = {
+        pageSize: 6,
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
 
+    queryResult = filterEmployerQueryBuilder(companyName || '', industry || '', offset || 0, limit || 6);
+    console.log(queryResult)
+    const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
+    if (jobs) {
+        counts = await jobsService.executeSearchQuery(queryResult.count);
+        if (counts) {
+            pager.totalItems = Object.values(counts[0])[0];
+            pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+        }
+        return {
+            pager,
+            rows: jobs
+        };
+    } 
+}
 
 async function getJobsWithPagination(page) {
     const pager = {
@@ -852,7 +879,7 @@ function FiltersJobQueryBuilder(search, employType, industry, salaryRange, offse
     return { selectQuery: selectQuery, count: QueryCount };
 }
 
-function filterApplicationsBuilder(applicantName, jobTitle,companyName, hired, offset, limit) {
+function filterApplicationsBuilder(applicantName, jobTitle, companyName, hired, offset, limit) {
     let query = ``;
     let haveWhere = false;
     if (applicantName != "") {
@@ -887,6 +914,26 @@ function filterApplicationsBuilder(applicantName, jobTitle,companyName, hired, o
     return { selectQuery: selectQuery, count: QueryCount };
 }
 
+function filterEmployerQueryBuilder(companyName,industry,offset,limit){
+    let query = ``;
+    let haveWhere = false;
+    if (companyName != "") {
+        query = query + ` where (companyName like '%${companyName}%' or companyDescription like '%${companyName}%')`;
+        haveWhere = true;
+    } if (industry != "") {
+        if (haveWhere) {
+            query = query + ` and industry like '%${industry}%'`;
+        } else {
+            query = query + ` where industry like '%${industry}%'`;
+            haveWhere = true;
+        }
+    }
+   
+    let selectQuery = `select * from company_profiles ` + query + ` LIMIT ${offset},${limit}`;
+    let QueryCount = `SELECT COUNT(*) FROM company_profiles` + query;
+    return { selectQuery: selectQuery, count: QueryCount };
+}
+
 module.exports = {
     getAllJobs,
     addJob,
@@ -917,6 +964,7 @@ module.exports = {
     isHired,
     adminGetAllCompanyJobFilters,
     getAllApplications,
-    adminGetAllApplicationsFilters
+    adminGetAllApplicationsFilters,
+    adminGetAllEmployersFilters
 
 }
