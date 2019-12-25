@@ -170,6 +170,13 @@ function getAllApplications(offset, limit){
 function getAllApplicationsCount(){
     return sequelize.query(`SELECT COUNT(*) from view_job_applications_applicant`,{ type: sequelize.QueryTypes.SELECT })  
 }
+function getCompanyApplications(compId,offset, limit){
+    return sequelize.query(`SELECT * from view_job_applications_applicant where companyProfileId='${compId}' order by createdAt DESC LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
+}
+
+function getCompanyApplicationsCount(compId){
+    return sequelize.query(`SELECT COUNT(*) from view_job_applications_applicant where companyProfileId='${compId}'`,{ type: sequelize.QueryTypes.SELECT })  
+}
 
 function saveJobForLaterReview(ApplicantProfileId, JobId) {
     return JobLaterReview.create({ ApplicantProfileId, JobId }).catch(err => console.log(err));
@@ -231,6 +238,9 @@ module.exports = {
     getHiredApplicant,
     executeSearchQuery,
     getAllApplications,
-    getAllApplicationsCount
+    getAllApplicationsCount,
+    getCompanyApplications,
+    getCompanyApplicationsCount
+
     // getApplicantApplication
 }
