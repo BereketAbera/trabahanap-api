@@ -39,8 +39,8 @@ async function editJobById(id, newJob) {
 async function getJobById(id) {
     return Job.findOne({ where: { id }, include: [{ model: CompanyProfile }, { model: Location }] }).catch(err => console.log(err));
 }
-async function getHiredApplicant(ApplicantProfileId){
-    return JobApplication.findOne({ where: { ApplicantProfileId } }).catch(err => console.log(err));
+async function getHiredApplicant(ApplicantProfileId,jobId){
+    return JobApplication.findOne({ where: { ApplicantProfileId, jobId } }).catch(err => console.log(err));
 }
 
 function getApplicationByProfileIdAndJobId(JobId, ApplicantProfileId) {
