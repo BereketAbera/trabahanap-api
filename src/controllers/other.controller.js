@@ -12,6 +12,17 @@ const CONSTANTS = require('../../constants');
 const bcryptjs = require('bcryptjs');
 sgMail.setApiKey(CONSTANTS.SENDGRID_KEY);
 
+function getAdminDashboardCounts(req, res, next) {
+    getAdminStats(req.user.sub)
+        .then(stats => res.status(200).send({ success: true, stats}))
+        .catch(err => next(err));
+}
+
+function getEmployerDashboardCounts(req, res, next) {
+    getEmployerStats(req.user.sub)
+        .then(stats => res.status(200).send({ success: true, stats}))
+        .catch(err => next(err));
+}
 
 function getAllIndustries(req, res, next) {
     getIndutries()
@@ -220,6 +231,23 @@ function addStaffsCompany(req, res, next) {
     adminAddCompanyStaffs(req.body, req.params.companyProfileId)
         .then(staffs => staffs ? res.status(200).send({ success: true, staffs }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
         .catch(err => next(err));
+}
+
+async function getAdminStats(userId) {
+    const user = await userService.getUserById(userId);
+    if(user && (user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
+        const stats = await otherService.getAdminStats();
+        if(stats) { return stats }
+    }
+}
+
+async function getEmployerStats(userId) {
+    const user = await userService.getUserById(userId);
+    
+    if(user) {
+        const stats = await otherService.getEmployerStats(user.companyProfileId);
+        if(stats) { return stats }
+    }
 }
 
 async function getIndutries() {
@@ -588,6 +616,8 @@ function advancedSearchQueryBuilder(search, employType, industry, salaryRange, c
 }
 
 module.exports = {
+    getAdminDashboardCounts,
+    getEmployerDashboardCounts,
     getAllIndustries,
     addEmpIssue,
     getEmpIssues,

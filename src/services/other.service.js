@@ -1,15 +1,33 @@
 const {
-    Indutry,
-    Issue,
-    Token,
-    User,
+    Indutry, Issue,
+    Token, User,
+    Job, JobApplication,
     CompanyProfile,
     ApplicantProfile,
     IssueResponse
 } = require('../models');
+const jobService = require('./job.service');
 
 const ROLE = require('../_helpers/role');
 const sequelize = require('../database/connection');
+
+async function getAdminStats() {
+    let employers = await CompanyProfile.count({ where: { verified: true }});
+    let applicants = await User.count({ where: { role: ROLE.APPLICANT }});
+    let jobs = await Job.count();
+    let applications = await sequelize.query(`SELECT COUNT(*) FROM view_filtered_job_applications AS count`, { type: sequelize.QueryTypes.SELECT });
+
+    return { employers, applicants, jobs, applications: Object.values(applications[0])[0] }
+}
+
+async function getEmployerStats(CompanyProfileId) {
+    let jobCount = await Job.count({ where: {CompanyProfileId}});
+    let staffCount = await User.count({ where: {CompanyProfileId, role: ROLE.STAFFER, emailVerified: true}});
+    let applications = await JobApplication.count({ where: {CompanyProfileId}});
+    let filtered = await sequelize.query(`SELECT COUNT(*) FROM view_filtered_job_applications AS count WHERE CompanyProfileId='${CompanyProfileId}' `, { type: sequelize.QueryTypes.SELECT })
+    
+    return { jobs: jobCount, staff: staffCount, applications, filtered: Object.values(filtered[0])[0] }
+}
 
 function getAllIndustries(){
     return Indutry.findAll().catch(err => console.log(err));
@@ -92,6 +110,8 @@ function getIssueById(issueId){
 
 
 module.exports = {
+    getAdminStats,
+    getEmployerStats,
     getAllIndustries,
     addIssue,
     getApplicantIssues,

@@ -6,6 +6,7 @@ const otherController = require('../controllers/other.controller');
 const empAutorize = require('../_helpers/empAutorize');
 const ROLE = require('../_helpers/role');
 
+app.get('/counters', otherController.getEmployerDashboardCounts);
 app.get('/locations/:companyProfileId', locationController.getCompanyLocations);
 app.post('/location', locationController.addLocationWithImage);
 
