@@ -6,6 +6,7 @@ const jobsController = require('../controllers/jobs.controller')
 const adminAuthorize = require('../_helpers/adminAuthorize');
 const ROLE = require('../_helpers/role');
 
+app.get('/counters', otherController.getAdminDashboardCounts);
 app.get('/employers', otherController.getEmployers);
 app.post('/employers',userController.admnCreateCompanyProfileWithBusinessLicenseAndLogo);
 app.put('/employers/verify/:id', otherController.verifyEmployer);
