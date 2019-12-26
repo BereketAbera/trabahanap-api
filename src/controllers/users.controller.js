@@ -635,7 +635,7 @@ function editCompanyProfile(req, res, next) {
 }
 
 function getApplicants(req, res, next) {
-    getAllApplicants()
+    getAllApplicants(req.query.page || 1)
         .then(applicants => applicants ? res.status(200).json({ success: true, applicants }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -833,11 +833,27 @@ async function isEmailUnique({ email }) {
     return true;
 }
 
-async function getAllApplicants() {
-    const employers = await userService.getAllApplicants();
-    if (employers) {
-        return employers;
+async function getAllApplicants(page) {
+    const pager = {
+        pageSize: 6,
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
     }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
+    const applicant = await userService.getAllApplicants(offset, limit);
+
+    if (applicant) {
+        pager.totalItems = applicant.count;
+        pager.totalPages = Math.ceil(applicant.count / pager.pageSize);
+        return {
+            pager,
+            rows: applicant.rows
+        }
+    }
+   
 }
 
 function uploadFilePromise(file, bucketName, fileName) {

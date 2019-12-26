@@ -599,9 +599,9 @@ function advancedSearchQueryBuilder(search, employType, industry, salaryRange, c
     }
     if (salaryRange != "") {
         if (haveWhere) {
-            query = query + ` and salaryRange=${salaryRange}`;
+            query = query + ` and salaryRange='${salaryRange}'`;
         } else {
-            query = query + ` where salaryRange=${salaryRange}`;
+            query = query + ` where salaryRange='${salaryRange}'`;
             haveWhere = true;
         }
     }

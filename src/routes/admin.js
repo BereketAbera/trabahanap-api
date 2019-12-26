@@ -33,4 +33,9 @@ app.get('/employers/applicant/:companyProfileId',jobsController.getCompanyApplic
 app.get('/staff/:companyProfileId',otherController.getStaffsCompany);
 app.post('/staff/:companyProfileId',otherController.addStaffsCompany);
 app.get('/jobs', jobsController.adminGetAllJobs);
+
+
 app.get('/filter/jobs',jobsController.adminGetAllCompanyJobFilters);
+app.get('/filter/applications',jobsController.adminGetAllApplicationsFilters);
+app.get('/filter/employers',jobsController.adminGetAllEmployersFilters);
+app.get('/filter/applicants',jobsController.adminGetAllApplicantFilters);
