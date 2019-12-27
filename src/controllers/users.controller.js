@@ -7,6 +7,7 @@ var credentials = new AWS.SharedIniFileCredentials({ profile: 'liguam' });
 AWS.config.credentials = credentials;
 // Set the region 
 AWS.config.update({ region: 'us-west-2' });
+var moment = require('moment');
 // Create S3 service object
 s3 = new AWS.S3({ apiVersion: '2006-03-01' });
 const config = require('../../config.json');
@@ -111,7 +112,7 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
         }
         companyProfile['username'] = companyProfile.email;
 
-        const valid_user = validateUser({ ...companyProfile, password: '1234',username:companyProfile.email });
+        const valid_user = validateUser({ ...companyProfile, password: '1234', username: companyProfile.email });
         if (valid_user != true) {
             res.status(200).json({ success: false, validationError: valid_user });
             return;
@@ -119,7 +120,7 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
 
         var unique = false;
         isEmailUnique(companyProfile).then(data => {
-            unique = data; 
+            unique = data;
             if (unique != true) {
                 res.status(200).json({ success: false, Error: "email must be unique" });
                 return;
@@ -187,7 +188,7 @@ async function adminSignUpEmployerUser(body) {
         const saveToken = await otherService.saveToken(token, body.email);
         const { email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile } = { ...body };
         const user = await userService.createUser({ email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile });
-      
+
         if (saveToken && user) {
             const message = construct_employer_email(body.email, token);
             sgMail.send(message);
@@ -640,6 +641,53 @@ function getApplicants(req, res, next) {
         .catch(err => next(err));
 }
 
+function deactivateApplicant(req, res, next) {
+    deactivateApplicantById(req.params.id)
+        .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
+function getApplicantById(req, res, next) {
+    getApplicantProfileByUserId(req.params.id)
+        .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
+
+async function getApplicantProfileByUserId(id){
+    const applicant = userService.getApplicantProfileByUserId(id);
+    if(applicant){
+        return applicant;
+    }
+
+}
+
+async function deactivateApplicantById(id) {
+    //console.log(id);
+    const user = await userService.getUserById(id);
+    if (user.active) {
+        const deactivated = await userService.updateUserField(0, 'active', id);
+        const deletedAt = moment().format();
+        const deleteDate = await userService.updateUserField(deletedAt, 'deletedAt', id);
+        if (deleteDate[0] > 0 && deactivated[0] > 0) {
+            return true;
+        }
+    } else {
+        const deactivated = await userService.updateUserField(1, 'active', id);
+        const deletedAt = moment().format();
+        const deleteDate = await userService.updateUserField(deletedAt, 'deletedAt', id);
+        if (deleteDate[0] > 0 && deactivated[0] > 0) {
+            return true;
+        }
+
+    }
+
+
+    if (deactivated && user) {
+        console.log(user)
+        return user;
+    }
+}
 
 async function authenticateUsers({ email, password }) {
     const user = await userService.getUserByEmail(email);
@@ -676,7 +724,6 @@ async function signUpUserApplicant(body) {
     }
 
 }
-
 
 async function signUpUserApplicantFromAdmin(body) {
     const unique = await isEmailUnique(body);
@@ -765,7 +812,7 @@ async function createUserApplicantProfileAdmin(body) {
                 const newApplicantProfile = await userService.getApplicantById(appProfile.id);
                 const token = uuidv4();
                 const saveToken = await otherService.saveToken(token, user.email);
-                if(newApplicantProfile && saveToken){
+                if (newApplicantProfile && saveToken) {
                     const message = constructApplicantEmail(user.email, token);
                     sgMail.send(message);
                     return newApplicantProfile;
@@ -853,7 +900,7 @@ async function getAllApplicants(page) {
             rows: applicant.rows
         }
     }
-   
+
 }
 
 function uploadFilePromise(file, bucketName, fileName) {
@@ -897,5 +944,7 @@ module.exports = {
     changeEmployerPassword,
     addNewEmployerPassword,
     createApplicant,
-    getApplicants
+    getApplicants,
+    deactivateApplicant,
+    getApplicantById
 }

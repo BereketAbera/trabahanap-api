@@ -20,7 +20,10 @@ app.get('/staff', adminAuthorize(ROLE.ADMIN), otherController.getAdminStaff);
 
 app.post('/applicants', userController.createApplicant);
 app.get('/applicants', userController.getApplicants);
+app.put('/applicants/:id',userController.deactivateApplicant);
+app.get('/applicant/:id',userController.getApplicantById);
 app.get('/applications', jobsController.getAllApplications);
+
 
 app.post('/location', locationController.addLocationWithImage);
 app.post('/jobs/:companyProfileId', jobsController.adminAddJob);
