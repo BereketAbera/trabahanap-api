@@ -544,6 +544,8 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
         totalPages: 0,
         currentPage: parseInt(page)
     }
+
+    console.log(cityName,employType,industry,salaryRange,search,page,'asd')
     if (cityName == "undefined"){
         cityName = '';
     }
@@ -555,11 +557,11 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
     }
 
     //console.log(search, employType, industry, cityName, page)
-    const offset = (page - 2) * pager.pageSize;
+    const offset = (page - 1) * pager.pageSize;
 
     const limit = pager.pageSize;
 
-    queryResult = advancedSearchQueryBuilder(search, employType, industry, salaryRange, cityName, offset, limit);
+    queryResult = advancedSearchQueryBuilder(search || '', employType || '', industry || '', salaryRange || '', cityName || '', offset || 0, limit || 8 );
     //console.log(queryResult.selectQuery)
    // console.log(queryResult.count);
 

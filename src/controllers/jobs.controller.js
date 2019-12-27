@@ -218,7 +218,7 @@ function searchCities(req, res, next) {
 }
 
 function searchByCity(req, res, next) {
-    getSearchInCity(req.query.key || '', req.query.city || '', req.query.page || 1)
+    getSearchInCity(req.query.key || '', req.query.cityName || '', req.query.page || 1)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -578,7 +578,7 @@ async function getCompanyApplicationsWithPaginations(user_id, page) {
 }
 
 async function getSearchInCity(search, cityName, page) {
-
+    console.log(cityName,"city");
     const pager = {
         pageSize: 8,
         totalItems: 0,
@@ -590,13 +590,13 @@ async function getSearchInCity(search, cityName, page) {
 
 
     if (cityName == '' && search == '') {
-        //console.log('BOTH NO')
+        console.log('BOTH NO')
         const jobs = await jobsService.searchAll(offset, limit);
         //console.log(jobs)
         if (jobs) {
 
             const jobscount = await jobsService.getJobsWithOffsetAndLimit(offset, limit);
-            console.log(jobscount)
+            //console.log(jobscount)
             pager.totalItems = jobscount.count;
             pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
             return {
@@ -605,7 +605,7 @@ async function getSearchInCity(search, cityName, page) {
             };
         }
     } else if (cityName == '' && !(search == '')) {
-        //console.log("no city")
+        console.log("no city")
         const jobs = await jobsService.searchInAll(search, offset, limit);
         if (jobs) {
             const jobscount = await jobsService.countsearchAll(search, cityName);
@@ -617,7 +617,7 @@ async function getSearchInCity(search, cityName, page) {
             };
         }
     } else if (cityName != '' && (search == '')) {
-        //console.log("no search")
+        console.log("no search")
         const jobs = await jobsService.searchAllInCity(cityName, offset, limit);
         if (jobs) {
             const jobscount = await jobsService.countsearchAllInCity(search, cityName);
@@ -631,7 +631,7 @@ async function getSearchInCity(search, cityName, page) {
 
     } else if (cityName != '' && (search != '')) {
         //console.log(cityName)
-        //console.log('both')
+        console.log('both')
         const jobs = await jobsService.searchInCity(search, cityName, offset, limit);
         const jobscount = await jobsService.countsearchInCity(search, cityName);
         pager.totalItems = Object.values(jobscount[0])[0];
