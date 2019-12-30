@@ -14,13 +14,13 @@ sgMail.setApiKey(CONSTANTS.SENDGRID_KEY);
 
 function getAdminDashboardCounts(req, res, next) {
     getAdminStats(req.user.sub)
-        .then(stats => res.status(200).send({ success: true, stats}))
+        .then(stats => res.status(200).send({ success: true, stats }))
         .catch(err => next(err));
 }
 
 function getEmployerDashboardCounts(req, res, next) {
     getEmployerStats(req.user.sub)
-        .then(stats => res.status(200).send({ success: true, stats}))
+        .then(stats => res.status(200).send({ success: true, stats }))
         .catch(err => next(err));
 }
 
@@ -37,7 +37,7 @@ function searchIndustry(req, res, next) {
 }
 
 function advancedSearchJob(req, res, next) {
-    getAdvancedSearched(req.query.search || "", req.query.et || "", req.query.industry || "", req.query.sr || "", req.query.ct || "", req.query.page || 1)
+    getAdvancedSearched(req.query.search || "", req.query.et || "", req.query.industry || "", req.query.sr || "", req.query.ct || "", req.query.pwd || 1, req.query.page || 1)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -235,18 +235,18 @@ function addStaffsCompany(req, res, next) {
 
 async function getAdminStats(userId) {
     const user = await userService.getUserById(userId);
-    if(user && (user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
+    if (user && (user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
         const stats = await otherService.getAdminStats();
-        if(stats) { return stats }
+        if (stats) { return stats }
     }
 }
 
 async function getEmployerStats(userId) {
     const user = await userService.getUserById(userId);
-    
-    if(user) {
+
+    if (user) {
         const stats = await otherService.getEmployerStats(user.companyProfileId);
-        if(stats) { return stats }
+        if (stats) { return stats }
     }
 }
 
@@ -537,7 +537,7 @@ async function getSearchedIndustry(search) {
 
 }
 
-async function getAdvancedSearched(search, employType, industry, salaryRange, cityName, page) {
+async function getAdvancedSearched(search, employType, industry, salaryRange, cityName, pwd, page) {
     const pager = {
         pageSize: 8,
         totalItems: 0,
@@ -545,15 +545,15 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
         currentPage: parseInt(page)
     }
 
-    console.log(cityName,employType,industry,salaryRange,search,page,'asd')
-    if (cityName == "undefined"){
+    console.log(cityName, employType, industry, salaryRange, search, page, pwd, 'asd')
+    if (cityName == "undefined") {
         cityName = '';
     }
-    if(industry=="undefined"){ 
-        industry='';
+    if (industry == "undefined") {
+        industry = '';
     }
-    if(salaryRange=="undefined") {
-        salaryRange='';
+    if (salaryRange == "undefined") {
+        salaryRange = '';
     }
 
     //console.log(search, employType, industry, cityName, page)
@@ -561,19 +561,16 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
 
     const limit = pager.pageSize;
 
-    queryResult = advancedSearchQueryBuilder(search || '', employType || '', industry || '', salaryRange || '', cityName || '', offset || 0, limit || 8 );
-    //console.log(queryResult.selectQuery)
-   // console.log(queryResult.count);
+    queryResult = advancedSearchQueryBuilder(search || '', employType || '', industry || '', salaryRange || '', cityName || '', pwd, offset || 0, limit || 8);
+    console.log(queryResult)
+    // console.log(queryResult.count);
 
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
     //console.log(jobs)
     if (jobs) {
-        //console.log('here in')
         counts = await jobsService.executeSearchQuery(queryResult.count);
-        //console.log(counts)
-        if(counts){
+        if (counts) {
             pager.totalItems = Object.values(counts[0])[0];
-            //console.log(counts)
             pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
         }
         return {
@@ -581,20 +578,30 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
             rows: jobs
         };
     }
- 
+
 }
 
 
-function advancedSearchQueryBuilder(search, employType, industry, salaryRange, cityName, offset, limit) {
+function advancedSearchQueryBuilder(search, employType, industry, salaryRange, cityName, pwd, offset, limit) {
+    console.log(pwd,'pwd')
     let query = ``;
     let haveWhere = false;
-    if (employType != "") {
-        query = query + ` where employmentType='${employType}'`;
+    if (pwd) {
+        query = query + ` where pwd='${pwd}'`;
         haveWhere = true;
+    }
+    if (employType != "") {
+        if (haveWhere) {
+            query = query + ` and employmentType='${employType}'`;
+            haveWhere = true;
+        } else {
+            query = query + ` where employmentType='${employType}'`;
+        }
+
     } if (industry != "") {
         if (haveWhere) {
             query = query + ` and industry='${industry}'`;
-        }else{
+        } else {
             query = query + ` where industry='${industry}'`;
             haveWhere = true;
         }
@@ -612,9 +619,9 @@ function advancedSearchQueryBuilder(search, employType, industry, salaryRange, c
     } else {
         query = query + ` where cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%')`;
     }
-    let selectQuery=`select * from view_companies_jobs_search `+query+` LIMIT ${offset},${limit}`;
-    let QueryCount=`SELECT COUNT(*) FROM view_companies_jobs_search`+query+` LIMIT ${offset},${limit}`;
-    return {selectQuery:selectQuery,count:QueryCount};
+    let selectQuery = `select * from view_companies_jobs_search ` + query + ` LIMIT ${offset},${limit}`;
+    let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search` + query + ` LIMIT ${offset},${limit}`;
+    return { selectQuery: selectQuery, count: QueryCount };
 }
 
 module.exports = {
