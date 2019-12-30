@@ -155,7 +155,7 @@ function getJobApplicant(req, res, next) {
 }
 
 function isHired(req, res, next) {
-    getIsHired(req.params.id,req.params.jobId)
+    getIsHired(req.params.id, req.params.jobId)
         .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -578,7 +578,7 @@ async function getCompanyApplicationsWithPaginations(user_id, page) {
 }
 
 async function getSearchInCity(search, cityName, page) {
-    console.log(cityName,"city");
+    console.log(cityName, "city");
     const pager = {
         pageSize: 8,
         totalItems: 0,
@@ -588,63 +588,20 @@ async function getSearchInCity(search, cityName, page) {
     const offset = (page - 1) * pager.pageSize;
     const limit = pager.pageSize;
 
-
-    if (cityName == '' && search == '') {
-        console.log('BOTH NO')
-        const jobs = await jobsService.searchAll(offset, limit);
-        //console.log(jobs)
-        if (jobs) {
-
-            const jobscount = await jobsService.getJobsWithOffsetAndLimit(offset, limit);
-            //console.log(jobscount)
-            pager.totalItems = jobscount.count;
+    queryResult = searchQueryBuilder(search || '', cityName || '', offset, limit);
+    console.log(queryResult)
+    const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
+   
+    if (jobs) {
+        counts = await jobsService.executeSearchQuery(queryResult.count);
+        if (counts) {
+            pager.totalItems = Object.values(counts[0])[0];
             pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
-            return {
-                pager,
-                rows: jobs
-            };
         }
-    } else if (cityName == '' && !(search == '')) {
-        console.log("no city")
-        const jobs = await jobsService.searchInAll(search, offset, limit);
-        if (jobs) {
-            const jobscount = await jobsService.countsearchAll(search, cityName);
-            pager.totalItems = Object.values(jobscount[0])[0];
-            pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
-            return {
-                pager,
-                rows: jobs
-            };
-        }
-    } else if (cityName != '' && (search == '')) {
-        console.log("no search")
-        const jobs = await jobsService.searchAllInCity(cityName, offset, limit);
-        if (jobs) {
-            const jobscount = await jobsService.countsearchAllInCity(search, cityName);
-            pager.totalItems = Object.values(jobscount[0])[0];
-            pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
-            return {
-                pager,
-                rows: jobs
-            };
-        }
-
-    } else if (cityName != '' && (search != '')) {
-        //console.log(cityName)
-        console.log('both')
-        const jobs = await jobsService.searchInCity(search, cityName, offset, limit);
-        const jobscount = await jobsService.countsearchInCity(search, cityName);
-        pager.totalItems = Object.values(jobscount[0])[0];
-        pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
-        if (jobs) {
-            return {
-                pager,
-                rows: jobs
-            };
-        }
-    }
-    else {
-        return {};
+        return {
+            pager,
+            rows: jobs
+        };
     }
 }
 
@@ -887,8 +844,8 @@ async function getEmployerFilteredJobApplicants(jobId, userId) {
     }
 }
 
-async function getIsHired(applicantId,jobId) {
-    const hiredApplicant = await jobsService.getHiredApplicant(applicantId,jobId);
+async function getIsHired(applicantId, jobId) {
+    const hiredApplicant = await jobsService.getHiredApplicant(applicantId, jobId);
     console.log(hiredApplicant)
     if (hiredApplicant) {
         return { hired: hiredApplicant.hired }
@@ -1009,6 +966,25 @@ async function filterApplication(userId, jobId, applicantId) {
     return false;
 }
 
+function searchQueryBuilder(search, cityName, offset, limit) {
+    let query = ``;
+    let haveWhere = false;
+    //query = ` WHERE CompanyProfileId='${CompanyProfileId}'`;
+    if (cityName != "") {
+        query = query + ` where cityName like '%${cityName}%'`;
+        haveWhere=true;
+    } if (search != "") {
+        if (haveWhere) {
+            query = query + ` and (jobTitle like '%${search}%' or companyName like '%${search}%' or industryType like '%${search}%')`;
+        } else {
+            query = query + ` where (jobTitle like '%${search}%' or companyName like '%${search}%' or industryType like '%${search}%')`;
+        }
+    }
+    let selectQuery = `select * from view_companies_jobs_search ` + query + ` LIMIT ${offset},${limit}`;
+    let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search` + query;
+    return { selectQuery: selectQuery, count: QueryCount };
+}
+
 function FiltersJobQueryBuilder(search, employType, industry, salaryRange, offset, limit) {
     let query = ``;
     let haveWhere = false;
@@ -1118,6 +1094,7 @@ function filterApplicantQueryBuilder(name, email, offset, limit) {
     let QueryCount = `SELECT COUNT(*) FROM users` + query;
     return { selectQuery: selectQuery, count: QueryCount };
 }
+
 
 function filterEmployerApplicantionsQueryBuilder(CompanyProfileId, jobtitle, industry, position, offset, limit) {
     let query = ``;

@@ -128,33 +128,34 @@ function getJobsSearch(search) {
     }).catch(err => console.log(err));
 }
 
-function countsearchInCity(search,cityName){
-    return sequelize.query(`SELECT COUNT(*) FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industryType like '${search}%')`,{ type: sequelize.QueryTypes.SELECT})
-}
+// function countsearchInCity(search,cityName){
+//     return sequelize.query(`SELECT COUNT(*) FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industryType like '${search}%')`,{ type: sequelize.QueryTypes.SELECT})
+// }
 
-function countsearchAll(search,cityName){
-    return sequelize.query(`SELECT COUNT(*) FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industryType like '${search}%')`,{ type: sequelize.QueryTypes.SELECT})
-}
+// function countsearchAll(search,cityName){
+//     return sequelize.query(`SELECT COUNT(*) FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industryType like '${search}%')`,{ type: sequelize.QueryTypes.SELECT})
+// }
 
-function countsearchAllInCity(search,cityName){
-    return sequelize.query(`SELECT COUNT(*) FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industryType like '${search}%')`,{ type: sequelize.QueryTypes.SELECT})
-}
+// function countsearchAllInCity(search,cityName){
+//     return sequelize.query(`SELECT COUNT(*) FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industryType like '${search}%')`,{ type: sequelize.QueryTypes.SELECT})
+// }
 
 
-function searchInCity(search,cityName,offset, limit){
-    return sequelize.query(`SELECT * FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industryType like '${search}%') order by createdAt DESC  LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
-}
+// function searchInCity(search,cityName,offset, limit){
+//     return sequelize.query(`SELECT * FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industryType like '${search}%') order by createdAt DESC  LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
+// }
 
-function searchInAll(search,offset, limit){
-    return sequelize.query(`SELECT *  FROM view_companies_jobs_search WHERE (industry like '%${search}%') or (companyName like '%${search}%') OR (jobTitle like '%${search}%') or (employmentType	like '${search}%') OR companyDescription like '%${search}%'  order by createdAt DESC LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
-}
+// function searchInAll(search,offset, limit){
+//     return sequelize.query(`SELECT *  FROM view_companies_jobs_search WHERE (industry like '%${search}%') or (companyName like '%${search}%') OR (jobTitle like '%${search}%') or (employmentType	like '${search}%') OR companyDescription like '%${search}%'  order by createdAt DESC LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
+// }
 
-function searchAllInCity(cityName,offset, limit){
-    return sequelize.query(`SELECT * FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' order by createdAt DESC LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
-}
-function searchAll(offset, limit){
-    return sequelize.query(`SELECT *  FROM view_companies_jobs_search order by createdAt DESC LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
-}
+// function searchAllInCity(cityName,offset, limit){
+//     return sequelize.query(`SELECT * FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' order by createdAt DESC LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
+// }
+
+// function searchAll(offset, limit){
+//     return sequelize.query(`SELECT *  FROM view_companies_jobs_search order by createdAt DESC LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
+// }
 function getJobsInLocations(latitude,longitude,distance){
     return  sequelize.query(`SELECT *, ( 6371 * acos( cos( radians(${latitude}) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(${longitude}) ) + sin( radians(${latitude}) ) * sin( radians( latitude ) ) ) ) AS distance FROM view_companies_jobs_search HAVING distance < ${distance} ORDER BY distance LIMIT 0 , 20;`,{ type: sequelize.QueryTypes.SELECT })   
 }
@@ -225,14 +226,7 @@ module.exports = {
     getCitySearch,
     getCompanySearch,
     getJobsSearch,
-    searchInCity,
-    searchInAll,
-    searchAllInCity,
     getJobsInLocations,
-    countsearchInCity,
-    countsearchAll,
-    countsearchAllInCity,
-    searchAll,
     getJobsInLocationsByKey,
     getCompanyAllApplicant,
     getHiredApplicant,
