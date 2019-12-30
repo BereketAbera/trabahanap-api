@@ -55,9 +55,9 @@ function signUpApplicant(req, res, next) {
 
     req.body.username = req.body.email;
 
-    signUpUserApplicant(req.body)
-        .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'email is not unique' }))
-        .catch(err => next(err));
+    // signUpUserApplicant(req.body)
+    //     .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'email is not unique' }))
+    //     .catch(err => next(err));
 
 }
 

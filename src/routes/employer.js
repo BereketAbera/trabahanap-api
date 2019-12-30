@@ -34,8 +34,9 @@ app.post('/staff/add', empAutorize(ROLE.EMPLOYER), otherController.addStaff)
 app.get('/staff', empAutorize(ROLE.EMPLOYER), otherController.getStaffs)
 
 app.get('/issues', otherController.getEmpIssues);
-// app.get('/issues/:id', otherController.getIssue);
+app.get('/issues/:id', otherController.getEmpIssueById);
 app.post('/issues', otherController.addEmpIssue);
+app.delete('/issue/:id', otherController.deleteEmpIssue);
 
 app.get('/applications',jobsController.getCompanyApplications);
 app.get('/filter/applications',jobsController.getFilterCompanyApplications);

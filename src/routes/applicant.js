@@ -22,3 +22,4 @@ app.put('/profile/:id', userController.editApplicantProfile);
 app.get('/issues', otherController.getIssues);
 app.get('/issues/:id', otherController.getIssue);
 app.post('/issues', otherController.addIssue);
+app.delete('/issue/:id', otherController.deleteAppIssue);

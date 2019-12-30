@@ -48,8 +48,24 @@ function getEmployerIssues(CompanyProfileId){
     return Issue.findAll({where: {CompanyProfileId}, include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
 
+function getReportedIssueById(id) {
+    return Issue.findOne({where: {id}, include: [{model: IssueResponse}]}).catch(err => console.log(err));
+}
+
 function getApplicantIssueById(ApplicantProfileId, id){
     return Issue.findOne({where: {ApplicantProfileId, id}, include: [{model: IssueResponse}]}).catch(err => console.log(err)); 
+}
+
+function getEmployerIssueById(CompanyProfileId, id){
+    return Issue.findOne({where: {CompanyProfileId, id}, include: [{model: IssueResponse}]}).catch(err => console.log(err)); 
+}
+
+function deleteEmployerIssue(CompanyProfileId, id) {
+    return Issue.destroy({where: {CompanyProfileId, id}}).catch(err => console.log(err)); 
+}
+
+function deleteApplicantIssue(ApplicantProfileId, id) {
+    return Issue.destroy({where: {ApplicantProfileId, id}}).catch(err => console.log(err)); 
 }
 
 function saveToken(token, email){
@@ -108,7 +124,6 @@ function getIssueById(issueId){
     return Issue.findOne({where: {id: issueId}}).catch(err => console.log(err));
 }
 
-
 module.exports = {
     getAdminStats,
     getEmployerStats,
@@ -116,7 +131,11 @@ module.exports = {
     addIssue,
     getApplicantIssues,
     getEmployerIssues,
+    deleteEmployerIssue,
+    deleteApplicantIssue,
+    getReportedIssueById,
     getApplicantIssueById,
+    getEmployerIssueById,
     saveToken,
     getToken,
     getTokenEmail,
