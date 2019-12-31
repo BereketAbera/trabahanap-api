@@ -312,6 +312,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
             companyProfile[key] = value;
         })
 
+        //companyProfile ={ ...companyProfile }
         companyProfile = { ...companyProfile, CityId: companyProfile.cityId, RegionId: companyProfile.regionId, CountryId: companyProfile.countryId };
         const valid = validateCompanyProfile(companyProfile);
         if (valid != true) {
@@ -319,6 +320,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
             return;
         }
 
+        console.log("no validation")
 
         var fileLogo = files["companyLogo"];
         var fileLicense = files["businessLicense"];
@@ -330,6 +332,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
                 })
                 .then(data => {
                     companyProfile["businessLicense"] = data.Location;
+                    console.log("lkjds")
                     return createUserCompanyProfile({ ...companyProfile, user_id: req.user.sub });
                 })
                 .then(companyProfile => {
@@ -489,7 +492,7 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
     var fileNameProfilePicture = "";
     var form = new formidable.IncomingForm();
     form.multiples = true;
-
+    console.log('here')
     form.on('fileBegin', function (name, file) {
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         let fileName = '';
@@ -516,16 +519,25 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
             return;
         }
 
+        console.log('after')
+
         var cvFile = files['cv'];
         var profilePictureFile = files['applicantPicture']
-        if (cvFile && profilePictureFile) {
+        if (cvFile) {
             uploadFilePromise(cvFile.path, 'th-applicant-cv', fileNameCV)
                 .then(data => {
+                    console.log(data)
                     applicantProfile['cv'] = data.Location;
-                    return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                    if(profilePictureFile){
+                        return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                    }else{
+                        return uploadFilePromise(cvFile.path, 'th-employer-logo', cvFile)
+
+                    }
                 })
                 .then(data => {
-                    applicantProfile['applicantPicture'] = data.Location;
+                    console.log(data.Location)
+                    //applicantProfile['applicantPicture'] = data.Location;
                     return createUserApplicantProfile(applicantProfile);
                 })
                 .then(applicantProfile => {
@@ -708,8 +720,14 @@ async function authenticateUsers({ email, password }) {
 
                 userWithoutPassword[key] = value;
             });
+
+            if(user.role = 'APPLICANT'){
+                applicantProfile = await userService.getApplicantProfileByUserId(user.id);
+                userWithoutPassword['applicantProfile'] = applicantProfile;
+            }
             return userWithoutPassword;
         }
+
     }
 }
 

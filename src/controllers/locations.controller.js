@@ -28,9 +28,11 @@ function addLocationWithImage(req, res, next) {
     var form = new formidable.IncomingForm();
     form.on('fileBegin', (name, file) => {
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
-        fileName = moment().format("YYYYMMDDHHmmssSS");
-        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + "." + fileExt;
-        localImagePath = file.path;
+        if (name == 'picture') {
+            fileName = moment().format("YYYYMMDDHHmmssSS");
+            file.path = CONSTANTS.baseDir + '/uploads/' + fileName + "." + fileExt;
+            localImagePath = file.path;
+        }
     });
     form.on('file', function (name, file) {
         console.log('Uploaded ' + file.name);
@@ -46,12 +48,21 @@ function addLocationWithImage(req, res, next) {
             return;
         }
         location = { ...location, CityId: location.cityId, RegionId: location.regionId, CountryId: location.countryId }
-        processFileUpload(userId, location, fileName, localImagePath)
-            .then(location => {
-                fs.unlinkSync(localImagePath);
-                res.status(200).send({ success: true, location })
-            })
-            .catch(err => next(err));
+        if (localImagePath != "") {
+            processFileUpload(userId, location, fileName, localImagePath)
+                .then(location => {
+                    fs.unlinkSync(localImagePath);
+                    res.status(200).send({ success: true, location })
+                })
+                .catch(err => next(err));
+        } else {
+            processFileUpload(userId, location, fileName, localImagePath)
+                .then(location => {
+                    res.status(200).send({ success: true, location })
+                })
+                .catch(err => next(err));
+        }
+
     });
 }
 
@@ -217,7 +228,7 @@ async function adminGetLocationsByCompanyProfileId(page, pageSize, companyProfil
     const limit = pager.pageSize;
 
     const location = await locationService.getCompanyLocationsByOffsetAndLimit(offset, limit, companyProfileId).catch(err => console.log(err));
-  
+
     if (location) {
         pager.totalItems = location.count;
         pager.totalPages = Math.ceil(location.count / pager.pageSize);
@@ -231,9 +242,11 @@ async function adminGetLocationsByCompanyProfileId(page, pageSize, companyProfil
 
 
 async function processFileUpload(userId, location, fileName, localImagepath) {
-    const imgObj = await uploadFile(localImagepath, 'th-employer-logo', fileName)
-    // location.bucket = 'th-employer-logo';
-    location.picture = imgObj.Location;
+    if (localImagepath != "") {
+        const imgObj = await uploadFile(localImagepath, 'th-employer-logo', fileName)
+        // location.bucket = 'th-employer-logo';
+        location.picture = imgObj.Location;
+    }
     // location.awsFileKey = fileName;
     return addCompanyLocation(location);
 }

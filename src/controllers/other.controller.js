@@ -55,7 +55,7 @@ function addEmpIssue(req, res, next) {
     var form = new formidable.IncomingForm();
 
     console.log("file extenstion")
-        form.on('fileBegin', (name, file) => {
+    form.on('fileBegin', (name, file) => {
         console.log(file.size, "file extenstion")
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         fileName = moment().format("YYYYMMDDHHmmssSS");
@@ -99,13 +99,16 @@ function addIssue(req, res, next) {
     var form = new formidable.IncomingForm();
     form.on('fileBegin', (name, file) => {
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
-        fileName = moment().format("YYYYMMDDHHmmssSS");
-        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + "." + fileExt;
-        localImagePath = file.path;
+        if (name == 'picture') {
+            fileName = moment().format("YYYYMMDDHHmmssSS");
+            file.path = CONSTANTS.baseDir + '/uploads/' + fileName + "." + fileExt;
+            localImagePath = file.path;
+        }
     });
     form.on('file', function (name, file) {
         console.log('Uploaded ' + file.name);
     });
+
     form.parse(req, function (err, fields, files) {
         _.map(fields, (value, key) => {
             issue[key] = value;
@@ -116,12 +119,21 @@ function addIssue(req, res, next) {
             res.status(200).json({ success: false, validationError: valid });
             return;
         }
-        processFileUpload(userId, issue, fileName, localImagePath, 'applicant')
+        if(localImagePath !=""){
+            processFileUpload(userId, issue, fileName, localImagePath, 'applicant')
             .then(issue => {
                 fs.unlinkSync(localImagePath);
                 res.status(200).send({ success: true, issue })
             })
             .catch(err => next(err));
+        }else{
+            processFileUpload(userId, issue, fileName, localImagePath, 'applicant')
+            .then(issue => {
+                res.status(200).send({ success: true, issue })
+            })
+            .catch(err => next(err));
+        }
+        
     });
 
 }
@@ -312,15 +324,17 @@ function addStaffsCompany(req, res, next) {
 }
 
 async function processFileUpload(userId, issue, fileName, localImagepath, role) {
-    const imgObj = await uploadFile(localImagepath, 'th-employer-logo', fileName)
-    // issue.bucket = 'th-employer-logo';
-    issue.picture = imgObj.Location;
-    // location.awsFileKey = fileName;
-    if(role === 'employer') {
+    if (localImagepath !="") {
+        const imgObj = await uploadFile(localImagepath, 'th-employer-logo', fileName)
+        // issue.bucket = 'th-employer-logo';
+        issue.picture = imgObj.Location;
+    }
+
+    if (role === 'employer') {
         return addEmployerIssue(issue, userId);
     }
-    else if(role === 'applicant') {
-        return addApplicantIssue(issue,userId)
+    else if (role === 'applicant') {
+        return addApplicantIssue(issue, userId)
     }
 }
 
@@ -463,9 +477,9 @@ async function getCompanyDetailsInfo(companyProfileId) {
 
 async function getEmployerIssue(userId, issueId) {
     const user = await userService.getUserById(userId);
-    if(user) {
+    if (user) {
         const issue = await otherService.getEmployerIssueById(user.companyProfileId, issueId);
-        if(issue) {
+        if (issue) {
             return issue;
         }
     }
@@ -473,9 +487,9 @@ async function getEmployerIssue(userId, issueId) {
 
 async function deleteEmployerIssue(userId, issueId) {
     const user = await userService.getUserById(userId);
-    if(user) {
+    if (user) {
         const issue = await otherService.deleteEmployerIssue(user.companyProfileId, issueId);
-        if(issue) {
+        if (issue) {
             return issue;
         }
     }
@@ -483,9 +497,9 @@ async function deleteEmployerIssue(userId, issueId) {
 
 async function deleteApplicantIssue(userId, issueId) {
     const applicant = await userService.getApplicantProfileByUserId(userId);
-    if(applicant) {
+    if (applicant) {
         const issue = await otherService.deleteApplicantIssue(applicant.id, issueId);
-        if(issue) {
+        if (issue) {
             return issue;
         }
     }
@@ -643,7 +657,7 @@ async function getAllReportedIssues() {
 async function getReportedIssueById(id) {
     const issue = await otherService.getReportedIssueById(id);
 
-    if(issue) {
+    if (issue) {
         return issue;
     }
 }
@@ -736,7 +750,7 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
 
 
 function advancedSearchQueryBuilder(search, employType, industry, salaryRange, cityName, pwd, offset, limit) {
-    console.log(pwd,'pwd')
+    console.log(pwd, 'pwd')
     let query = ``;
     let haveWhere = false;
     if (pwd) {

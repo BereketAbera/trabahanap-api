@@ -76,7 +76,7 @@ function validateUser(data){
 function validateApplicantProfile(data){
     const errors = {};
     let valid = true;
-    const fields = ["currentEmployer", "currentOccopation", "address", "gender", "dateOfBirth", "selfDescription", "CityId", "RegionId", "CountryId"];
+    const fields = [ "gender", "dateOfBirth", "selfDescription", "CityId", "RegionId", "CountryId"];
     const keys = _.keys(data);
     fields.map(field => {
         if(keys.includes(field)){
@@ -89,7 +89,7 @@ function validateApplicantProfile(data){
     }
     
     _.map(data, (value, key) => {
-        if(validator.isEmpty(value+'')){
+        if( fields.includes(key) && validator.isEmpty(value+'')){
             errors[key] = `${key} is not valid`;
             valid = false;
         }
@@ -104,7 +104,7 @@ function validateApplicantProfile(data){
 function validateCompanyProfile(data){
     const errors = {};
     let valid = true;
-    const fields = ["zipcode", "companyName", "contactPerson", "contactNumber", "websiteURL", "industryType", "companyDescription", "businessLicenseNumber", "companyAddress", "CityId", "RegionId", "CountryId"];
+    const fields = ["zipcode", "companyName", "contactPerson", "contactNumber", "industryType", "companyDescription", "businessLicenseNumber", "CityId", "RegionId", "CountryId"];
     const keys = _.keys(data);
     fields.map(field => {
         if(keys.includes(field)){
@@ -128,7 +128,7 @@ function validateCompanyProfile(data){
                 errors[key] = `zipcode is not valid`;
                 valid = false;
             }
-        }else if(validator.isEmpty(value + '')){
+        }else if(fields.includes(key) && validator.isEmpty(value + '')){
             errors[key] = `${key} is not valid`;
             valid = false;
         }
@@ -189,7 +189,7 @@ function validateIssue(data){
     }
 
     _.map(data, (value, key) => {
-        if(validator.isEmpty(value + '')){
+        if(fields.includes(key) && validator.isEmpty(value + '')){
             errors[key] = `${key} is not valid`;
             valid = false;
         }
