@@ -22,3 +22,6 @@ app.put('/profile/:id', userController.editApplicantProfile);
 app.get('/issues', otherController.getIssues);
 app.get('/issues/:id', otherController.getIssue);
 app.post('/issues', otherController.addIssue);
+
+app.get('/filter/jobs/saved',jobsController.filterApplicantSavedJobs);
+app.get('/filter/jobs/applications',jobsController.filterApplicantAppliedJobs);

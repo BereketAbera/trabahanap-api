@@ -152,6 +152,17 @@ function getFilteredJobApplicants(req, res, next) {
         .then(applicants => applicants ? res.status(200).json({ success: true, applicants }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
+function filterApplicantSavedJobs(req, res, next) {
+    getFilterApplicantSavedJobs(req.user.sub, req.query.job, req.query.industry, req.query.company, req.query.page || 1)
+        .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
+function filterApplicantAppliedJobs(req, res, next) {
+    getFilterApplicantAppliedJobs(req.user.sub, req.query.job, req.query.industry, req.query.company, req.query.page || 1)
+        .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
 
 function getJobApplicant(req, res, next) {
     getJobApplicantById(req.params.id)
@@ -173,7 +184,7 @@ function getCompanyApplicant(req, res, next) {
 }
 
 function getApplicantAppliedJobs(req, res, next) {
-    getApplicantJobs(req.user.sub)
+    getApplicantJobs(req.user.sub,req.query.page || 1)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -256,7 +267,7 @@ function getFilterCompanyApplications(req, res, next) {
         .catch(err => next(err));
 }
 
-async function getFilterJobsWithPaginations(user_id,jobtitle,industry,position,page){
+async function getFilterJobsWithPaginations(user_id, jobtitle, industry, position, page) {
     const pager = {
         pageSize: 6,
         totalItems: 0,
@@ -287,6 +298,70 @@ async function getFilterJobsWithPaginations(user_id,jobtitle,industry,position,p
     }
 }
 
+
+async function getFilterApplicantAppliedJobs(user_id, jobtitle, industry, company, page) {
+    const pager = {
+        pageSize: 6,
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    //console.log("what")
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+    //console.log(user_id)
+    const user = await userService.getApplicantProfileByUserId(user_id);
+    //console.log(user)
+    if (user) {
+        console.log('here')
+        queryResult = filterApplicantJobsQueryBuilder('view_applicant_applied_jobs',user.id || '', jobtitle || '', industry || '', company || '', offset || 0, limit || 6);
+        console.log(queryResult)
+        const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
+        if (jobs) {
+            counts = await jobsService.executeSearchQuery(queryResult.count);
+            if (counts) {
+                pager.totalItems = Object.values(counts[0])[0];
+                pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+            }
+            return {
+                pager,
+                rows: jobs
+            };
+        }
+    }
+}
+async function getFilterApplicantSavedJobs(user_id, jobtitle, industry, company, page) {
+    const pager = {
+        pageSize: 6,
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+ 
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+    console.log(user_id)
+    const user = await userService.getApplicantProfileByUserId(user_id);
+    console.log(user)
+    if (user) { 
+        queryResult = filterApplicantJobsQueryBuilder('view_jobs_saved_review_later',user.id || '', jobtitle || '', industry || '', company || '', offset || 0, limit || 6);
+        //console.log(queryResult)
+        const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
+        if (jobs) {
+            counts = await jobsService.executeSearchQuery(queryResult.count);
+            if (counts) {
+                pager.totalItems = Object.values(counts[0])[0];
+                pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+            }
+            return {
+                pager,
+                rows: jobs
+            };
+        }
+    }
+
+
+}
 async function filterApplicationsPagination(user_id, applicantName, jobTitle, companyName, hired, page) {
     const pager = {
         pageSize: 6,
@@ -889,10 +964,19 @@ async function getJobApplicantById(applicantId) {
     }
 }
 
-async function getApplicantJobs(userId) {
+async function getApplicantJobs(userId,page) {
+    const pager = {
+        pageSize: 6,
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
     const applicant = await userService.getApplicantProfileByUserId(userId);
     if (applicant) {
-        const jobs = await jobsService.getApplicantJobs(applicant.id);
+        const jobs = await jobsService.getApplicantJobs(applicant.id,offset,limit);
         if (jobs[0]) {
             return jobs[0];
         }
@@ -1175,6 +1259,26 @@ function filterEmployerJobsQueryBuilder(CompanyProfileId, jobtitle, industry, po
     return { selectQuery: selectQuery, count: QueryCount };
 }
 
+function filterApplicantJobsQueryBuilder(table,applicantProfileId, jobtitle, industry, company, offset, limit) {
+    let query = ``;
+    query = ` WHERE ApplicantProfileId='${applicantProfileId}'`;
+    if (jobtitle != "") {
+        query = query + ` and jobTitle like '%${jobtitle}%'`;
+    } if (industry != "") {
+        query = query + ` and industry like '%${industry}%'`;
+
+    } if (company != "") {
+        query = query + ` and companyName like '%${company}%'`;
+
+    }
+
+    let selectQuery = `select * from ${table}` + query + ` LIMIT ${offset},${limit}`;
+    let QueryCount = `SELECT COUNT(*) FROM ${table}` + query;
+    return { selectQuery: selectQuery, count: QueryCount };
+}
+
+
+
 module.exports = {
     getAllJobs,
     addJob,
@@ -1212,5 +1316,7 @@ module.exports = {
     getCompanyApplications,
     getFilterCompanyApplications,
     filterAllFilteredJobsApplications,
-    filterAllJobs
+    filterAllJobs,
+    filterApplicantSavedJobs,
+    filterApplicantAppliedJobs
 }

@@ -91,12 +91,12 @@ function getFilteredJobApplicants(jobId) {
     return sequelize.query(`SELECT a.id, a.currentEmployer, a.gender, a.dateOfBirth, a.address, u.email, ja.id as applicationId, u.firstName, u.lastName from job_applications ja LEFT JOIN applicant_profiles a ON a.id = ja.applicantProfileId LEFT JOIN users u ON u.id = a.userId where ja.jobId = '${jobId}' AND ja.filtered = true`);
 }
 
-function getApplicantJobs(applicantId) {
-    return sequelize.query(`SELECT j.id, j.jobTitle, j.jobDescription, j.industry, j.position, j.educationAttainment, j.salaryRange, j.employmentType, j.vacancies, j.additionalQualifications, j.applicationEndDate, j.applicationStartDate, j.companyProfileId, cp.companyName, cp.contactNumber, cp.industryType, cp.companyLogo, cp.companyAddress, ja.applicationDate from job_applications ja LEFT JOIN jobs j ON j.id = ja.jobId LEFT JOIN company_profiles cp ON cp.id = j.companyProfileId where ja.applicantProfileId = '${applicantId}'`);
+function getApplicantJobs(applicantId,offset,limit) {
+    return sequelize.query(`SELECT * from view_applicant_applied_jobs where applicantProfileId = '${applicantId}' order by createdAt DESC LIMIT ${offset},${limit}`);
 }
 
 function getApplicantSavedJobs(applicantId) {
-    return sequelize.query(`SELECT j.id, j.jobTitle, j.jobDescription, j.industry, j.position, j.educationAttainment, j.salaryRange, j.employmentType, j.vacancies, j.additionalQualifications, j.applicationEndDate, j.applicationStartDate, j.companyProfileId, cp.companyName, cp.contactNumber, cp.industryType, cp.companyLogo, cp.companyAddress from job_later_reviews jl LEFT JOIN jobs j ON j.id = jl.jobId LEFT JOIN company_profiles cp ON cp.id = j.companyProfileId where jl.applicantProfileId = '${applicantId}'`);
+    return sequelize.query(`SELECT j.id, j.jobTitle, j.jobDescription, j.industry, j.position, j.educationAttainment, j.salaryRange, j.employmentType, j.vacancies, j.additionalQualifications, j.applicationEndDate, j.applicationStartDate, jl.applicantProfileId,j.companyProfileId, cp.companyName, cp.contactNumber, cp.industryType, cp.companyLogo, cp.companyAddress from job_later_reviews jl LEFT JOIN jobs j ON j.id = jl.jobId LEFT JOIN company_profiles cp ON cp.id = j.companyProfileId where jl.applicantProfileId = '${applicantId}'`);
 }
 
 function getCitySearch(search) {
