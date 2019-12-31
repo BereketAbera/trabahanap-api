@@ -25,3 +25,4 @@ app.post('/issues', otherController.addIssue);
 
 app.get('/filter/jobs/saved',jobsController.filterApplicantSavedJobs);
 app.get('/filter/jobs/applications',jobsController.filterApplicantAppliedJobs);
+app.delete('/issue/:id', otherController.deleteAppIssue);

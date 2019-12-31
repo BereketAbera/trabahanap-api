@@ -3,6 +3,8 @@ const userService = require('../services/user.service');
 const jobsService = require('../services/job.service')
 const ROLE = require('../_helpers/role');
 
+var fs = require('fs');
+var path = require('path');
 const { validateIssue } = require('../_helpers/validators');
 const constractStafferEmail = require('../_helpers/construct_staffer_email');
 const constractAdminStaffEmail = require('../_helpers/construct_adminStaff_email');
@@ -10,6 +12,9 @@ const uuidv4 = require('uuid/v4');
 const sgMail = require('@sendgrid/mail');
 const CONSTANTS = require('../../constants');
 const bcryptjs = require('bcryptjs');
+var moment = require('moment');
+var _ = require('lodash');
+var formidable = require('formidable');
 sgMail.setApiKey(CONSTANTS.SENDGRID_KEY);
 
 function getAdminDashboardCounts(req, res, next) {
@@ -43,15 +48,41 @@ function advancedSearchJob(req, res, next) {
 }
 
 function addEmpIssue(req, res, next) {
-    const valid = validateIssue(req.body);
-    if (valid != true) {
-        res.status(200).json({ success: false, validationError: valid });
-        return;
-    }
+    let localImagePath = "";
+    let issue = {};
+    let fileName = ""
+    let userId = req.user.sub;
+    var form = new formidable.IncomingForm();
 
-    addEmployerIssue(req.body, req.user.sub)
-        .then(issue => res ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+    console.log("file extenstion")
+        form.on('fileBegin', (name, file) => {
+        console.log(file.size, "file extenstion")
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        fileName = moment().format("YYYYMMDDHHmmssSS");
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + "." + fileExt;
+        localImagePath = file.path;
+    });
+    form.on('file', function (name, file) {
+        console.log('Uploaded ' + file.name);
+    });
+    form.parse(req, function (err, fields, files) {
+        _.map(fields, (value, key) => {
+            issue[key] = value;
+        });
+
+        const valid = validateIssue(issue);
+        if (valid != true) {
+            res.status(200).json({ success: false, validationError: valid });
+            return;
+        }
+        processFileUpload(userId, issue, fileName, localImagePath, 'employer')
+            .then(issue => {
+                fs.unlinkSync(localImagePath);
+                res.status(200).send({ success: true, issue })
+            })
+            .catch(err => next(err));
+    });
+
 }
 
 function getEmpIssues(req, res, next) {
@@ -61,15 +92,38 @@ function getEmpIssues(req, res, next) {
 }
 
 function addIssue(req, res, next) {
-    const valid = validateIssue(req.body);
-    if (valid != true) {
-        res.status(200).json({ success: false, validationError: valid });
-        return;
-    }
+    let localImagePath = "";
+    let issue = {};
+    let fileName = ""
+    let userId = req.user.sub;
+    var form = new formidable.IncomingForm();
+    form.on('fileBegin', (name, file) => {
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        fileName = moment().format("YYYYMMDDHHmmssSS");
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + "." + fileExt;
+        localImagePath = file.path;
+    });
+    form.on('file', function (name, file) {
+        console.log('Uploaded ' + file.name);
+    });
+    form.parse(req, function (err, fields, files) {
+        _.map(fields, (value, key) => {
+            issue[key] = value;
+        });
 
-    addApplicantIssue(req.body, req.user.sub)
-        .then(issue => res ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        const valid = validateIssue(issue);
+        if (valid != true) {
+            res.status(200).json({ success: false, validationError: valid });
+            return;
+        }
+        processFileUpload(userId, issue, fileName, localImagePath, 'applicant')
+            .then(issue => {
+                fs.unlinkSync(localImagePath);
+                res.status(200).send({ success: true, issue })
+            })
+            .catch(err => next(err));
+    });
+
 }
 
 function getAdminStaff(req, res, next) {
@@ -98,6 +152,24 @@ function getStaffs(req, res, next) {
 
 function getIssue(req, res, next) {
     getApplicantIssue(req.user.sub, req.params.id)
+        .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function getEmpIssueById(req, res, next) {
+    getEmployerIssue(req.user.sub, req.params.id)
+        .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function deleteEmpIssue(req, res, next) {
+    deleteEmployerIssue(req.user.sub, req.params.id)
+        .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function deleteAppIssue(req, res, next) {
+    deleteApplicantIssue(req.user.sub, req.params.id)
         .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
         .catch(err => next(err));
 }
@@ -203,6 +275,12 @@ function getAllIssues(req, res, next) {
         .catch(err => next(err));
 }
 
+function getIssueById(req, res, next) {
+    getReportedIssueById(req.params.id)
+        .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
 function getApplicantIssuesAdmin(req, res, next) {
     getAllIssuesFromApplicants()
         .then(issues => issues ? res.status(200).send({ success: true, issues }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
@@ -231,6 +309,43 @@ function addStaffsCompany(req, res, next) {
     adminAddCompanyStaffs(req.body, req.params.companyProfileId)
         .then(staffs => staffs ? res.status(200).send({ success: true, staffs }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
         .catch(err => next(err));
+}
+
+async function processFileUpload(userId, issue, fileName, localImagepath, role) {
+    const imgObj = await uploadFile(localImagepath, 'th-employer-logo', fileName)
+    // issue.bucket = 'th-employer-logo';
+    issue.picture = imgObj.Location;
+    // location.awsFileKey = fileName;
+    if(role === 'employer') {
+        return addEmployerIssue(issue, userId);
+    }
+    else if(role === 'applicant') {
+        return addApplicantIssue(issue,userId)
+    }
+}
+
+function uploadFile(file, bucketName, fileName) {
+    return uploadFilePromise(file, bucketName, fileName).then(data => {
+        return data;
+    });
+}
+
+function uploadFilePromise(file, bucketName, fileName) {
+    var uploadParams = { Bucket: bucketName, Key: fileName, Body: '', ACL: 'public-read' };
+    var fileStream = fs.createReadStream(file);
+    uploadParams.Body = fileStream;
+    uploadParams.Key = path.basename(file);
+    return new Promise((resolve, reject) => {
+        s3.upload(uploadParams, function (err, data) {
+            if (err) {
+                reject(err)
+            } if (data) {
+                resolve(data);
+            } else {
+                reject("system error");
+            }
+        });
+    });
 }
 
 async function getAdminStats(userId) {
@@ -343,6 +458,36 @@ async function getCompanyDetailsInfo(companyProfileId) {
     const company = await userService.getCompanyProfileById(companyProfileId);
     if (company) {
         return { company, user }
+    }
+}
+
+async function getEmployerIssue(userId, issueId) {
+    const user = await userService.getUserById(userId);
+    if(user) {
+        const issue = await otherService.getEmployerIssueById(user.companyProfileId, issueId);
+        if(issue) {
+            return issue;
+        }
+    }
+}
+
+async function deleteEmployerIssue(userId, issueId) {
+    const user = await userService.getUserById(userId);
+    if(user) {
+        const issue = await otherService.deleteEmployerIssue(user.companyProfileId, issueId);
+        if(issue) {
+            return issue;
+        }
+    }
+}
+
+async function deleteApplicantIssue(userId, issueId) {
+    const applicant = await userService.getApplicantProfileByUserId(userId);
+    if(applicant) {
+        const issue = await otherService.deleteApplicantIssue(applicant.id, issueId);
+        if(issue) {
+            return issue;
+        }
     }
 }
 
@@ -495,6 +640,14 @@ async function getAllReportedIssues() {
     }
 }
 
+async function getReportedIssueById(id) {
+    const issue = await otherService.getReportedIssueById(id);
+
+    if(issue) {
+        return issue;
+    }
+}
+
 async function getAllIssuesFromApplicants() {
     const issues = await otherService.getAllReportedApplicantIssues();
     if (issues) {
@@ -633,6 +786,9 @@ module.exports = {
     addIssue,
     getIssues,
     getIssue,
+    deleteEmpIssue,
+    deleteAppIssue,
+    getEmpIssueById,
     getAdminStaff,
     addAdminStaff,
     addStaff,
@@ -645,6 +801,7 @@ module.exports = {
     getCompanyDetails,
     verifyEmployer,
     getAllIssues,
+    getIssueById,
     getApplicantIssuesAdmin,
     getCompanyIssuesAdmin,
     addIssueResponse,

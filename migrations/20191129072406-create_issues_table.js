@@ -15,6 +15,9 @@ module.exports = {
       issueType:{
         type: Sequelize.STRING
       },
+      picture:{
+        type: Sequelize.STRING
+      },
       issueDescription:{
         type: Sequelize.TEXT
       },
