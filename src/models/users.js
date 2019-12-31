@@ -1,7 +1,7 @@
 /* jshint indent: 2 */
 const bcryptjs = require('bcryptjs');
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   let user = sequelize.define('users', {
     id: {
       primaryKey: true,
@@ -47,17 +47,25 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       defaultValue: '0'
     },
-    hasFinishedProfile:{
+    hasFinishedProfile: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
-    emailVerificationToken:{
+    emailVerificationToken: {
       type: DataTypes.STRING,
       allowNull: true
+    },
+    active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
     },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false
+    }, 
+    deletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
     },
     updatedAt: {
       type: DataTypes.DATE,

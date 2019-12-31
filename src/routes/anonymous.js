@@ -9,14 +9,9 @@ app.get('/jobs', jobsController.getAllJobs);
 
 
 app.get('/location/cities', locationsController.getAllCities);
-
 app.get('/location/regions', locationsController.getAllRegions);
-
 app.get('/location/countries', locationsController.getAllCountries);
-
 app.get('/location/cities/:regionId', locationsController.getRegionCities);
-
-
 app.get('/other/industries', otherController.getAllIndustries);
 
 app.get('/search',jobsController.searchByCity);

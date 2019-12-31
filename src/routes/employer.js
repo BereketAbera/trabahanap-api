@@ -42,3 +42,4 @@ app.get('/applications',jobsController.getCompanyApplications);
 app.get('/filter/applications',jobsController.getFilterCompanyApplications);
 app.get('/filter/jobs/applications',jobsController.filterJobsApplications);
 app.get('/filter/filtered/applications',jobsController.filterAllFilteredJobsApplications);
+app.get('/filter/jobs',jobsController.filterAllJobs)

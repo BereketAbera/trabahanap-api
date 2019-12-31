@@ -21,7 +21,10 @@ app.get('/staff', adminAuthorize(ROLE.ADMIN), otherController.getAdminStaff);
 
 app.post('/applicants', userController.createApplicant);
 app.get('/applicants', userController.getApplicants);
+app.put('/applicants/:id',userController.deactivateApplicant);
+app.get('/applicant/:id',userController.getApplicantById);
 app.get('/applications', jobsController.getAllApplications);
+
 
 app.post('/location', locationController.addLocationWithImage);
 app.post('/jobs/:companyProfileId', jobsController.adminAddJob);
@@ -34,7 +37,6 @@ app.get('/employers/applicant/:companyProfileId',jobsController.getCompanyApplic
 app.get('/staff/:companyProfileId',otherController.getStaffsCompany);
 app.post('/staff/:companyProfileId',otherController.addStaffsCompany);
 app.get('/jobs', jobsController.adminGetAllJobs);
-
 
 app.get('/filter/jobs',jobsController.adminGetAllCompanyJobFilters);
 app.get('/filter/applications',jobsController.adminGetAllApplicationsFilters);

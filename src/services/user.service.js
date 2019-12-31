@@ -59,7 +59,7 @@ function updateUserField(value, fieldName, userId){
 }
 
 function getApplicantProfileByUserId(userId){
-    return ApplicantProfile.findOne({where: {userId}}).catch(err => console.log(err));
+    return ApplicantProfile.findOne({where: {userId},include: [{model: User}]}).catch(err => console.log(err));
 }
 function getUserbyCompanyProfileId(id){
     return CompanyProfile.findOne({where:{id}}).catch(err => console.log(err));
