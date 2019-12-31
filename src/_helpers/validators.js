@@ -1,6 +1,5 @@
 const validator = require('validator');
 const _ = require('lodash');
-const axios = require('axios');
 
 function validateJob(data){
     const errors = {};
