@@ -2,5 +2,6 @@ module.exports = {
     ADMIN: 'ADMIN',
     EMPLOYER: 'EMPLOYER',
     STAFFER: 'STAFFER',
-    APPLICANT: 'APPLICANT'
+    APPLICANT: 'APPLICANT',
+    ADMINSTAFF : 'ADMINSTAFF'
 };

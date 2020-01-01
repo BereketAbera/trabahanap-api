@@ -7,6 +7,7 @@ var credentials = new AWS.SharedIniFileCredentials({ profile: 'liguam' });
 AWS.config.credentials = credentials;
 // Set the region 
 AWS.config.update({ region: 'us-west-2' });
+var moment = require('moment');
 // Create S3 service object
 s3 = new AWS.S3({ apiVersion: '2006-03-01' });
 const config = require('../../config.json');
@@ -111,7 +112,7 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
         }
         companyProfile['username'] = companyProfile.email;
 
-        const valid_user = validateUser({ ...companyProfile, password: '1234',username:companyProfile.email });
+        const valid_user = validateUser({ ...companyProfile, password: '1234', username: companyProfile.email });
         if (valid_user != true) {
             res.status(200).json({ success: false, validationError: valid_user });
             return;
@@ -119,7 +120,7 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
 
         var unique = false;
         isEmailUnique(companyProfile).then(data => {
-            unique = data; 
+            unique = data;
             if (unique != true) {
                 res.status(200).json({ success: false, Error: "email must be unique" });
                 return;
@@ -187,7 +188,7 @@ async function adminSignUpEmployerUser(body) {
         const saveToken = await otherService.saveToken(token, body.email);
         const { email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile } = { ...body };
         const user = await userService.createUser({ email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile });
-      
+
         if (saveToken && user) {
             const message = construct_employer_email(body.email, token);
             sgMail.send(message);
@@ -311,6 +312,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
             companyProfile[key] = value;
         })
 
+        //companyProfile ={ ...companyProfile }
         companyProfile = { ...companyProfile, CityId: companyProfile.cityId, RegionId: companyProfile.regionId, CountryId: companyProfile.countryId };
         const valid = validateCompanyProfile(companyProfile);
         if (valid != true) {
@@ -318,6 +320,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
             return;
         }
 
+        console.log("no validation")
 
         var fileLogo = files["companyLogo"];
         var fileLicense = files["businessLicense"];
@@ -329,6 +332,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
                 })
                 .then(data => {
                     companyProfile["businessLicense"] = data.Location;
+                    console.log("lkjds")
                     return createUserCompanyProfile({ ...companyProfile, user_id: req.user.sub });
                 })
                 .then(companyProfile => {
@@ -488,7 +492,7 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
     var fileNameProfilePicture = "";
     var form = new formidable.IncomingForm();
     form.multiples = true;
-
+    console.log('here')
     form.on('fileBegin', function (name, file) {
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         let fileName = '';
@@ -515,16 +519,25 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
             return;
         }
 
+        console.log('after')
+
         var cvFile = files['cv'];
         var profilePictureFile = files['applicantPicture']
-        if (cvFile && profilePictureFile) {
+        if (cvFile) {
             uploadFilePromise(cvFile.path, 'th-applicant-cv', fileNameCV)
                 .then(data => {
+                    console.log(data)
                     applicantProfile['cv'] = data.Location;
-                    return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                    if(profilePictureFile){
+                        return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                    }else{
+                        return uploadFilePromise(cvFile.path, 'th-employer-logo', cvFile)
+
+                    }
                 })
                 .then(data => {
-                    applicantProfile['applicantPicture'] = data.Location;
+                    console.log(data.Location)
+                    //applicantProfile['applicantPicture'] = data.Location;
                     return createUserApplicantProfile(applicantProfile);
                 })
                 .then(applicantProfile => {
@@ -635,11 +648,58 @@ function editCompanyProfile(req, res, next) {
 }
 
 function getApplicants(req, res, next) {
-    getAllApplicants()
+    getAllApplicants(req.query.page || 1)
         .then(applicants => applicants ? res.status(200).json({ success: true, applicants }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
+function deactivateApplicant(req, res, next) {
+    deactivateApplicantById(req.params.id)
+        .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
+function getApplicantById(req, res, next) {
+    getApplicantProfileByUserId(req.params.id)
+        .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
+
+async function getApplicantProfileByUserId(id){
+    const applicant = userService.getApplicantProfileByUserId(id);
+    if(applicant){
+        return applicant;
+    }
+
+}
+
+async function deactivateApplicantById(id) {
+    //console.log(id);
+    const user = await userService.getUserById(id);
+    if (user.active) {
+        const deactivated = await userService.updateUserField(0, 'active', id);
+        const deletedAt = moment().format();
+        const deleteDate = await userService.updateUserField(deletedAt, 'deletedAt', id);
+        if (deleteDate[0] > 0 && deactivated[0] > 0) {
+            return true;
+        }
+    } else {
+        const deactivated = await userService.updateUserField(1, 'active', id);
+        const deletedAt = moment().format();
+        const deleteDate = await userService.updateUserField(deletedAt, 'deletedAt', id);
+        if (deleteDate[0] > 0 && deactivated[0] > 0) {
+            return true;
+        }
+
+    }
+
+
+    if (deactivated && user) {
+        console.log(user)
+        return user;
+    }
+}
 
 async function authenticateUsers({ email, password }) {
     const user = await userService.getUserByEmail(email);
@@ -660,8 +720,14 @@ async function authenticateUsers({ email, password }) {
 
                 userWithoutPassword[key] = value;
             });
+
+            if(user.role = 'APPLICANT'){
+                applicantProfile = await userService.getApplicantProfileByUserId(user.id);
+                userWithoutPassword['applicantProfile'] = applicantProfile;
+            }
             return userWithoutPassword;
         }
+
     }
 }
 
@@ -676,7 +742,6 @@ async function signUpUserApplicant(body) {
     }
 
 }
-
 
 async function signUpUserApplicantFromAdmin(body) {
     const unique = await isEmailUnique(body);
@@ -765,7 +830,7 @@ async function createUserApplicantProfileAdmin(body) {
                 const newApplicantProfile = await userService.getApplicantById(appProfile.id);
                 const token = uuidv4();
                 const saveToken = await otherService.saveToken(token, user.email);
-                if(newApplicantProfile && saveToken){
+                if (newApplicantProfile && saveToken) {
                     const message = constructApplicantEmail(user.email, token);
                     sgMail.send(message);
                     return newApplicantProfile;
@@ -833,11 +898,27 @@ async function isEmailUnique({ email }) {
     return true;
 }
 
-async function getAllApplicants() {
-    const employers = await userService.getAllApplicants();
-    if (employers) {
-        return employers;
+async function getAllApplicants(page) {
+    const pager = {
+        pageSize: 6,
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
     }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
+    const applicant = await userService.getAllApplicants(offset, limit);
+
+    if (applicant) {
+        pager.totalItems = applicant.count;
+        pager.totalPages = Math.ceil(applicant.count / pager.pageSize);
+        return {
+            pager,
+            rows: applicant.rows
+        }
+    }
+
 }
 
 function uploadFilePromise(file, bucketName, fileName) {
@@ -881,5 +962,7 @@ module.exports = {
     changeEmployerPassword,
     addNewEmployerPassword,
     createApplicant,
-    getApplicants
+    getApplicants,
+    deactivateApplicant,
+    getApplicantById
 }

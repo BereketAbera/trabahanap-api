@@ -3,14 +3,31 @@ const userService = require('../services/user.service');
 const jobsService = require('../services/job.service')
 const ROLE = require('../_helpers/role');
 
+var fs = require('fs');
+var path = require('path');
 const { validateIssue } = require('../_helpers/validators');
 const constractStafferEmail = require('../_helpers/construct_staffer_email');
+const constractAdminStaffEmail = require('../_helpers/construct_adminStaff_email');
 const uuidv4 = require('uuid/v4');
 const sgMail = require('@sendgrid/mail');
 const CONSTANTS = require('../../constants');
 const bcryptjs = require('bcryptjs');
+var moment = require('moment');
+var _ = require('lodash');
+var formidable = require('formidable');
 sgMail.setApiKey(CONSTANTS.SENDGRID_KEY);
 
+function getAdminDashboardCounts(req, res, next) {
+    getAdminStats(req.user.sub)
+        .then(stats => res.status(200).send({ success: true, stats }))
+        .catch(err => next(err));
+}
+
+function getEmployerDashboardCounts(req, res, next) {
+    getEmployerStats(req.user.sub)
+        .then(stats => res.status(200).send({ success: true, stats }))
+        .catch(err => next(err));
+}
 
 function getAllIndustries(req, res, next) {
     getIndutries()
@@ -25,21 +42,47 @@ function searchIndustry(req, res, next) {
 }
 
 function advancedSearchJob(req, res, next) {
-    getAdvancedSearched(req.query.search || "", req.query.et || "", req.query.industry || "", req.query.sr || "", req.query.ct || "", req.query.page || 1)
+    getAdvancedSearched(req.query.search || "", req.query.et || "", req.query.industry || "", req.query.sr || "", req.query.ct || "", req.query.pwd || 1, req.query.page || 1)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
 function addEmpIssue(req, res, next) {
-    const valid = validateIssue(req.body);
-    if (valid != true) {
-        res.status(200).json({ success: false, validationError: valid });
-        return;
-    }
+    let localImagePath = "";
+    let issue = {};
+    let fileName = ""
+    let userId = req.user.sub;
+    var form = new formidable.IncomingForm();
 
-    addEmployerIssue(req.body, req.user.sub)
-        .then(issue => res ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+    console.log("file extenstion")
+    form.on('fileBegin', (name, file) => {
+        console.log(file.size, "file extenstion")
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        fileName = moment().format("YYYYMMDDHHmmssSS");
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + "." + fileExt;
+        localImagePath = file.path;
+    });
+    form.on('file', function (name, file) {
+        console.log('Uploaded ' + file.name);
+    });
+    form.parse(req, function (err, fields, files) {
+        _.map(fields, (value, key) => {
+            issue[key] = value;
+        });
+
+        const valid = validateIssue(issue);
+        if (valid != true) {
+            res.status(200).json({ success: false, validationError: valid });
+            return;
+        }
+        processFileUpload(userId, issue, fileName, localImagePath, 'employer')
+            .then(issue => {
+                fs.unlinkSync(localImagePath);
+                res.status(200).send({ success: true, issue })
+            })
+            .catch(err => next(err));
+    });
+
 }
 
 function getEmpIssues(req, res, next) {
@@ -49,14 +92,61 @@ function getEmpIssues(req, res, next) {
 }
 
 function addIssue(req, res, next) {
-    const valid = validateIssue(req.body);
-    if (valid != true) {
-        res.status(200).json({ success: false, validationError: valid });
-        return;
-    }
+    let localImagePath = "";
+    let issue = {};
+    let fileName = ""
+    let userId = req.user.sub;
+    var form = new formidable.IncomingForm();
+    form.on('fileBegin', (name, file) => {
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        if (name == 'picture') {
+            fileName = moment().format("YYYYMMDDHHmmssSS");
+            file.path = CONSTANTS.baseDir + '/uploads/' + fileName + "." + fileExt;
+            localImagePath = file.path;
+        }
+    });
+    form.on('file', function (name, file) {
+        console.log('Uploaded ' + file.name);
+    });
 
-    addApplicantIssue(req.body, req.user.sub)
-        .then(issue => res ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+    form.parse(req, function (err, fields, files) {
+        _.map(fields, (value, key) => {
+            issue[key] = value;
+        });
+
+        const valid = validateIssue(issue);
+        if (valid != true) {
+            res.status(200).json({ success: false, validationError: valid });
+            return;
+        }
+        if(localImagePath !=""){
+            processFileUpload(userId, issue, fileName, localImagePath, 'applicant')
+            .then(issue => {
+                fs.unlinkSync(localImagePath);
+                res.status(200).send({ success: true, issue })
+            })
+            .catch(err => next(err));
+        }else{
+            processFileUpload(userId, issue, fileName, localImagePath, 'applicant')
+            .then(issue => {
+                res.status(200).send({ success: true, issue })
+            })
+            .catch(err => next(err));
+        }
+        
+    });
+
+}
+
+function getAdminStaff(req, res, next) {
+    getAdminStaffers(req.user.sub)
+        .then(staffs => staffs ? res.status(200).send({ success: true, staffs }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function addAdminStaff(req, res, next) {
+    addAdminStaffer(req.body, req.user.sub)
+        .then(success => res.status(200).send({ success }))
         .catch(err => next(err));
 }
 
@@ -74,6 +164,24 @@ function getStaffs(req, res, next) {
 
 function getIssue(req, res, next) {
     getApplicantIssue(req.user.sub, req.params.id)
+        .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function getEmpIssueById(req, res, next) {
+    getEmployerIssue(req.user.sub, req.params.id)
+        .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function deleteEmpIssue(req, res, next) {
+    deleteEmployerIssue(req.user.sub, req.params.id)
+        .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function deleteAppIssue(req, res, next) {
+    deleteApplicantIssue(req.user.sub, req.params.id)
         .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
         .catch(err => next(err));
 }
@@ -179,6 +287,12 @@ function getAllIssues(req, res, next) {
         .catch(err => next(err));
 }
 
+function getIssueById(req, res, next) {
+    getReportedIssueById(req.params.id)
+        .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
 function getApplicantIssuesAdmin(req, res, next) {
     getAllIssuesFromApplicants()
         .then(issues => issues ? res.status(200).send({ success: true, issues }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
@@ -207,6 +321,62 @@ function addStaffsCompany(req, res, next) {
     adminAddCompanyStaffs(req.body, req.params.companyProfileId)
         .then(staffs => staffs ? res.status(200).send({ success: true, staffs }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
         .catch(err => next(err));
+}
+
+async function processFileUpload(userId, issue, fileName, localImagepath, role) {
+    if (localImagepath !="") {
+        const imgObj = await uploadFile(localImagepath, 'th-employer-logo', fileName)
+        // issue.bucket = 'th-employer-logo';
+        issue.picture = imgObj.Location;
+    }
+
+    if (role === 'employer') {
+        return addEmployerIssue(issue, userId);
+    }
+    else if (role === 'applicant') {
+        return addApplicantIssue(issue, userId)
+    }
+}
+
+function uploadFile(file, bucketName, fileName) {
+    return uploadFilePromise(file, bucketName, fileName).then(data => {
+        return data;
+    });
+}
+
+function uploadFilePromise(file, bucketName, fileName) {
+    var uploadParams = { Bucket: bucketName, Key: fileName, Body: '', ACL: 'public-read' };
+    var fileStream = fs.createReadStream(file);
+    uploadParams.Body = fileStream;
+    uploadParams.Key = path.basename(file);
+    return new Promise((resolve, reject) => {
+        s3.upload(uploadParams, function (err, data) {
+            if (err) {
+                reject(err)
+            } if (data) {
+                resolve(data);
+            } else {
+                reject("system error");
+            }
+        });
+    });
+}
+
+async function getAdminStats(userId) {
+    const user = await userService.getUserById(userId);
+    if (user && (user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
+        const stats = await otherService.getAdminStats();
+        if (stats) { return stats }
+    }
+}
+
+async function getEmployerStats(userId) {
+    const user = await userService.getUserById(userId);
+
+    if (user) {
+        const stats = await otherService.getEmployerStats(user.companyProfileId);
+        if (stats) { return stats }
+    }
 }
 
 async function getIndutries() {
@@ -305,6 +475,36 @@ async function getCompanyDetailsInfo(companyProfileId) {
     }
 }
 
+async function getEmployerIssue(userId, issueId) {
+    const user = await userService.getUserById(userId);
+    if (user) {
+        const issue = await otherService.getEmployerIssueById(user.companyProfileId, issueId);
+        if (issue) {
+            return issue;
+        }
+    }
+}
+
+async function deleteEmployerIssue(userId, issueId) {
+    const user = await userService.getUserById(userId);
+    if (user) {
+        const issue = await otherService.deleteEmployerIssue(user.companyProfileId, issueId);
+        if (issue) {
+            return issue;
+        }
+    }
+}
+
+async function deleteApplicantIssue(userId, issueId) {
+    const applicant = await userService.getApplicantProfileByUserId(userId);
+    if (applicant) {
+        const issue = await otherService.deleteApplicantIssue(applicant.id, issueId);
+        if (issue) {
+            return issue;
+        }
+    }
+}
+
 async function getApplicantIssue(userId, issueId) {
     const applicant = await userService.getApplicantProfileByUserId(userId);
     if (applicant) {
@@ -313,6 +513,38 @@ async function getApplicantIssue(userId, issueId) {
             return issue;
         }
     }
+}
+
+async function getAdminStaffers(userId) {
+    const user = await userService.getUserById(userId);
+    if (user && user.role === 'ADMIN') {
+        console.log("about to get your staffs")
+        const staffs = await otherService.getAdminStaffs();
+        if (staffs) {
+            return staffs;
+        }
+    }
+}
+
+async function addAdminStaffer(body, userId) {
+    const user = await userService.getUserById(userId);
+    if (user && body.email) {
+        console.log("inside user email logic")
+        const userExists = await userService.getUserByEmail(body.email);
+        const tokenExists = await otherService.getTokenEmail(body.email);
+        if (userExists || tokenExists) {
+            return false;
+        }
+        const token = uuidv4();
+        const saveToken = await otherService.saveToken(token, body.email);
+        const newUser = await userService.createUser({ ...body, role: ROLE.ADMINSTAFF, password: uuidv4(), username: body.email });
+        if (saveToken && newUser) {
+            const message = constractAdminStaffEmail(body.firstName, body.email, token);
+            sgMail.send(message);
+            return true;
+        }
+    }
+    return false;
 }
 
 async function addCompanyStaffer(body, userId) {
@@ -327,7 +559,7 @@ async function addCompanyStaffer(body, userId) {
         const saveToken = await otherService.saveToken(token, body.email);
         const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: user.companyProfileId, password: uuidv4(), username: body.email, hasFinishedProfile: true });
         if (saveToken && newUser) {
-            const message = constractStafferEmail(body.email, token);
+            const message = constractStafferEmail(body.firstName, body.email, token);
             sgMail.send(message);
             return true;
         }
@@ -422,6 +654,14 @@ async function getAllReportedIssues() {
     }
 }
 
+async function getReportedIssueById(id) {
+    const issue = await otherService.getReportedIssueById(id);
+
+    if (issue) {
+        return issue;
+    }
+}
+
 async function getAllIssuesFromApplicants() {
     const issues = await otherService.getAllReportedApplicantIssues();
     if (issues) {
@@ -464,57 +704,40 @@ async function getSearchedIndustry(search) {
 
 }
 
-async function getAdvancedSearched(search, employType, industry, salaryRange, cityName, page) {
+async function getAdvancedSearched(search, employType, industry, salaryRange, cityName, pwd, page) {
     const pager = {
         pageSize: 8,
         totalItems: 0,
         totalPages: 0,
         currentPage: parseInt(page)
     }
+
+    console.log(cityName, employType, industry, salaryRange, search, page, pwd, 'asd')
     if (cityName == "undefined") {
         cityName = '';
     }
-    console.log(search, employType, industry, cityName, page)
+    if (industry == "undefined") {
+        industry = '';
+    }
+    if (salaryRange == "undefined") {
+        salaryRange = '';
+    }
+
+    //console.log(search, employType, industry, cityName, page)
     const offset = (page - 1) * pager.pageSize;
+
     const limit = pager.pageSize;
-    //console.log(offset)
-    queryResult = advancedSearchQueryBuilder(search, employType, industry, salaryRange, cityName, offset, limit);
-    console.log(queryResult.selectQuery)
-    console.log(queryResult.count);
-    //let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%' or industry like '${search}%')`;
-    // let query=`SELECT * FROM view_companies_jobs_search WHERE cityName like '${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%' or industry like '${search}%') order by createdAt DESC  LIMIT ${offset},${limit}`
 
-    // if(employType !='' && industry != ''){
-    //     //console.log('sdljf')
-    //     query=`SELECT * FROM view_companies_jobs_search WHERE industry='${industry}' and employmentType='${employType}' and (cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}`
-    //     QueryCount=`SELECT COUNT(*) FROM view_companies_jobs_search WHERE industry='${industry}' and employmentType='${employType}' and (cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}`
-    // }
-    // else if(employType !='' && industry ==''){
-    //     //console.log('no ind')
-    //     query=`SELECT * FROM view_companies_jobs_search WHERE employmentType='${employType}' and (cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}` 
-    //     QueryCount=`SELECT * FROM view_companies_jobs_search WHERE employmentType='${employType}' and (cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}` 
-
-    // }else if(employType =='' & industry != ''){
-    //     //console.log('no emp')
-    //     query=`SELECT * FROM view_companies_jobs_search WHERE industry='${industry}' and (cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%')) order by createdAt DESC  LIMIT ${offset},${limit}` 
-    //     QueryCount=`SELECT COUNT(*) FROM view_companies_jobs_search where industry='${industry}' and (cityName like '%${cityName}%' or jobTitle like '%${search}%' or companyName like '${search}%') order by createdAt DESC  LIMIT ${offset},${limit}` 
-
-    // }
-    // else{
-    //     QueryCount=`SELECT COUNT(*)  FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%') order by createdAt`
-
-    //     query=`SELECT * FROM view_companies_jobs_search WHERE cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%') order by createdAt DESC  LIMIT ${offset},${limit}`
-    // }
+    queryResult = advancedSearchQueryBuilder(search || '', employType || '', industry || '', salaryRange || '', cityName || '', pwd, offset || 0, limit || 8);
+    console.log(queryResult)
+    // console.log(queryResult.count);
 
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
-    console.log(jobs)
+    //console.log(jobs)
     if (jobs) {
-        console.log('here in')
         counts = await jobsService.executeSearchQuery(queryResult.count);
-        console.log(counts)
-        if(counts){
+        if (counts) {
             pager.totalItems = Object.values(counts[0])[0];
-            console.log(counts)
             pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
         }
         return {
@@ -522,29 +745,39 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
             rows: jobs
         };
     }
- 
+
 }
 
 
-function advancedSearchQueryBuilder(search, employType, industry, salaryRange, cityName, offset, limit) {
+function advancedSearchQueryBuilder(search, employType, industry, salaryRange, cityName, pwd, offset, limit) {
+    console.log(pwd, 'pwd')
     let query = ``;
     let haveWhere = false;
-    if (employType != "") {
-        query = query + ` where employmentType='${employType}'`;
+    if (pwd) {
+        query = query + ` where pwd='${pwd}'`;
         haveWhere = true;
+    }
+    if (employType != "") {
+        if (haveWhere) {
+            query = query + ` and employmentType='${employType}'`;
+            haveWhere = true;
+        } else {
+            query = query + ` where employmentType='${employType}'`;
+        }
+
     } if (industry != "") {
         if (haveWhere) {
             query = query + ` and industry='${industry}'`;
-        }else{
+        } else {
             query = query + ` where industry='${industry}'`;
             haveWhere = true;
         }
     }
     if (salaryRange != "") {
         if (haveWhere) {
-            query = query + ` and salaryRange=${salaryRange}`;
+            query = query + ` and salaryRange='${salaryRange}'`;
         } else {
-            query = query + ` where salaryRange=${salaryRange}`;
+            query = query + ` where salaryRange='${salaryRange}'`;
             haveWhere = true;
         }
     }
@@ -553,18 +786,25 @@ function advancedSearchQueryBuilder(search, employType, industry, salaryRange, c
     } else {
         query = query + ` where cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '${search}%')`;
     }
-    let selectQuery=`select * from view_companies_jobs_search `+query;
-    let QueryCount=`SELECT COUNT(*) FROM view_companies_jobs_search`+query;
-    return {selectQuery:selectQuery,count:QueryCount};
+    let selectQuery = `select * from view_companies_jobs_search ` + query + ` LIMIT ${offset},${limit}`;
+    let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search` + query + ` LIMIT ${offset},${limit}`;
+    return { selectQuery: selectQuery, count: QueryCount };
 }
 
 module.exports = {
+    getAdminDashboardCounts,
+    getEmployerDashboardCounts,
     getAllIndustries,
     addEmpIssue,
     getEmpIssues,
     addIssue,
     getIssues,
     getIssue,
+    deleteEmpIssue,
+    deleteAppIssue,
+    getEmpIssueById,
+    getAdminStaff,
+    addAdminStaff,
     addStaff,
     addNewStaffer,
     addNewApplicant,
@@ -575,6 +815,7 @@ module.exports = {
     getCompanyDetails,
     verifyEmployer,
     getAllIssues,
+    getIssueById,
     getApplicantIssuesAdmin,
     getCompanyIssuesAdmin,
     addIssueResponse,

@@ -59,7 +59,7 @@ function updateUserField(value, fieldName, userId){
 }
 
 function getApplicantProfileByUserId(userId){
-    return ApplicantProfile.findOne({where: {userId}}).catch(err => console.log(err));
+    return ApplicantProfile.findOne({where: {userId},include: [{model: User}]}).catch(err => console.log(err));
 }
 function getUserbyCompanyProfileId(id){
     return CompanyProfile.findOne({where:{id}}).catch(err => console.log(err));
@@ -86,8 +86,8 @@ async function getCompanyWithOffsetAndLimit(offset, limit){
     return await CompanyProfile.findAndCountAll({offset, limit,order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
 
-function getAllApplicants(){
-    return ApplicantProfile.findAll({include: [{model: User}]});
+function getAllApplicants(offset,limit){
+    return ApplicantProfile.findAndCountAll({offset,limit,include: [{model: User}],order: [['createdAt', 'DESC']]});
 }
 
 module.exports = {
