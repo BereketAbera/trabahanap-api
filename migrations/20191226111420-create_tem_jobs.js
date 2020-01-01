@@ -1,12 +1,24 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('jobs', {
+    return queryInterface.createTable('temp_jobs', {
       id: {
         allowNull: false,
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
         type: Sequelize.UUID
+      },
+      caspioId: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      caspioOrgId:{
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      caspioLocId:{
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       jobTitle: {
         type: Sequelize.STRING
@@ -55,6 +67,6 @@ module.exports = {
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('jobs');
+    return queryInterface.dropTable('temp_jobs');
   }
 };

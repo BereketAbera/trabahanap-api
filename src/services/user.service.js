@@ -20,6 +20,10 @@ function getUserByIdAndRole(id, role){
     return User.findOne({where: { id, role}, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
 }
 
+function getAllByCompanyProfileId(companyProfileId){
+    return User.findAll({where: {companyProfileId}}).catch(err => console.log(err));
+}
+
 function addCompanyProfile(companyprofile){
     return CompanyProfile.create(companyprofile).catch(err => console.log(err));
 }
@@ -46,12 +50,24 @@ function getCompanyProfileById(id){
     return CompanyProfile.findOne({where: {id}}).catch(err => console.log(err));
 }
 
+function getAllCompanyProfile(){
+    return CompanyProfile.findAll({include: [{model: User}],order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
+
 function updateUserField(value, fieldName, userId){
     return User.update({[fieldName]: value},{where: {id: userId}});
 }
 
 function getApplicantProfileByUserId(userId){
     return ApplicantProfile.findOne({where: {userId}}).catch(err => console.log(err));
+}
+function getUserbyCompanyProfileId(id){
+    return CompanyProfile.findOne({where:{id}}).catch(err => console.log(err));
+}
+
+function getUserAndCompanyProfile(){
+    //sequelize.query(`SELECT DISTINCT cp.id, cp.zipcode, cp.companyName, cp.contactPerson, cp.contactNumber,cp.websiteURL,cp.verified, cp.companyLogo,cp.companyDescription,cp.businessLicense,cp.hasLocations, cp.businessLicenseNumber,cp.industryType,cp.companyAddress, u.email,u.username, u.phoneNumber,u.firstName,u.lastName from company_profiles cp INNER JOIN users u ON u.CompanyProfileid = cp.id`,{ type: sequelize.QueryTypes.SELECT});
+    return CompanyProfile.findAll( {order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
 
 function updateApplicantProfile(applicantProfile, body){
@@ -65,10 +81,14 @@ function getApplicantById(id){
 async function getEmployersWithOffsetAndLimit(offset, limit){
     return await User.findAndCountAll({offset, limit, include: [{model: CompanyProfile}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
+
+async function getCompanyWithOffsetAndLimit(offset, limit){
+    return await CompanyProfile.findAndCountAll({offset, limit,order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
+
 function getAllApplicants(){
     return ApplicantProfile.findAll({include: [{model: User}]});
 }
-
 
 module.exports = {
     updateUserById,
@@ -87,5 +107,10 @@ module.exports = {
     updateApplicantProfile,
     getApplicantById,
     getEmployersWithOffsetAndLimit,
-    getAllApplicants
+    getAllApplicants,
+    getAllCompanyProfile,
+    getUserbyCompanyProfileId,
+    getUserAndCompanyProfile,
+    getCompanyWithOffsetAndLimit,
+    getAllByCompanyProfileId
 };

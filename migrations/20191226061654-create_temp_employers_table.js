@@ -1,20 +1,28 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('users', {
+    return queryInterface.createTable('temp_employers', {
       id: {
         primaryKey: true,
         type: Sequelize.UUID,
         allowNull: false,
         defaultValue: Sequelize.UUIDV4
       },
+      caspioId: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      caspioOrgId:{
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       username: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       phoneNumber: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: true
       },
       password: {
         type: Sequelize.STRING,
@@ -22,17 +30,18 @@ module.exports = {
       },
       email: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       firstName: {
         type: Sequelize.STRING
       },
       lastName: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull: true
       },
       role: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       lastLoggedIn: {
         type: Sequelize.DATE,
@@ -47,16 +56,16 @@ module.exports = {
         defaultValue: false
       },
       createdAt: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.DATE
       },
       updatedAt: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.DATE
       }
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('users');
+    return queryInterface.dropTable('temp_employers');
   }
 };

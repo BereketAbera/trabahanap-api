@@ -4,13 +4,18 @@ const {
     Token,
     User,
     CompanyProfile,
+    ApplicantProfile,
     IssueResponse
 } = require('../models');
 
 const ROLE = require('../_helpers/role');
+const sequelize = require('../database/connection');
 
 function getAllIndustries(){
     return Indutry.findAll().catch(err => console.log(err));
+}
+function getIndutriesSearch(search){
+    return sequelize.query(`SELECT * FROM industries WHERE industryName like '${search}%'`, { type: sequelize.QueryTypes.SELECT })
 }
 
 function addIssue(issue){
@@ -19,6 +24,10 @@ function addIssue(issue){
 
 function getApplicantIssues(ApplicantProfileId){
     return Issue.findAll({where: {ApplicantProfileId}, include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
+
+function getEmployerIssues(CompanyProfileId){
+    return Issue.findAll({where: {CompanyProfileId}, include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
 
 function getApplicantIssueById(ApplicantProfileId, id){
@@ -51,8 +60,18 @@ function getAllEmployers(){
     return User.findAll({where: {role: ROLE.EMPLOYER}, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
 }
 
+
 function getAllReportedIssues(){
-    return Issue.findAll({include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+    return Issue.findAll({include: [{model: IssueResponse},{model: ApplicantProfile,include:[{model:User}]}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
+
+function getAllReportedApplicantIssues() {
+    return Issue.findAll({where: {CompanyProfileId: null}, include: [{model: IssueResponse},{model: ApplicantProfile,include:[{model:User}]}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
+
+function getAllReportedCompanyIssues() {
+    return Issue.findAll({where: {ApplicantProfileId: null}, include: [{model: IssueResponse},{model: CompanyProfile}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+
 }
 
 function addIssueResponse(issueResponse){
@@ -67,10 +86,12 @@ function getIssueById(issueId){
     return Issue.findOne({where: {id: issueId}}).catch(err => console.log(err));
 }
 
+
 module.exports = {
     getAllIndustries,
     addIssue,
     getApplicantIssues,
+    getEmployerIssues,
     getApplicantIssueById,
     saveToken,
     getToken,
@@ -79,7 +100,10 @@ module.exports = {
     getCompanyStaffs,
     getAllEmployers,
     getAllReportedIssues,
+    getAllReportedApplicantIssues,
+    getAllReportedCompanyIssues,
     addIssueResponse,
     updateIssueField,
-    getIssueById
+    getIssueById,
+    getIndutriesSearch
 }

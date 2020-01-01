@@ -12,6 +12,9 @@ const routes = require('./routes');
 // const CONSTANTS = require('../constants');
 // const fileUpload = require('./_helpers/file_upload');
 
+const migrate = require('./migrate-data');
+migrate.migrateData();
+
 const PORT = process.env.PORT || 3000;
 
 let app = express();
@@ -44,6 +47,10 @@ app.use(routes);
 
 
 app.use(errorHandler);
+
+// const migrate = require('./migrate-data');
+
+// migrate.migrateData();
 
 app.listen(PORT, () => {
     console.log(`server running at port ${PORT}`);

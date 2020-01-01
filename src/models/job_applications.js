@@ -15,6 +15,9 @@ module.exports = function(sequelize, DataTypes) {
     filtered: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
+    },hired: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     },
     createdAt: {
       type: DataTypes.DATE,
