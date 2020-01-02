@@ -5,7 +5,7 @@ function createUser(user){
 }
 
 function getUserByEmail(email){
-    return User.findOne({where: {email}, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
+    return User.findOne({where: {email,active:1}, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
 }
 
 function getUserByEmailToken(token){

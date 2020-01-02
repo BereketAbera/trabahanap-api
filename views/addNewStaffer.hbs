@@ -20,9 +20,9 @@
                 <input name="token" type="text" hidden value={{response.token}}>
 
                 <h5 class="form__error">{{response.error}}</h5>
-               
+
             </div>
-             <input class="th-btn th-btn--primary form__btn pull-right" type="submit" value="Set Password">
+            <input class="th-btn th-btn--primary form__btn pull-right" type="submit" value="Set Password">
         </form>
     </div>
     {{else}}
@@ -33,7 +33,8 @@
     {{else}}
     {{#if response.passwordChanged}}
     <div class="success">
-        You have successfully changed your password!
+        <h1 class="success_header">Your Registration is Complete.</h1>
+        <h3 class="success_text">You have successfully changed your password! Click below to login into system </h3>
         <a href="https://8thdd.com/login">Go To Login</a>
     </div>
     {{else}}

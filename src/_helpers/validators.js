@@ -4,7 +4,7 @@ const _ = require('lodash');
 function validateJob(data){
     const errors = {};
     let valid = true;
-    const fields = ["jobTitle", "jobDescription", "industry", "position", "educationAttainment", "salaryRange", "employmentType", "vacancies", "additionalQualifications", "applicationStartDate", "applicationEndDate", "locationId"];
+    const fields = ["jobTitle", "jobDescription", "industry", "educationAttainment", "salaryRange", "employmentType", "vacancies", "applicationStartDate", "applicationEndDate", "locationId"];
     const keys = _.keys(data);
     fields.map(field => {
         if(keys.includes(field)){
@@ -26,7 +26,7 @@ function validateJob(data){
                 errors[key] = `${key} is not valid`;
                 valid = false;
             }
-        }else if(validator.isEmpty(value + '')){
+        }else if(fields.includes(key) && validator.isEmpty(value + '')){
             errors[key] = `${key} is not valid`;
             valid = false;
         }

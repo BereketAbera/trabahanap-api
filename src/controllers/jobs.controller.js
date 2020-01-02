@@ -196,10 +196,17 @@ function saveForLaterReview(req, res, next) {
 }
 
 function getJobsLaterReview(req, res, next) {
-    getApplicantLaterReviewJobs(req.user.sub)
+    getApplicantLaterReviewJobs(req.user.sub,req.query.page || 1)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
+
+function getAllSavedJobs(req, res, next) {
+    getApplicantSavedReviewJobs(req.user.sub)
+        .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
 
 function filterJobApplication(req, res, next) {
     filterApplication(req.user.sub, jobId = req.body.jobId, applicantId = req.body.applicantId)
@@ -977,8 +984,13 @@ async function getApplicantJobs(userId,page) {
     const applicant = await userService.getApplicantProfileByUserId(userId);
     if (applicant) {
         const jobs = await jobsService.getApplicantJobs(applicant.id,offset,limit);
+        counts = await jobsService.countGetApplicantAppliedJobs(applicant.id);
+        if (counts) {
+            pager.totalItems = Object.values(counts[0][0])[0];
+            pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+        }
         if (jobs[0]) {
-            return jobs[0];
+            return {pager,rows:jobs[0]};
         }
     }
 
@@ -1005,12 +1017,13 @@ async function saveJobForLaterReview(userId, jobId) {
     return false;
 }
 
-async function getApplicantLaterReviewJobs(userId) {
+async function getApplicantSavedReviewJobs(userId) {
+ 
     const applicant = await userService.getApplicantProfileByUserId(userId);
 
     if (applicant) {
         const applications = await jobsService.getApplicantApplications(applicant.id);
-        const jobs = await jobsService.getApplicantSavedJobs(applicant.id);
+        const jobs = await jobsService.getAllSavedJobs(applicant.id);
         if (jobs[0] && applications) {
             const applicationIds = applications.map(application => {
                 return application.JobId;
@@ -1020,6 +1033,40 @@ async function getApplicantLaterReviewJobs(userId) {
             })
             if (unappliedSavedJobs) {
                 return unappliedSavedJobs;
+            }
+        }
+    }
+}
+
+async function getApplicantLaterReviewJobs(userId,page) {
+    const pager = {
+        pageSize: 6,
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
+    const applicant = await userService.getApplicantProfileByUserId(userId);
+
+    if (applicant) {
+        const applications = await jobsService.getApplicantApplications(applicant.id);
+        const jobs = await jobsService.getApplicantSavedJobs(applicant.id,offset || 0,limit || 6);
+        if (jobs[0] && applications) {
+            counts = await jobsService.countGetApplicantSavedJobs(applicant.id);
+            if (counts) {
+                pager.totalItems = Object.values(counts[0][0])[0];
+                pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+            }
+            const applicationIds = applications.map(application => {
+                return application.JobId;
+            })
+            const unappliedSavedJobs = jobs[0].filter(job => {
+                return !applicationIds.includes(job.id);
+            })
+            if (unappliedSavedJobs) {
+                return {pager,rows:unappliedSavedJobs};
             }
         }
     }
@@ -1295,6 +1342,7 @@ module.exports = {
     getApplicantAppliedJobs,
     saveForLaterReview,
     getJobsLaterReview,
+    getAllSavedJobs,
     getFilteredJobApplicants,
     getFilteredJobWithApplications,
     filterJobApplication,
