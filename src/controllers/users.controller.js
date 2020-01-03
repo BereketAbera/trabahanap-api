@@ -23,6 +23,7 @@ const construct_email_applicant = require('../_helpers/construct_email_applicant
 const userService = require('../services/user.service');
 const jobService = require('../services/job.service');
 const otherService = require('../services/other.service');
+const authService = require('../services/auth.service')
 const formidable = require('formidable');
 const CONSTANTS = require('../../constants.js');
 
@@ -62,8 +63,11 @@ function signUpApplicant(req, res, next) {
 
     req.body.username = req.body.email;
 
+    // axios.post(`${environment}/auth/signup`,req.body).then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'email is not unique' }))
+    //     .catch(err => next(err));
+
     signUpUserApplicant(req.body)
-        .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'email is not unique' }))
+        .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'email is not unique' }))
         .catch(err => next(err));
 
 }
@@ -547,7 +551,7 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
                 })
                 .then(applicantProfile => {
                     fs.unlinkSync(cvFile.path);
-                   //console.log(applicantProfile.applicantProfile,'a')
+                    //console.log(applicantProfile.applicantProfile,'a')
                     applicantProfile ? res.status(200).json({ success: true, applicantProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
                 .catch(err => next(err));
@@ -711,14 +715,12 @@ async function deactivateApplicantById(id) {
 }
 
 async function authenticateUsers({ email, password }) {
-    const user = await userService.getUserByEmail(email);
-    if (user) {
-        const pass = bcryptjs.compareSync(password, user.password);
-        if (pass) {
-
-            if (!user.emailVerified) {
-                return { error: "Verify you email first" }
-            }
+    const resp = await authService.loginFromApi({ email, password });
+    //console.log(resp.data, 'res')
+    if (resp.data.success) {
+        const user = await userService.getUserByEmail(email);
+        if (user) {
+            //console.log(user)
             const token = jwt.sign({ sub: user.id, role: user.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
             const userWithoutPassword = {};
             _.map(user.dataValues, (value, key) => {
@@ -726,29 +728,73 @@ async function authenticateUsers({ email, password }) {
                     userWithoutPassword['token'] = token;
                     return;
                 }
-
                 userWithoutPassword[key] = value;
+
             });
 
             if (user.role = 'APPLICANT') {
                 applicantProfile = await userService.getApplicantProfileByUserId(user.id);
                 userWithoutPassword['applicantProfile'] = applicantProfile;
             }
+            if (resp.data.user.emailVerified) {
+                userWithoutPassword.emailVerified = 1;
+
+            }
+            console.log(userWithoutPassword, 'ipass')
             return userWithoutPassword;
         }
-
+        //return user.data;
     }
+
+    // const user = await userService.getUserByEmail(email);
+    // if (user) {
+    //     const pass = bcryptjs.compareSync(password, user.password);
+    //     if (pass) {
+
+    //         if (!user.emailVerified) {
+    //             return { error: "Verify you email first" }
+    //         }
+    //         const token = jwt.sign({ sub: user.id, role: user.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
+    //         const userWithoutPassword = {};
+    //         _.map(user.dataValues, (value, key) => {
+    //             if (key == 'password') {
+    //                 userWithoutPassword['token'] = token;
+    //                 return;
+    //             }
+
+    //             userWithoutPassword[key] = value;
+    //         });
+
+    //         if (user.role = 'APPLICANT') {
+    //             applicantProfile = await userService.getApplicantProfileByUserId(user.id);
+    //             userWithoutPassword['applicantProfile'] = applicantProfile;
+    //         }
+    //         return userWithoutPassword;
+    //     }
+
+    // }
 }
 
 async function signUpUserApplicant(body) {
-    const unique = await isEmailUnique(body);
-    if (unique) {
+
+    const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4() })
+    console.log(user.data)
+    if (user.data.success) {
         body["role"] = ROLE.APPLICANT;
-        const user = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
-        const message = construct_email_applicant(user);
+        const message = construct_email_applicant(user.data.user);
+        const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
         sgMail.send(message);
-        return user;
+        return users;
     }
+
+    // const unique = await isEmailUnique(body);
+    // if (unique) {
+    //     body["role"] = ROLE.APPLICANT;
+    //     const user = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
+    //     const message = construct_email_applicant(user);
+    //     sgMail.send(message);
+    //     return user;
+    // }
 
 }
 
@@ -769,15 +815,27 @@ async function signUpUserApplicantFromAdmin(body) {
 }
 
 async function signUpUserEmployer(body) {
-    const unique = await isEmailUnique(body);
-    if (unique) {
 
+    const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4() })
+    console.log(user.data)
+    if (user.data.success) {
         body["role"] = ROLE.EMPLOYER;
-        const user = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
-        const message = constructEmail(user);
+        const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
+        const message = constructEmail(user.data.user);
         sgMail.send(message);
-        return user;
+        return users;
     }
+
+
+    // const unique = await isEmailUnique(body);
+    // if (unique) {
+
+    //     body["role"] = ROLE.EMPLOYER;
+    //     const user = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
+    //     const message = constructEmail(user);
+    //     sgMail.send(message);
+    //     return user;
+    // }
 }
 
 async function getUserById(user_id) {
@@ -824,11 +882,11 @@ async function updateApplicantField(value, fieldName, userId) {
 
 async function createUserApplicantProfile(body) {
     const user = await userService.getUserByIdAndRole(body.UserId, ROLE.APPLICANT);
-    let newUser ={};
+    let newUser = {};
     if (user) {
         const appProfile = await userService.addApplicantProfile({ ...body });
         if (appProfile) {
-            newuser = await user.update({ hasFinishedProfile: true });  
+            newuser = await user.update({ hasFinishedProfile: true });
             //let applicantProfile = await userService.getApplicantProfileByUserId(body.UserId);
             if (newuser) {
                 //console.log({...newUser,applicantProfile:applicantProfile})
@@ -870,6 +928,7 @@ async function getUserApplicantProfile(id) {
 
 async function createUserCompanyProfile(body) {
     const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
+    console.log(user,'user')
     if (user) {
         const compProfile = await userService.addCompanyProfile(body);
         if (compProfile) {
@@ -897,15 +956,28 @@ async function editUserCompanyProfile(body, id) {
 }
 
 async function verifyUserEmail(req) {
-    const user = await userService.getUserByEmailToken(req.query.token);
-    if (user) {
-        const updated = await userService.updateUserById(user.id, { emailVerified: true });
+    const user = await authService.verifyUserFromApi(req.query.token);
+    console.log(user.data);
+    if (user.data.success) {
+        const updated = await userService.updateUserByEmail(user.data.user.email, { emailVerified: true });
         if (updated) {
             return { success: true, message: "Email verifyed successfully.", HOST_URL: CONSTANTS.HOST_URL_FRONTEND }
         }
-    }
+        return { success: false, message: "Cannot varify account.", HOST_URL: CONSTANTS.HOST_URL_FRONTEND }
 
+    }
     return { success: false, message: "Cannot varify account.", HOST_URL: CONSTANTS.HOST_URL_FRONTEND }
+
+
+    // const user = await userService.getUserByEmailToken(req.query.token);
+    // if (user) {
+    //     const updated = await userService.updateUserById(user.id, { emailVerified: true });
+    //     if (updated) {
+    //         return { success: true, message: "Email verifyed successfully.", HOST_URL: CONSTANTS.HOST_URL_FRONTEND }
+    //     }
+    // }
+
+    // return { success: false, message: "Cannot varify account.", HOST_URL: CONSTANTS.HOST_URL_FRONTEND }
 }
 
 async function isEmailUnique({ email }) {
