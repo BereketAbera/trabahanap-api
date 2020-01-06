@@ -7,6 +7,7 @@ const _ = require('lodash');
 //     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 // };
 var credentials = new AWS.SharedIniFileCredentials({ profile: 'liguam' });
+var ROLE = require('../_helpers/role');
 AWS.config.credentials = credentials;
 // Set the region 
 AWS.config.update({ region: 'us-west-2' });
@@ -96,6 +97,12 @@ function updateLocationPicture(req, res, next) {
     });
 }
 
+function updateLocationByAdmin(req, res, next) {
+    updateCompanyLocation(req.body, req.params.id, req.user.sub)
+        .then(location => res.status(200).send({ success: true, location }))
+        .catch(err => next(err));
+}
+
 function updateLocation(req, res, next) {
     updateCompanyLocation(req.body, req.params.id, req.user.sub)
         .then(location => res.status(200).send({ success: true, location }))
@@ -150,6 +157,11 @@ function getLocationByCompanyProfile(req, res, next) {
         .catch(err => next(err));
 }
 
+function getLocationById(req, res, next) {
+    adminGetLocationById(req.params.id)
+        .then(location => res.status(200).send({ success: true, location }))
+        .catch(err => next(err));
+}
 
 async function getCities() {
     const cities = await locationService.getCities();
@@ -186,7 +198,9 @@ async function updateCompanyLocation(nLocation, locationId, user_id) {
     if (CountryId) { nLocation.countryId = CountryId }
     var location = await locationService.getLocationById(locationId);
     var user = await userService.getUserById(user_id);
-    if (location && user && location.CompanyProfileId == user.CompanyProfileId) {
+    console.log(user.role, "the role of the user", location.locationName)
+    if (location && user && (location.CompanyProfileId == user.CompanyProfileId || user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
+        console.log("about to edit your locations")
         var updatedLocation = await locationService.updateLocation(location, nLocation)
         if (updatedLocation) {
             return updatedLocation;
@@ -206,6 +220,12 @@ async function getLocationByCompanyProfileId(companyProfileId, user_id) {
     }
 }
 
+async function adminGetLocationById(id) {
+    const location = await locationService.getLocationById(id).catch(err => console.log(err));
+    if(location) {
+        return location;
+    }
+}
 
 async function adminGetLocations(companyProfileId) {
     const location = await locationService.getCompanyLocations(companyProfileId).catch(err => console.log(err));
@@ -305,6 +325,8 @@ module.exports = {
     getRegionCities,
     getCompanyLocations,
     getLocationByCompanyProfile,
+    getLocationById,
+    updateLocationByAdmin,
     addLocationWithImage,
     getLocation,
     updateLocation,
