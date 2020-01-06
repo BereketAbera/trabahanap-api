@@ -25,11 +25,13 @@ app.put('/applicants/:id',userController.deactivateApplicant);
 app.get('/applicant/:id',userController.getApplicantById);
 app.get('/applications', jobsController.getAllApplications);
 
-
 app.post('/location', locationController.addLocationWithImage);
 app.post('/jobs/:companyProfileId', jobsController.adminAddJob);
 app.put('/jobs/:id', jobsController.editCompanyJob);
 app.get('/location/:companyProfileId',locationController.getLocationByCompanyProfile);
+app.get('/location/details/:id', locationController.getLocationById);
+app.put('/location/details/:id', locationController.updateLocationByAdmin);
+app.put('/location/details/picture/:id', locationController.updateLocationPicture);
 app.get('/location/company/:companyProfileId',locationController.getLocatiosForCompany);
 app.get('/jobs/:companyProfileId',jobsController.adminGetAllCompanyJob);
 app.get('/employers/:companyProfileId',otherController.getCompanyDetails);

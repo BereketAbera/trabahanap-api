@@ -713,13 +713,30 @@ async function deactivateApplicantById(id) {
 async function authenticateUsers({ email, password }) {
     const user = await userService.getUserByEmail(email);
     if (user) {
-        const pass = bcryptjs.compareSync(password, user.password);
-        if (pass) {
+        // const pass = bcryptjs.compareSync(password, user.password);
+        // if (pass) {
 
-            if (!user.emailVerified) {
-                return { error: "Verify you email first" }
-            }
-            const token = jwt.sign({ sub: user.id, role: user.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
+        //     if (!user.emailVerified) {
+        //         return { error: "Verify you email first" }
+        //     }
+        //     const token = jwt.sign({ sub: user.id, role: user.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
+        //     const userWithoutPassword = {};
+        //     _.map(user.dataValues, (value, key) => {
+        //         if (key == 'password') {
+        //             userWithoutPassword['token'] = token;
+        //             return;
+        //         }
+
+        //         userWithoutPassword[key] = value;
+        //     });
+
+        //     if (user.role = 'APPLICANT') {
+        //         applicantProfile = await userService.getApplicantProfileByUserId(user.id);
+        //         userWithoutPassword['applicantProfile'] = applicantProfile;
+        //     }
+        //     return userWithoutPassword;
+        // }
+        const token = jwt.sign({ sub: user.id, role: user.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
             const userWithoutPassword = {};
             _.map(user.dataValues, (value, key) => {
                 if (key == 'password') {
@@ -735,8 +752,6 @@ async function authenticateUsers({ email, password }) {
                 userWithoutPassword['applicantProfile'] = applicantProfile;
             }
             return userWithoutPassword;
-        }
-
     }
 }
 
