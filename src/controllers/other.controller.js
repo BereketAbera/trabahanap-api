@@ -1,6 +1,7 @@
 const otherService = require('../services/other.service');
 const userService = require('../services/user.service');
-const jobsService = require('../services/job.service')
+const jobsService = require('../services/job.service');
+const authService = require('../services/auth.service');
 const ROLE = require('../_helpers/role');
 
 var fs = require('fs');
@@ -523,7 +524,6 @@ async function getApplicantIssue(userId, issueId) {
 async function getAdminStaffers(userId) {
     const user = await userService.getUserById(userId);
     if (user && user.role === 'ADMIN') {
-        console.log("about to get your staffs")
         const staffs = await otherService.getAdminStaffs();
         if (staffs) {
             return staffs;
@@ -534,7 +534,6 @@ async function getAdminStaffers(userId) {
 async function addAdminStaffer(body, userId) {
     const user = await userService.getUserById(userId);
     if (user && body.email) {
-        console.log("inside user email logic")
         const userExists = await userService.getUserByEmail(body.email);
         const tokenExists = await otherService.getTokenEmail(body.email);
         if (userExists || tokenExists) {
@@ -542,8 +541,9 @@ async function addAdminStaffer(body, userId) {
         }
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
-        const newUser = await userService.createUser({ ...body, role: ROLE.ADMINSTAFF, password: uuidv4(), username: body.email });
-        if (saveToken && newUser) {
+        const user = await authService.createUserApi({ ...body,password: uuidv4(),role: ROLE.ADMINSTAFF, username: body.email,emailVerificationToken: uuidv4() })
+        const newUser = await userService.createUser({ ...body, role: ROLE.ADMINSTAFF, username: body.email });
+        if (saveToken && newUser && user.data.success) {
             const message = constractAdminStaffEmail(body.firstName, body.email, token);
             sgMail.send(message);
             return true;
@@ -560,10 +560,13 @@ async function addCompanyStaffer(body, userId) {
         if (userExists || tokenExists) {
             return false;
         }
+
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
-        const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: user.companyProfileId, password: uuidv4(), username: body.email, hasFinishedProfile: true });
-        if (saveToken && newUser) {
+        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email})
+        const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER,password: uuidv4(), companyProfileId: user.companyProfileId, username: body.email, hasFinishedProfile: true });
+        if (saveToken && newUser && userApi) {
+            console.log(body,'body in staffer')
             const message = constractStafferEmail(body.firstName, body.email, token);
             sgMail.send(message);
             return true;
@@ -787,9 +790,9 @@ function advancedSearchQueryBuilder(search, employType, industry, salaryRange, c
         }
     }
     if (haveWhere) {
-        query = query + ` and (cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '%${search}%'))`;
+        query = query + ` and (cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '%${search}%'))`;
     } else {
-        query = query + ` where cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '%${search}%')`;
+        query = query + ` where cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '%${search}%')`;
     }
     let selectQuery = `select * from view_companies_jobs_search ` + query + ` LIMIT ${offset},${limit}`;
     let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search` + query + ` LIMIT ${offset},${limit}`;

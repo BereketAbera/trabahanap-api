@@ -19,7 +19,8 @@ const ROLE = require('../_helpers/role');
 const constructEmail = require('../_helpers/construct_email');
 const constructApplicantEmail = require('../_helpers/construct_applicant_email');
 const construct_employer_email = require('../_helpers/construct_employer_email');
-const construct_email_applicant = require('../_helpers/construct_email_applicant')
+const construct_email_applicant = require('../_helpers/construct_email_applicant');
+const construct_reset_password = require('../_helpers/construct_reset_password')
 const userService = require('../services/user.service');
 const jobService = require('../services/job.service');
 const otherService = require('../services/other.service');
@@ -86,6 +87,13 @@ function signUpEmployer(req, res, next) {
         .catch(err => next(err));
 }
 
+
+function forgetPassword(req, res, next) {
+    resetPassword(req.body)
+        .then(response => response ? res.status(200).json({ success: true, response }) : res.status(200).json({ success: false, response: 'No User with this email' }))
+        .catch(err => next(err));
+
+}
 
 
 function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
@@ -197,9 +205,10 @@ async function adminSignUpEmployerUser(body) {
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
         const { email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile } = { ...body };
-        const user = await userService.createUser({ email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile });
+        const userApi = await authService.createUserApi({email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile})
+        const user = await userService.createUser({ email, username, phoneNumber, firstName, lastName, gender, role, emailVerified, hasFinishedProfile });
 
-        if (saveToken && user) {
+        if (saveToken && user && userApi.data.success) {
             const message = construct_employer_email(body.email, token);
             sgMail.send(message);
             return user;
@@ -238,21 +247,21 @@ async function getEmployersWithPagination(page) {
     }
 }
 
-function changeEmployerPassword(req, res, next) {
+function changeUserPassword(req, res, next) {
     var response = { ...req.body, error: "", passwordChanged: false, processed: false };
-    if (req.body.password.length < 5) {
+    if (req.body.password.length < 6) {
         response.error = "Password must be at list 6 characters";
-        res.render('setEmployerPassword', { layout: 'main', response });
+        res.render('setNewPassword', { layout: 'main', response });
         return;
     } else if (req.body.password != req.body.comfirm_password) {
         response.error = "Passwords does not much";
-        res.render('setEmployerPassword', { layout: 'main', response });
+        res.render('setNewPassword', { layout: 'main', response });
         return;
     }
 
     //console.log(response);
 
-    changeNewEmployerPassword(req.body, response.token)
+    changeNewPassword(req.body, response.token)
         .then(success => {
             response.processed = true;
             if (success) {
@@ -261,34 +270,38 @@ function changeEmployerPassword(req, res, next) {
                 response.passwordChanged = false;
             }
 
-            res.render('setEmployerPassword', { layout: 'main', response });
+            res.render('setNewPassword', { layout: 'main', response });
             return;
         })
         .catch(err => next(err));
 }
 
-async function changeNewEmployerPassword(body, token) {
+async function changeNewPassword(body, token) {
     // console.log(token);
-    const user = await userService.getUserByEmail(body.email);
-    if (user) {
+    //const user = await userService.getUserByEmail(body.email);
+    console.log(body,'body')
+    const userApi = await authService.getUserByEmailFromApi(body.email);
+    console.log(userApi.data,'user')
+    if (userApi.data.success) {
         // const updatedUser = await userService.updateUserField(bcryptjs.hashSync(body.password, 10), 'password', user.id);
-        const updatedUser = await userService.updateUserById(user.id, { password: bcryptjs.hashSync(body.password, 10), emailVerified: true });
-        const updateToken = await otherService.updateToken(token, { expired: true });
-        if (updatedUser && updateToken) {
+        //const updatedUser = await userService.updateUserById(user.id, { password: bcryptjs.hashSync(body.password, 10), emailVerified: true });
+        const updateApi = await authService.changePassword(userApi.data.user.id,body.password);
+        //const updateToken = await otherService.updateToken(token, { expired: true });
+        if (updateApi) {
+
             return true;
         }
     }
-
     return false;
 }
 
-function addNewEmployerPassword(req, res, next) {
-    renderNewEmployerPassword(req)
-        .then(response => res.render('setEmployerPassword', { layout: 'main', response }))
+function resetPasswordFromEmail(req,res,next){
+    renderNewUserPassword(req)
+        .then(response => res.render('setNewPassword', { layout: 'main', response }))
         .catch(err => next(err));
 }
 
-async function renderNewEmployerPassword(req) {
+async function renderNewUserPassword(req) {
     if (req.params.token && req.params.token) {
         const exists = await otherService.getToken(req.params.token)
         if (exists) {
@@ -296,6 +309,27 @@ async function renderNewEmployerPassword(req) {
         }
     }
     return { ...req.params, verified: false, passwordChanged: false, processed: false }
+}
+
+
+async function resetPassword(body) {
+    console.log(body)
+    if (body.email) {
+        const user = await userService.getUserByEmail(body.email);
+        const token = uuidv4();
+        const saveToken = await otherService.saveToken(token, body.email);
+        if (user && saveToken) {
+            const message = construct_reset_password(user.firstName,user.email,token);
+            sgMail.send(message);
+            return "Email sent";
+                // return { ...body, token: exists.token, verified: true, passwordChanged: false, processed: false }
+
+
+            // return { ...req.params, verified: false, passwordChanged: false, processed: false }
+        }
+        // return "No user with this email address. Register first or Verify your account"
+    }
+
 }
 
 function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
@@ -740,7 +774,7 @@ async function authenticateUsers({ email, password }) {
                 userWithoutPassword.emailVerified = 1;
 
             }
-            console.log(userWithoutPassword, 'ipass')
+           // console.log(userWithoutPassword, 'ipass')
             return userWithoutPassword;
         }
         //return user.data;
@@ -803,9 +837,10 @@ async function signUpUserApplicantFromAdmin(body) {
     if (unique) {
         body["role"] = ROLE.APPLICANT;
         body["emailVerified"] = true;
-
+        const userApi = await authService.createUserApi(body);
         const user = await userService.createUser(body);
-        if (user) {
+        console.log(userApi.data)
+        if (user && userApi.data.success) {
             return user;
         }
         throw "Something went wrong.";
@@ -823,6 +858,7 @@ async function signUpUserEmployer(body) {
         const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
         const message = constructEmail(user.data.user);
         sgMail.send(message);
+        console.log("dude whats up")
         return users;
     }
 
@@ -928,7 +964,7 @@ async function getUserApplicantProfile(id) {
 
 async function createUserCompanyProfile(body) {
     const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
-    console.log(user,'user')
+    console.log(user, 'user')
     if (user) {
         const compProfile = await userService.addCompanyProfile(body);
         if (compProfile) {
@@ -961,12 +997,12 @@ async function verifyUserEmail(req) {
     if (user.data.success) {
         const updated = await userService.updateUserByEmail(user.data.user.email, { emailVerified: true });
         if (updated) {
-            return { success: true, message: "Email verifyed successfully.", HOST_URL: CONSTANTS.HOST_URL_FRONTEND }
+            return { success: true, message: "Email verified successfully.", HOST_URL: CONSTANTS.HOST_URL_FRONTEND }
         }
         return { success: false, message: "Cannot varify account.", HOST_URL: CONSTANTS.HOST_URL_FRONTEND }
 
     }
-    return { success: false, message: "Cannot varify account.", HOST_URL: CONSTANTS.HOST_URL_FRONTEND }
+    return { success: false, message: "Cannot verify account.", HOST_URL: CONSTANTS.HOST_URL_FRONTEND }
 
 
     // const user = await userService.getUserByEmailToken(req.query.token);
@@ -1049,11 +1085,12 @@ module.exports = {
     updateCompanyBusinessLicense,
     getAllEmployers,
     admnCreateCompanyProfileWithBusinessLicenseAndLogo,
-    changeEmployerPassword,
-    addNewEmployerPassword,
+    changeUserPassword,
     createApplicant,
     getApplicants,
     deactivateApplicant,
     getApplicantById,
-    getCompanyProfile
+    getCompanyProfile,
+    forgetPassword,
+    resetPasswordFromEmail
 }

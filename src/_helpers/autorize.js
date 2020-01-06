@@ -8,35 +8,53 @@ module.exports = authorize;
 
 
 
-
 function authorize(roles = []) {
     if (typeof roles === 'string') {
         roles = [roles];
     }
 
     return [
+        expressJwt({ secret: CONSTANTS.JWTSECRET }),
+
         (req, res, next) => {
-            verifyToken(req).then(
-                data => {
-                    if(data.success){
-                        req.user = data.user;
-                    }
-                    console.log(req)
-                    if (roles.length && !roles.includes(req.user.role)) {
-                        return res.status(200).json({ success: false, error: 'Unauthorized' });
-                    }
-                    next();
-                    console.log(req.user);  
-                }
-            ).catch(err =>{
-                console.log(err)
-            });
-           
-           
-          
+            if (roles.length && !roles.includes(req.user.role)) {
+                return res.status(200).json({ success: false, error: 'Unauthorized' });
+            }
+            next();
         }
     ];
 }
+
+
+
+// function authorize(roles = []) {
+//     if (typeof roles === 'string') {
+//         roles = [roles];
+//     }
+
+//     return [
+//         (req, res, next) => {
+//             verifyToken(req).then(
+//                 data => {
+//                     if(data.success){
+//                         req.user = data.user;
+//                     }
+//                     console.log(req)
+//                     if (roles.length && !roles.includes(req.user.role)) {
+//                         return res.status(200).json({ success: false, error: 'Unauthorized' });
+//                     }
+//                     next();
+//                     console.log(req.user);  
+//                 }
+//             ).catch(err =>{
+//                 console.log(err)
+//             });
+           
+           
+          
+//         }
+//     ];
+// }
 
 async function verifyToken(req) {
     const token = req.headers.authorization;
