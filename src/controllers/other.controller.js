@@ -453,6 +453,7 @@ async function adminAddCompanyStaffs(body, compProfileId) {
         console.log(body.email,"email");
         const userExists = await userService.getUserByEmail(body.email);
         const tokenExists = await otherService.getTokenEmail(body.email);
+
         console.log(userExists,"user");
         console.log(tokenExists,'token')
         if (userExists || tokenExists) {
@@ -461,9 +462,10 @@ async function adminAddCompanyStaffs(body, compProfileId) {
         console.log('to be created')
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
-        const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: compProfileId, password: uuidv4(), username: body.email, hasFinishedProfile: true });
+        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email})
+        const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: compProfileId, username: body.email, hasFinishedProfile: true });
         console.log('created')
-        if (saveToken && newUser) {
+        if (saveToken && newUser && userApi) {
             const message = constractStafferEmail(body.firstName,body.email, token);
             sgMail.send(message);
             console.log('sent')
@@ -564,7 +566,7 @@ async function addCompanyStaffer(body, userId) {
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
         const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email})
-        const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER,password: uuidv4(), companyProfileId: user.companyProfileId, username: body.email, hasFinishedProfile: true });
+        const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: user.companyProfileId, username: body.email, hasFinishedProfile: true });
         if (saveToken && newUser && userApi) {
             console.log(body,'body in staffer')
             const message = constractStafferEmail(body.firstName, body.email, token);

@@ -109,7 +109,10 @@ html {
   margin-top: 10rem;
 }
 
-
+.main-content{
+  width: 55%;
+  margin: auto;
+}
 
 .success {
   text-align: center;

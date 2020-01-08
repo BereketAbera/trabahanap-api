@@ -284,7 +284,7 @@ async function changeNewPassword(body, token) {
     console.log(userApi.data,'user')
     if (userApi.data.success) {
         // const updatedUser = await userService.updateUserField(bcryptjs.hashSync(body.password, 10), 'password', user.id);
-        //const updatedUser = await userService.updateUserById(user.id, { password: bcryptjs.hashSync(body.password, 10), emailVerified: true });
+        const updated = await userService.updateUserByEmail(userApi.data.user.email, { emailVerified: true });
         const updateApi = await authService.changePassword(userApi.data.user.id,body.password);
         //const updateToken = await otherService.updateToken(token, { expired: true });
         if (updateApi) {
@@ -758,14 +758,10 @@ async function authenticateUsers({ email, password }) {
             const token = jwt.sign({ sub: user.id, role: user.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
             const userWithoutPassword = {};
             _.map(user.dataValues, (value, key) => {
-                if (key == 'password') {
-                    userWithoutPassword['token'] = token;
-                    return;
-                }
                 userWithoutPassword[key] = value;
 
             });
-
+            userWithoutPassword['token'] = token;
             if (user.role = 'APPLICANT') {
                 applicantProfile = await userService.getApplicantProfileByUserId(user.id);
                 userWithoutPassword['applicantProfile'] = applicantProfile;
@@ -815,10 +811,13 @@ async function signUpUserApplicant(body) {
     console.log(user.data)
     if (user.data.success) {
         body["role"] = ROLE.APPLICANT;
-        const message = construct_email_applicant(user.data.user);
+        
         const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
-        sgMail.send(message);
-        return users;
+        if(user){
+            const message = construct_email_applicant(user.data.user);
+            sgMail.send(message);
+            return users;
+        }
     }
 
     // const unique = await isEmailUnique(body);
@@ -856,10 +855,12 @@ async function signUpUserEmployer(body) {
     if (user.data.success) {
         body["role"] = ROLE.EMPLOYER;
         const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
-        const message = constructEmail(user.data.user);
-        sgMail.send(message);
-        console.log("dude whats up")
-        return users;
+        if(users){
+            const message = constructEmail(body.firstName,body.email,user.data.user.emailVerificationToken);
+            sgMail.send(message);
+            return users;
+        }
+       
     }
 
 

@@ -9,8 +9,8 @@
   "development": {
     "username": "root",
     "password": null,
-    "database": "trabahanap_migration",
-    "host": "192.168.0.10",
+    "database": "trabahanap_development",
+    "host": "localhost",
     "dialect": "mysql",
     "operatorsAliases": false
   },

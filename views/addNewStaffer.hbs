@@ -1,10 +1,10 @@
 <div class="varification_container">
     {{#unless response.processed}}
     {{#if response.verified}}
-    <div>
+    <div class="main-content">
         <form action="/api/auth/new_staffer/{{response.email}}/{{response.token}}" method="post" class="form">
             <h3 class="form__header">Set Password For your Account</h3>
-            <div style="display: flex; flex-direction: column; width: 30%; overflow: hidden; padding: 2rem 0rem;">
+            <div style="display: flex; flex-direction: column; width: 20%; overflow: hidden; padding: 2rem 0rem;">
                 <div class="form__group">
                     <input class="form__input" id="password" type="password" name="password"
                         placeholder="Enter Password">
