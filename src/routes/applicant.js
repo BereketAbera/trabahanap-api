@@ -8,6 +8,7 @@ const otherController = require('../controllers/other.controller');
 // })
 app.get('/jobs', jobsController.getApplicantAppliedJobs)
 app.get('/jobs/saved', jobsController.getJobsLaterReview);
+app.get('/jobs/saved/all',jobsController.getAllSavedJobs);
 app.post('/jobs/apply', jobsController.applyJob);
 app.post('/jobs/save', jobsController.saveForLaterReview);
 app.get('/jobs/applications', jobsController.getApplicantApplications)

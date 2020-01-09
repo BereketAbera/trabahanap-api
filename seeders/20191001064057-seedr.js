@@ -9,12 +9,15 @@ console.log("running seedr");
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const industries = [];
-    const ind = ["Agriculture", "Airline", "Arts", "Automotive", "Banking/Financial",
-     "Call Center", "Communication", "Construction", "Distribution", "Education", "Energy",
-     "Engineering", "Fast Food", "Gaming", "HealthCare", "Hospitality", "Hotel", "Human Resources",
-     "Information Technology", "Insurance", "Landscaping", "Manpower Services", "Manufacturing",
-     "Marketing", "Media", "Others", "Publishing", "Real Estate",
-     "Restaurant", "Retail", "Sales", "Science", "Services", "Warehouse"]
+    const ind = ["Agriculture", "Airline", "Arts", "Automotive", "Banking/Financial", "Call Center", "Communication", "Construction", "Distribution", "Education", "Energy", "Engineering", "Fast Food", "Gaming", "Healthcare", "Hospitality", "Hotel", "Human Resources", "Information Technology", "Insurance", "Landscaping", "Manpower Services", "Manufacturing", "Marketing", "Media", "Others", "Publishing", "Real Estate", "Restaurant", "Retail", "Sales", "Sciences", "Services", "Warehouse"]
+    const tempindid = ["AGRICULTURE", "AIRLINE", "ARTS", "AUTOMOTIVE", "BANKINGFINANCIAL", "CALLCENTER", "COMMUNICATION", "CONSTRUCTION", "DISTRIBUTION", "EDUCATION", "ENERGY", "ENGINEERING", "FASTFOOD", "GAMING", "HEALTHCARE", "HOSPITALITY", "HOTEL", "HUMANRESOURCES", "INFOTECH", "INSURANCE", "LANDSCAPING", "MANPOWERSERVICE", "MANUFACTURING", "MARKETING", "MEDIA", "OTHER", "PUBLISHING", "REALESTATE", "RESTAURANT", "RETAIL", "SALES", "SCIENCES", "SERVICES", "WAREHOUSE"]
+    
+    // const ind = ["Agriculture", "Airline", "Arts", "Automotive", "Banking/Financial",
+    //  "Call Center", "Communication", "Construction", "Distribution", "Education", "Energy",
+    //  "Engineering", "Fast Food", "Gaming", "HealthCare", "Hospitality", "Hotel", "Human Resources",
+    //  "Information Technology", "Insurance", "Landscaping", "Manpower Services", "Manufacturing",
+    //  "Marketing", "Media", "Others", "Publishing", "Real Estate",
+    //  "Restaurant", "Retail", "Sales", "Science", "Services", "Warehouse"]
 
     for(var x = 0; x < ind.length; x ++){
       industries.push({

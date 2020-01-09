@@ -14,7 +14,6 @@ const JobLaterReview = sequelize.import("./job_later_reviews.js");
 const Issue = sequelize.import("./issues.js");
 const IssueResponse = sequelize.import("./issue_responses.js");
 const Token = sequelize.import("./tokens.js");
-const UserAndApplicantProfiles = sequelize.import("./user_and_applicant_profiles.js");
 
 ApplicantProfile.belongsTo(User);
 ApplicantProfile.belongsTo(City);

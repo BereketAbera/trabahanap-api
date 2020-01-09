@@ -29,6 +29,7 @@ app.post('/profile/logo', userController.updateCompanyLogo);
 app.post('/profile/businessLicense', userController.updateCompanyBusinessLicense);
 app.put('/profile/:id', userController.editCompanyProfile);
 app.post('/profile',  userController.createCompanyProfileWithBusinessLicenseAndLogo);
+app.get('/profile',userController.getCompanyProfile);
 
 app.post('/staff/add', empAutorize(ROLE.EMPLOYER), otherController.addStaff)
 app.get('/staff', empAutorize(ROLE.EMPLOYER), otherController.getStaffs)

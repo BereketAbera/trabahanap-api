@@ -25,9 +25,9 @@ const jobService = require('../services/job.service');
 const otherService = require('../services/other.service');
 const formidable = require('formidable');
 const CONSTANTS = require('../../constants.js');
+const axios = require('axios');
 
 sgMail.setApiKey(CONSTANTS.SENDGRID_KEY);
-
 
 const {
     validateUser,
@@ -44,6 +44,12 @@ function authenticate(req, res, next) {
             }
             user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'username or password is incorrect' })
         })
+        .catch(err => next(err));
+}
+
+function getCompanyProfile(req, res, next) {
+    getUserById(req.user.sub)
+        .then(employer => employer ? res.status(200).json({ success: true, employer }) : res.status(200).json({ success: false, error: 'email is not unique' }))
         .catch(err => next(err));
 }
 
@@ -203,6 +209,30 @@ async function adminSignUpEmployerUser(body) {
 function getAllEmployers(req, res, next) {
     getEmployersWithPagination(req.query.page || 1)
         .then(jobs => res.status(200).send({ success: true, jobs }))
+        .catch(err => next(err));
+}
+
+function facebookAuth(req, res, next){
+    const {access_token, social_id, user} = req.body;
+    
+    if(!access_token || !social_id || !user){
+        return res.status(200).send({ success: false, error: 'invalid request' });
+    }
+
+    socialAuthHandler('facebook', access_token, social_id, user)
+        .then(user => res.status(200).send({ success: true, user }))
+        .catch(err => next(err));
+}
+
+function googleAuth(req, res, next){
+    const {access_token, social_id, user} = req.body;
+    
+    if(!access_token || !social_id || !user){
+        return res.status(200).send({ success: false, error: 'invalid request' });
+    }
+
+    socialAuthHandler('google', access_token, social_id, user)
+        .then(user => res.status(200).send({ success: true, user }))
         .catch(err => next(err));
 }
 
@@ -492,7 +522,7 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
     var fileNameProfilePicture = "";
     var form = new formidable.IncomingForm();
     form.multiples = true;
-    console.log('here')
+    //console.log('here')
     form.on('fileBegin', function (name, file) {
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         let fileName = '';
@@ -519,7 +549,7 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
             return;
         }
 
-        console.log('after')
+        //console.log('after')
 
         var cvFile = files['cv'];
         var profilePictureFile = files['applicantPicture']
@@ -528,20 +558,20 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
                 .then(data => {
                     console.log(data)
                     applicantProfile['cv'] = data.Location;
-                    if(profilePictureFile){
+                    if (profilePictureFile) {
                         return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
-                    }else{
-                        return uploadFilePromise(cvFile.path, 'th-employer-logo', cvFile)
-
                     }
+                    //return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
                 })
                 .then(data => {
-                    console.log(data.Location)
-                    //applicantProfile['applicantPicture'] = data.Location;
+                    if (profilePictureFile) {
+                        applicantProfile['applicantPicture'] = data.Location;
+                    }
                     return createUserApplicantProfile(applicantProfile);
                 })
                 .then(applicantProfile => {
                     fs.unlinkSync(cvFile.path);
+                   //console.log(applicantProfile.applicantProfile,'a')
                     applicantProfile ? res.status(200).json({ success: true, applicantProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
                 .catch(err => next(err));
@@ -593,14 +623,19 @@ function createApplicant(req, res, next) {
 
         var cvFile = files['cv'];
         var profilePictureFile = files['applicantPicture'];
-        if (cvFile && profilePictureFile && cvFile.path && profilePictureFile.path) {
+        if (cvFile && cvFile.path) {
             uploadFilePromise(cvFile.path, 'th-applicant-cv', fileNameCV)
                 .then(data => {
                     applicantProfile['cv'] = data.Location;
-                    return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                    if (profilePictureFile) {
+                        return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                    }
+                    //return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
                 })
                 .then(data => {
-                    applicantProfile['applicantPicture'] = data.Location;
+                    if (profilePictureFile) {
+                        applicantProfile['applicantPicture'] = data.Location;
+                    }
                     return signUpUserApplicantFromAdmin(user);
                 })
                 .then(user => {
@@ -666,9 +701,9 @@ function getApplicantById(req, res, next) {
 }
 
 
-async function getApplicantProfileByUserId(id){
+async function getApplicantProfileByUserId(id) {
     const applicant = userService.getApplicantProfileByUserId(id);
-    if(applicant){
+    if (applicant) {
         return applicant;
     }
 
@@ -693,8 +728,6 @@ async function deactivateApplicantById(id) {
         }
 
     }
-
-
     if (deactivated && user) {
         console.log(user)
         return user;
@@ -721,7 +754,7 @@ async function authenticateUsers({ email, password }) {
                 userWithoutPassword[key] = value;
             });
 
-            if(user.role = 'APPLICANT'){
+            if (user.role = 'APPLICANT') {
                 applicantProfile = await userService.getApplicantProfileByUserId(user.id);
                 userWithoutPassword['applicantProfile'] = applicantProfile;
             }
@@ -771,6 +804,13 @@ async function signUpUserEmployer(body) {
     }
 }
 
+async function getUserById(user_id) {
+    const user = userService.getUserById(user_id);
+    if (user) {
+        return user;
+    }
+}
+
 async function editUserApplicantProfile(body, id) {
     body = { ...body, cityId: body.CityId, countryId: body.countryId, regionId: body.regionId };
     let applicantProfile = await userService.getApplicantProfileByUserId(body.user_id);
@@ -808,13 +848,15 @@ async function updateApplicantField(value, fieldName, userId) {
 
 async function createUserApplicantProfile(body) {
     const user = await userService.getUserByIdAndRole(body.UserId, ROLE.APPLICANT);
+    let newUser ={};
     if (user) {
         const appProfile = await userService.addApplicantProfile({ ...body });
         if (appProfile) {
-            const newUser = await user.update({ hasFinishedProfile: true });
-            // if(user)
-            if (newUser) {
-                return newUser;
+            newuser = await user.update({ hasFinishedProfile: true });  
+            //let applicantProfile = await userService.getApplicantProfileByUserId(body.UserId);
+            if (newuser) {
+                //console.log({...newUser,applicantProfile:applicantProfile})
+                return appProfile;
             }
         }
     }
@@ -921,6 +963,95 @@ async function getAllApplicants(page) {
 
 }
 
+async function socialAuthHandler(provider, access_token, socialId, localUser){
+    if(provider == 'facebook'){
+        let facebookAuth = await axios.get(`https://graph.facebook.com/me?access_token=${access_token}`);
+        facebookAuth = facebookAuth.data;
+        if(!facebookAuth.id){
+            throw "invalid social token"
+        }
+    
+        if(facebookAuth.id != socialId){
+            throw "invalid social token"
+        }
+
+    }else{
+        let googleAuth = await axios.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${access_token}`);
+        googleAuth = googleAuth.data;
+    
+        if(!googleAuth.sub){
+            throw "invalid social token"
+        }
+    
+        if(googleAuth.sub != socialId){
+            throw "invalid social token"
+        }
+    }
+    const { email, firstName, lastName } = localUser;
+    if(!email || !firstName || !lastName){
+        throw "invalid user"
+    }
+
+    const emailUnique = await isEmailUnique({email});
+    if(!emailUnique){
+        let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_login`, {email, socialId});
+        if(!authUser || !authUser.data.success){
+            throw "something went wrong";
+        }
+
+        authUser = authUser.data.user;
+
+        
+        let localUser = await userService.getUserById(authUser.id);
+        if(!localUser){
+            throw "something went wrong";
+        }
+
+        const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
+    
+        const userWithoutPassword = {};
+        _.map(localUser.dataValues, (value, key) => {
+            if (key == 'password') {
+                userWithoutPassword['token'] = token;
+                return;
+            }
+
+            userWithoutPassword[key] = value;
+        });
+        
+        return userWithoutPassword;
+    }else{
+        
+        let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_signup`, {email, firstName, lastName, phoneNumber: "", socialId});
+        if(!authUser){
+            throw "something went wrong";
+        }
+
+        authUser = authUser.data.user;
+
+        // console.log({email, firstName, lastName, phoneNumber: "", socialId});
+
+        let localUser = await userService.createUser({...authUser, role: 'APPLICANT', password: "testpassword", active: true, emailVerified:true});
+        if(!localUser){
+            throw "something went wrong";
+        }
+
+        const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
+    
+        const userWithoutPassword = {};
+        _.map(localUser.dataValues, (value, key) => {
+            if (key == 'password') {
+                userWithoutPassword['token'] = token;
+                return;
+            }
+
+            userWithoutPassword[key] = value;
+        });
+        
+        return userWithoutPassword;
+    }
+}
+
 function uploadFilePromise(file, bucketName, fileName) {
     var uploadParams = { Bucket: bucketName, Key: fileName, Body: '', ACL: 'public-read' };
     var fileStream = fs.createReadStream(file);
@@ -964,5 +1095,8 @@ module.exports = {
     createApplicant,
     getApplicants,
     deactivateApplicant,
-    getApplicantById
+    getApplicantById,
+    getCompanyProfile,
+    facebookAuth,
+    googleAuth
 }

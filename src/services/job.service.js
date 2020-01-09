@@ -39,6 +39,7 @@ async function editJobById(id, newJob) {
 async function getJobById(id) {
     return Job.findOne({ where: { id }, include: [{ model: CompanyProfile }, { model: Location }] }).catch(err => console.log(err));
 }
+
 async function getHiredApplicant(ApplicantProfileId,jobId){
     return JobApplication.findOne({ where: { ApplicantProfileId, jobId } }).catch(err => console.log(err));
 }
@@ -95,8 +96,19 @@ function getApplicantJobs(applicantId,offset,limit) {
     return sequelize.query(`SELECT * from view_applicant_applied_jobs where applicantProfileId = '${applicantId}' order by createdAt DESC LIMIT ${offset},${limit}`);
 }
 
-function getApplicantSavedJobs(applicantId) {
-    return sequelize.query(`SELECT j.id, j.jobTitle, j.jobDescription, j.industry, j.position, j.educationAttainment, j.salaryRange, j.employmentType, j.vacancies, j.additionalQualifications, j.applicationEndDate, j.applicationStartDate, jl.applicantProfileId,j.companyProfileId, cp.companyName, cp.contactNumber, cp.industryType, cp.companyLogo, cp.companyAddress from job_later_reviews jl LEFT JOIN jobs j ON j.id = jl.jobId LEFT JOIN company_profiles cp ON cp.id = j.companyProfileId where jl.applicantProfileId = '${applicantId}'`);
+function getApplicantSavedJobs(applicantId,offset,limit) {
+    return sequelize.query(`SELECT * from view_jobs_saved_review_later where applicantProfileId = '${applicantId}' order by createdAt DESC LIMIT ${offset},${limit} `);
+}
+
+function getAllSavedJobs(applicantId){
+    return sequelize.query(`SELECT * from view_jobs_saved_review_later where applicantProfileId = '${applicantId}'`);
+}
+function countGetApplicantSavedJobs(applicantId){
+    return sequelize.query(`SELECT COUNT(*) from view_jobs_saved_review_later where applicantProfileId = '${applicantId}'`);
+}
+
+function countGetApplicantAppliedJobs(applicantId){
+    return sequelize.query(`SELECT COUNT(*) from view_applicant_applied_jobs where applicantProfileId = '${applicantId}'`);
 }
 
 function getCitySearch(search) {
@@ -156,6 +168,7 @@ function getJobsSearch(search) {
 // function searchAll(offset, limit){
 //     return sequelize.query(`SELECT *  FROM view_companies_jobs_search order by createdAt DESC LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
 // }
+
 function getJobsInLocations(latitude,longitude,distance){
     return  sequelize.query(`SELECT *, ( 6371 * acos( cos( radians(${latitude}) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(${longitude}) ) + sin( radians(${latitude}) ) * sin( radians( latitude ) ) ) ) AS distance FROM view_companies_jobs_search HAVING distance < ${distance} ORDER BY distance LIMIT 0 , 20;`,{ type: sequelize.QueryTypes.SELECT })   
 }
@@ -234,7 +247,9 @@ module.exports = {
     getAllApplications,
     getAllApplicationsCount,
     getCompanyApplications,
-    getCompanyApplicationsCount
-
+    getCompanyApplicationsCount,
+    countGetApplicantAppliedJobs,
+    countGetApplicantSavedJobs,
+    getAllSavedJobs
     // getApplicantApplication
 }

@@ -20,6 +20,10 @@ app.post('/new_applicant/:email/:token', otherController.changeApplicantPassword
 app.get('/employer_password/:email/:token', userController.addNewEmployerPassword)
 app.post('/employer_password/:email/:token', userController.changeEmployerPassword)
 
+app.post('/facebook/token', userController.facebookAuth);
+
+app.post('/google/token', userController.googleAuth);
+
     
 app.get('/logout', (req, res) => {
     res.send({msg: 'Hello'});
