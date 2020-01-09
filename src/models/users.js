@@ -17,10 +17,6 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING(255),
       allowNull: false
     },
-    password: {
-      type: DataTypes.STRING(255),
-      allowNull: false
-    },
     email: {
       type: DataTypes.STRING(255),
       allowNull: false
@@ -75,10 +71,10 @@ module.exports = function (sequelize, DataTypes) {
     tableName: 'users'
   });
 
-  user.beforeCreate((u, options) => {
-    u.password = bcryptjs.hashSync(u.password, 10);
-    return user;
-  });
+  // user.beforeCreate((u, options) => {
+  //   u.password = bcryptjs.hashSync(u.password, 10);
+  //   return user;
+  // });
 
   return user;
 };

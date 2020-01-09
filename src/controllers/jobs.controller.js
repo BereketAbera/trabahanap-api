@@ -1173,7 +1173,7 @@ function FiltersJobQueryBuilder(search, employType, industry, salaryRange, offse
         query = query + ` where (jobTitle like '%${search}%' or companyName like '${search}%')`;
     }
     let selectQuery = `select * from view_companies_jobs_search ` + query + ` LIMIT ${offset},${limit}`;
-    let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search`;
+    let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search`+query;
     return { selectQuery: selectQuery, count: QueryCount };
 }
 

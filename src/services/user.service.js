@@ -1,7 +1,15 @@
 const { User, ApplicantProfile, CompanyProfile } = require('../models');
+// import { environment } from '../environmets/environmet';
+const environment = require('../environmets/environmet')
+const axios = require('axios');
 
 function createUser(user){
     return User.create(user).catch(err => console.log(err));
+}
+
+async function createUserApi(user){
+    console.log('s')
+    return await axios.post(`${environment}/auth/signup`,user);
 }
 
 function getUserByEmail(email){
@@ -34,6 +42,12 @@ function addApplicantProfile(applicantProfile){
 
 async function updateUserById(id, newUser){
     let user = await User.findOne({where: { id }}).catch(err => console.log(err));
+    return user.update(newUser);
+}
+
+
+async function updateUserByEmail(email, newUser){
+    let user = await User.findOne({where: { email }}).catch(err => console.log(err));
     return user.update(newUser);
 }
 
@@ -112,5 +126,7 @@ module.exports = {
     getUserbyCompanyProfileId,
     getUserAndCompanyProfile,
     getCompanyWithOffsetAndLimit,
-    getAllByCompanyProfileId
+    getAllByCompanyProfileId,
+    createUserApi,
+    updateUserByEmail
 };
