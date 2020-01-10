@@ -1,12 +1,15 @@
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('users', {
+    return queryInterface.createTable('user_and_applicant_profiles', {
       id: {
         primaryKey: true,
         type: Sequelize.UUID,
         allowNull: false,
         defaultValue: Sequelize.UUIDV4
+      },
+      caspioId: {
+        type: Sequelize.STRING,
       },
       username: {
         type: Sequelize.STRING,
@@ -46,6 +49,30 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },
+      cv: {
+        type: Sequelize.STRING
+      },
+      applicantPicture:{
+        type: Sequelize.STRING
+      },
+      currentEmployer: {
+        type: Sequelize.STRING
+      },
+      currentOccopation: {
+        type: Sequelize.STRING
+      },
+      address: {
+        type: Sequelize.STRING
+      },
+      gender: {
+        type: Sequelize.STRING
+      },
+      dateOfBirth:{
+        type: Sequelize.DATE
+      },
+      selfDescription: {
+        type: Sequelize.TEXT
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -53,10 +80,19 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
+      },
+      CityId: {
+        type: Sequelize.INTEGER
+      }, 
+      RegionId: {
+        type: Sequelize.INTEGER
+      },
+      CountryId: {
+        type: Sequelize.INTEGER
       }
     });
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('users');
+    return queryInterface.dropTable('user_and_applicant_profiles');
   }
 };

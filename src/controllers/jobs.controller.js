@@ -186,7 +186,7 @@ function isHired(req, res, next) {
 }
 function getCompanyApplicant(req, res, next) {
     const companyProfileId = req.params.companyProfileId;
-    console.log(companyProfileId);
+    // console.log(companyProfileId);
     getCompanyApplicantWithPagination(req.query.page || 1, req.query.pageSize || 5, companyProfileId)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
@@ -298,7 +298,7 @@ async function getFilterJobsWithPaginations(user_id, jobtitle, industry, positio
     if (user) {
 
         queryResult = filterEmployerJobsQueryBuilder(user.companyProfileId || '', jobtitle || '', industry || '', position || '', offset || 0, limit || 6);
-        console.log(queryResult)
+        // console.log(queryResult)
         const applications = await jobsService.executeSearchQuery(queryResult.selectQuery);
         if (applications) {
             counts = await jobsService.executeSearchQuery(queryResult.count);
@@ -329,9 +329,9 @@ async function getFilterApplicantAppliedJobs(user_id, jobtitle, industry, compan
     const user = await userService.getApplicantProfileByUserId(user_id);
     //console.log(user)
     if (user) {
-        console.log('here')
+        // console.log('here')
         queryResult = filterApplicantJobsQueryBuilder('view_applicant_applied_jobs',user.id || '', jobtitle || '', industry || '', company || '', offset || 0, limit || 6);
-        console.log(queryResult)
+        // console.log(queryResult)
         const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
         if (jobs) {
             counts = await jobsService.executeSearchQuery(queryResult.count);
@@ -356,9 +356,9 @@ async function getFilterApplicantSavedJobs(user_id, jobtitle, industry, company,
  
     const offset = (page - 1) * pager.pageSize;
     const limit = pager.pageSize;
-    console.log(user_id)
+    // console.log(user_id)
     const user = await userService.getApplicantProfileByUserId(user_id);
-    console.log(user)
+    // console.log(user)
     if (user) { 
         queryResult = filterApplicantJobsQueryBuilder('view_jobs_saved_review_later',user.id || '', jobtitle || '', industry || '', company || '', offset || 0, limit || 6);
         //console.log(queryResult)
@@ -428,7 +428,7 @@ async function adminFilterEmployersPagination(companyName, industry, page) {
     const limit = pager.pageSize;
 
     queryResult = filterEmployerQueryBuilder(companyName || '', industry || '', offset || 0, limit || 6);
-    console.log(queryResult)
+    // console.log(queryResult)
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
     if (jobs) {
         counts = await jobsService.executeSearchQuery(queryResult.count);
@@ -454,7 +454,7 @@ async function adminFilterApplicantsPagination(name, email, page) {
     const limit = pager.pageSize;
 
     queryResult = filterApplicantQueryBuilder(name || '', email || '', offset || 0, limit || 6);
-    console.log(queryResult)
+    // console.log(queryResult)
     const applicants = await jobsService.executeSearchQuery(queryResult.selectQuery);
     if (applicants) {
         counts = await jobsService.executeSearchQuery(queryResult.count);
@@ -484,7 +484,7 @@ async function filterAllFilteredJobsApplicationsWithPaginations(user_id, jobtitl
     if (user) {
 
         queryResult = filterEmployerFilteredApplicantionsQueryBuilder(user.companyProfileId || '', jobtitle || '', industry || '', position || '', offset || 0, limit || 6);
-        console.log(queryResult)
+        // console.log(queryResult)
         const applications = await jobsService.executeSearchQuery(queryResult.selectQuery);
         if (applications) {
             counts = await jobsService.executeSearchQuery(queryResult.count);
@@ -515,7 +515,7 @@ async function filterAllJobsApplicationsWithPaginations(user_id, jobtitle, indus
     if (user) {
 
         queryResult = filterEmployerApplicantionsQueryBuilder(user.companyProfileId || '', jobtitle || '', industry || '', position || '', offset || 0, limit || 6);
-        console.log(queryResult)
+        // console.log(queryResult)
         const applications = await jobsService.executeSearchQuery(queryResult.selectQuery);
         if (applications) {
             counts = await jobsService.executeSearchQuery(queryResult.count);
@@ -623,7 +623,7 @@ async function adminFilterJobsPagination(industry, employType, salaryRange, sear
     const limit = pager.pageSize;
 
     queryResult = FiltersJobQueryBuilder(search, employType, industry, salaryRange, offset, limit);
-    console.log(queryResult)
+    // console.log(queryResult)
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
     if (jobs) {
         counts = await jobsService.executeSearchQuery(queryResult.count);
@@ -700,7 +700,7 @@ async function getCompanyApplicationsWithPaginations(user_id, page) {
 }
 
 async function getSearchInCity(search, cityName, page) {
-    console.log(cityName, "city");
+    // console.log(cityName, "city");
     const pager = {
         pageSize: 8,
         totalItems: 0,
@@ -711,7 +711,7 @@ async function getSearchInCity(search, cityName, page) {
     const limit = pager.pageSize;
 
     queryResult = searchQueryBuilder(search || '', cityName || '', offset, limit);
-    console.log(queryResult)
+    // console.log(queryResult)
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
 
     if (jobs) {
@@ -877,7 +877,7 @@ async function getCompanyApplicantWithPagination(page, pageSize, compProfileId) 
     const limit = pager.pageSize;
 
     const applications = await jobsService.getCompanyAllApplicant(offset, limit, compProfileId);
-    console.log(applications)
+    // console.log(applications)
     if (applications) {
         return applications;
     }
@@ -978,7 +978,7 @@ async function getEmployerFilteredJobApplicants(jobId, userId) {
 
 async function getIsHired(applicantId, jobId) {
     const hiredApplicant = await jobsService.getHiredApplicant(applicantId, jobId);
-    console.log(hiredApplicant)
+    // console.log(hiredApplicant)
     if (hiredApplicant) {
         return { hired: hiredApplicant.hired }
     }
@@ -1099,11 +1099,11 @@ async function hireApplication(userId, jobId, applicantId) {
     const applicant = await userService.getApplicantById(applicantId);
     //console.log(user,job,applicant)
     if (user && job && applicant && user.company_profile && user.applicantPRofileId == job.companyProfileId.id) {
-        console.log('from Hire application');
+        // console.log('from Hire application');
         const jobApplication = await jobsService.getApplicationByProfileIdAndJobId(jobId, applicantId);
 
         if (jobApplication) {
-            console.log(jobApplication.hired)
+            // console.log(jobApplication.hired)
             if (!jobApplication.hired) {
                 const hired = await jobsService.updateJobApplication(jobApplication, { hired: true });
                 //console.log(hired,'hired')
@@ -1127,7 +1127,7 @@ async function filterApplication(userId, jobId, applicantId) {
     const job = await jobsService.getJobById(jobId);
     const applicant = await userService.getApplicantById(applicantId);
     if (user && job && applicant && user.company_profile && user.applicantPRofileId == job.companyProfileId.id) {
-        console.log('from filter application');
+        // console.log('from filter application');
         const jobApplication = await jobsService.getApplicationByProfileIdAndJobId(jobId, applicantId);
         if (jobApplication) {
             if (!jobApplication.filtered) {

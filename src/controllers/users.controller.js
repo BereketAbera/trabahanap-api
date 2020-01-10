@@ -27,9 +27,9 @@ const otherService = require('../services/other.service');
 const authService = require('../services/auth.service')
 const formidable = require('formidable');
 const CONSTANTS = require('../../constants.js');
+const axios = require('axios');
 
 sgMail.setApiKey(CONSTANTS.SENDGRID_KEY);
-
 
 const {
     validateUser,
@@ -237,6 +237,30 @@ async function adminSignUpEmployerUser(body) {
 function getAllEmployers(req, res, next) {
     getEmployersWithPagination(req.query.page || 1)
         .then(jobs => res.status(200).send({ success: true, jobs }))
+        .catch(err => next(err));
+}
+
+function facebookAuth(req, res, next){
+    const {access_token, social_id, user} = req.body;
+    
+    if(!access_token || !social_id || !user){
+        return res.status(200).send({ success: false, error: 'invalid request' });
+    }
+
+    socialAuthHandler('facebook', access_token, social_id, user)
+        .then(user => res.status(200).send({ success: true, user }))
+        .catch(err => next(err));
+}
+
+function googleAuth(req, res, next){
+    const {access_token, social_id, user} = req.body;
+    
+    if(!access_token || !social_id || !user){
+        return res.status(200).send({ success: false, error: 'invalid request' });
+    }
+
+    socialAuthHandler('google', access_token, social_id, user)
+        .then(user => res.status(200).send({ success: true, user }))
         .catch(err => next(err));
 }
 
@@ -778,6 +802,7 @@ async function deactivateApplicantById(id) {
 
 async function authenticateUsers({ email, password }) {
     const resp = await authService.loginFromApi({ email, password });
+    console.log(resp.data);
     //console.log(resp.data, 'res')
     if (resp.data.success) {
         const user = await userService.getUserByEmail(email);
@@ -993,7 +1018,7 @@ async function getUserApplicantProfile(id) {
 
 async function createUserCompanyProfile(body) {
     const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
-    console.log(user, 'user')
+    // console.log(user, 'user')
     if (user) {
         const compProfile = await userService.addCompanyProfile(body);
         if (compProfile) {
@@ -1022,7 +1047,7 @@ async function editUserCompanyProfile(body, id) {
 
 async function verifyUserEmail(req) {
     const user = await authService.verifyUserFromApi(req.query.token);
-    console.log(user.data);
+    // console.log(user.data);
     if (user.data.success) {
         const updated = await userService.updateUserByEmail(user.data.user.email, { emailVerified: true });
         if (updated) {
@@ -1076,6 +1101,99 @@ async function getAllApplicants(page) {
 
 }
 
+async function socialAuthHandler(provider, access_token, socialId, localUser){
+    if(provider == 'facebook'){
+        let facebookAuth = await axios.get(`https://graph.facebook.com/me?access_token=${access_token}`);
+        facebookAuth = facebookAuth.data;
+        if(!facebookAuth.id){
+            throw "invalid social token"
+        }
+    
+        if(facebookAuth.id != socialId){
+            throw "invalid social token"
+        }
+
+    }else{
+        let googleAuth = await axios.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${access_token}`);
+        googleAuth = googleAuth.data;
+    
+        if(!googleAuth.sub){
+            throw "invalid social token"
+        }
+    
+        if(googleAuth.sub != socialId){
+            throw "invalid social token"
+        }
+    }
+    const { email, firstName, lastName, role } = localUser;
+    if(!email || !firstName || !lastName){
+        throw "invalid user"
+    }
+
+    const emailUnique = await isEmailUnique({email});
+    if(!emailUnique){
+        let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_login`, {email, socialId});
+        // console.log(authUser.data);
+        if(!authUser || !authUser.data.success){
+            
+            throw "something went wrong";
+        }
+
+        authUser = authUser.data.user;
+
+        
+        let localUser = await userService.getUserById(authUser.id);
+        if(!localUser){
+            throw "something went wrong";
+        }
+
+        const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
+    
+        // console.log(token);
+
+        const userWithoutPassword = {};
+        _.map(localUser.dataValues, (value, key) => {
+            if (key == 'password') {
+                return;
+            }
+            userWithoutPassword[key] = value;
+        });
+
+        userWithoutPassword.token = token;
+        
+        return userWithoutPassword;
+    }else{
+        
+        let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_signup`, {email, firstName, lastName, phoneNumber: "", socialId});
+        if(!authUser){
+            throw "something went wrong";
+        }
+
+        authUser = authUser.data.user;
+
+        // console.log({email, firstName, lastName, phoneNumber: "", socialId});
+
+        let localUser = await userService.createUser({...authUser, role, active: true, emailVerified:true});
+        if(!localUser){
+            throw "something went wrong";
+        }
+
+        const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
+    
+        const userWithoutPassword = {};
+        _.map(localUser.dataValues, (value, key) => {
+            if (key == 'password') {
+                return;
+            }
+            userWithoutPassword[key] = value;
+        });
+
+        userWithoutPassword.token = token;
+        
+        return userWithoutPassword;
+    }
+}
+
 function uploadFilePromise(file, bucketName, fileName) {
     var uploadParams = { Bucket: bucketName, Key: fileName, Body: '', ACL: 'public-read' };
     var fileStream = fs.createReadStream(file);
@@ -1120,6 +1238,8 @@ module.exports = {
     deactivateApplicant,
     getApplicantById,
     getCompanyProfile,
+    facebookAuth,
+    googleAuth,
     forgetPassword,
     resetPasswordFromEmail,
     changePassword

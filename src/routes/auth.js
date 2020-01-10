@@ -25,6 +25,11 @@ app.get('/reset_password/:email/:token',userController.resetPasswordFromEmail)
 app.post('/reset_password/:email/:token',userController.changeUserPassword);
 app.post('/change_password',accountAuthorize(),userController.changePassword);
 
+app.post('/facebook/token', userController.facebookAuth);
+
+app.post('/google/token', userController.googleAuth);
+
+    
 app.get('/logout', (req, res) => {
     res.send({msg: 'Hello'});
 });
