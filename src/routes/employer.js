@@ -21,6 +21,7 @@ app.get('/jobs/filtered/applicants/:id', jobsController.getFilteredJobApplicants
 app.put('/jobs/:id', jobsController.editJob);
 app.get('/jobs', jobsController.getAllCompanyJobs);
 app.post('/jobs', jobsController.addJob);
+app.put('/jobs/delete/:id',jobsController.deleteJob);
 
 app.put('/profile/locations/picture/:id', locationController.updateLocationPicture);
 app.get('/profile/locations/:id', locationController.getLocation);

@@ -141,7 +141,6 @@ module.exports = {
         id: faker.random.uuid(),
         username: email,
         phoneNumber: faker.phone.phoneNumberFormat(),
-        password: bcryptjs.hashSync('password', 10),
         email,
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),

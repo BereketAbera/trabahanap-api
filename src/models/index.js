@@ -42,6 +42,7 @@ JobApplication.belongsTo(Job);
 Job.belongsTo(CompanyProfile);
 Job.belongsTo(Location);
 Job.hasMany(JobApplication);
+Job.belongsTo(User);
 
 JobLaterReview.belongsTo(ApplicantProfile);
 JobLaterReview.belongsTo(Job);

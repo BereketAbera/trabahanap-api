@@ -14,19 +14,21 @@ const sequelize = require('../database/connection');
 async function getAdminStats() {
     let employers = await CompanyProfile.count({ where: { verified: true }});
     let applicants = await User.count({ where: { role: ROLE.APPLICANT }});
-    let jobs = await Job.count();
+    let jobs = await Job.count({where:{ active:1}});
     let applications = await sequelize.query(`SELECT COUNT(*) FROM view_filtered_job_applications AS count`, { type: sequelize.QueryTypes.SELECT });
 
     return { employers, applicants, jobs, applications: Object.values(applications[0])[0] }
 }
 
 async function getEmployerStats(CompanyProfileId) {
-    let jobCount = await Job.count({ where: {CompanyProfileId}});
+    let jobCount = await Job.count({ where: {CompanyProfileId,active:1}});
     let staffCount = await User.count({ where: {CompanyProfileId, role: ROLE.STAFFER, emailVerified: true}});
     let applications = await JobApplication.count({ where: {CompanyProfileId}});
-    let filtered = await sequelize.query(`SELECT COUNT(*) FROM view_filtered_job_applications AS count WHERE CompanyProfileId='${CompanyProfileId}' `, { type: sequelize.QueryTypes.SELECT })
+    let filtered = await JobApplication.count({ where: {CompanyProfileId,filtered:1}});
+
+    // let filtered = await sequelize.query(`SELECT COUNT(*) FROM view_filtered_job_applications AS count WHERE CompanyProfileId='${CompanyProfileId}' `, { type: sequelize.QueryTypes.SELECT })
     
-    return { jobs: jobCount, staff: staffCount, applications, filtered: Object.values(filtered[0])[0] }
+    return { jobs: jobCount, staff: staffCount, applications, filtered:filtered}
 }
 
 function getAllIndustries(){
@@ -124,6 +126,10 @@ function getIssueById(issueId){
     return Issue.findOne({where: {id: issueId}}).catch(err => console.log(err));
 }
 
+function getFilteredApplicant(CompanyProfileId){
+    return JobApplication.findAndCountAll({where: {CompanyProfileId,filtered:1}}).catch(err => console.log(err))
+}
+
 module.exports = {
     getAdminStats,
     getEmployerStats,
@@ -149,5 +155,6 @@ module.exports = {
     addIssueResponse,
     updateIssueField,
     getIssueById,
-    getIndutriesSearch
+    getIndutriesSearch,
+    getFilteredApplicant
 }

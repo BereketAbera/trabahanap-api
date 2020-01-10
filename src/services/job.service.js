@@ -1,4 +1,5 @@
 const {
+    User,
     Job,
     CompanyProfile,
     JobApplication,
@@ -16,11 +17,11 @@ const Sequelize = require('sequelize');
 const Op = Sequelize.Op
 
 async function getJobsWithOffsetAndLimit(offset, limit) {
-    return await Job.findAndCountAll({ offset, limit, include: [{ model: CompanyProfile }], order: [['createdAt', 'DESC']] }).catch(err => console.log(err));
+    return await Job.findAndCountAll({ where:{ active:1}, offset, limit, include: [{ model: CompanyProfile }], order: [['createdAt', 'DESC']] }).catch(err => console.log(err));
 }
 
 async function getCompanyJobsWithOffsetAndLimit(offset, limit, companyProfileId) {
-    return await Job.findAndCountAll({ where: { companyProfileId }, offset, limit, include: [{ model: CompanyProfile }], order: [['createdAt', 'DESC']] }).catch(err => console.log(err));
+    return await Job.findAndCountAll({ where: { companyProfileId,active:1 }, offset, limit, include: [{ model: CompanyProfile },{ model: User }], order: [['createdAt', 'DESC']] }).catch(err => console.log(err));
 }
 
 async function addJob(job) {
@@ -37,7 +38,7 @@ async function editJobById(id, newJob) {
 }
 
 async function getJobById(id) {
-    return Job.findOne({ where: { id }, include: [{ model: CompanyProfile }, { model: Location }] }).catch(err => console.log(err));
+    return Job.findOne({ where: { id,active:1 }, include: [{ model: CompanyProfile }, { model: Location }] }).catch(err => console.log(err));
 }
 
 async function getHiredApplicant(ApplicantProfileId,jobId){

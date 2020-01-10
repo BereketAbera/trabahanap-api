@@ -39,6 +39,9 @@ module.exports = function(sequelize, DataTypes) {
     employmentType: {
       type: DataTypes.STRING(255),
       allowNull: true
+    },active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
     },
     vacancies: {
       type: DataTypes.INTEGER(11),
@@ -64,11 +67,23 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: false
     },
+    hostAddress: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
     CompanyProfileId: {
       type: DataTypes.CHAR(36),
       allowNull: true,
       references: {
         model: 'company_profiles',
+        key: 'id'
+      }
+    },
+    userId: {
+      type: DataTypes.CHAR(40),
+      allowNull: true,
+      references: {
+        model: 'users',
         key: 'id'
       }
     },

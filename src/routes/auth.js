@@ -1,7 +1,7 @@
 const app = module.exports = require('express')();
 
 const userController = require('../controllers/users.controller');
-const otherController = require('../controllers/other.controller');
+const accountAuthorize = require('../_helpers/accountAuthorize')
 
 app.post('/applicant_signup', userController.signUpApplicant);
 
@@ -23,6 +23,7 @@ app.get('/email_verification', userController.verifyEmail)
 app.post('/forgot_password',userController.forgetPassword);
 app.get('/reset_password/:email/:token',userController.resetPasswordFromEmail)
 app.post('/reset_password/:email/:token',userController.changeUserPassword);
+app.post('/change_password',accountAuthorize(),userController.changePassword);
 
 app.get('/logout', (req, res) => {
     res.send({msg: 'Hello'});

@@ -76,12 +76,20 @@ function addEmpIssue(req, res, next) {
             res.status(200).json({ success: false, validationError: valid });
             return;
         }
-        processFileUpload(userId, issue, fileName, localImagePath, 'employer')
+        if(localImagePath !=""){
+            processFileUpload(userId, issue, fileName, localImagePath, 'employer')
             .then(issue => {
                 fs.unlinkSync(localImagePath);
                 res.status(200).send({ success: true, issue })
             })
             .catch(err => next(err));
+        }else{
+            processFileUpload(userId, issue, fileName, localImagePath, 'employer')
+            .then(issue => {
+                res.status(200).send({ success: true, issue })
+            })
+            .catch(err => next(err));
+        }
     });
 
 }
