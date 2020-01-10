@@ -62,11 +62,20 @@ function addJob(req, res, next) {
         return;
     }
 
-    addEmployerJob({ ...req.body, user_id: req.user.sub })
+    addEmployerJob({ ...req.body, user_id: req.user.sub,})
         .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
         .catch(err => next(err));
 
 }
+
+function deleteJob(req, res, next) {
+    deleteEmployerJob({ ...req.body, user_id: req.user.sub, id: req.params.id })
+        .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
+        .catch(err => next(err));
+
+}
+
+
 
 function adminAddJob(req, res, next) {
     const valid = validateJob(req.body);
@@ -776,9 +785,10 @@ async function addEmployerJob(body) {
     if (user) {
 
         const compProfileId = user.company_profile.id;
+
         //console.log(compProfileId)
         if (compProfileId) {
-            const job = await jobsService.addJob({ ...body, companyProfileId: compProfileId });
+            const job = await jobsService.addJob({ ...body, companyProfileId: compProfileId,userId:user.id });
             if (job) {
 
                 return job;
@@ -799,6 +809,17 @@ async function editEmployerJob(body) {
     const job = await jobsService.getJobById(body.id);
     if (user && job) {
         const updatedJob = jobsService.editJobById(job.id, body);
+        if (updatedJob) {
+            return updatedJob;
+        }
+    }
+}
+
+async function deleteEmployerJob(body) {
+    const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
+    const job = await jobsService.getJobById(body.id);
+    if (user && job) {
+        const updatedJob = jobsService.editJobById(job.id, {active:0});
         if (updatedJob) {
             return updatedJob;
         }
@@ -1366,5 +1387,6 @@ module.exports = {
     filterAllFilteredJobsApplications,
     filterAllJobs,
     filterApplicantSavedJobs,
-    filterApplicantAppliedJobs
+    filterApplicantAppliedJobs,
+    deleteJob
 }

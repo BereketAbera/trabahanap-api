@@ -96,6 +96,21 @@ function forgetPassword(req, res, next) {
 }
 
 
+function changePassword(req, res, next) {
+    // changeUserPassword
+    if (req.body.newPassword.length < 6) {
+        res.status(200).json({ success: false, error: "Password must be at list 6 characters" })
+    } else if (req.body.newPassword != req.body.confirmPassword) {
+        res.status(200).json({ success: false, error: "Passwords does not much" })
+    }
+
+    updateUserPassword(req.body,req.user.sub)
+        .then(response => response ? res.status(200).json({ success: !response.error, response }) : res.status(200).json({ success: false, response: 'No User with this email' }))
+        .catch(err => next(err));
+
+
+}
+
 function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
 
     var fileNameLogo = "";
@@ -205,7 +220,7 @@ async function adminSignUpEmployerUser(body) {
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
         const { email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile } = { ...body };
-        const userApi = await authService.createUserApi({email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile})
+        const userApi = await authService.createUserApi({ email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile })
         const user = await userService.createUser({ email, username, phoneNumber, firstName, lastName, gender, role, emailVerified, hasFinishedProfile });
 
         if (saveToken && user && userApi.data.success) {
@@ -301,15 +316,13 @@ function changeUserPassword(req, res, next) {
 }
 
 async function changeNewPassword(body, token) {
-    // console.log(token);
-    //const user = await userService.getUserByEmail(body.email);
-    console.log(body,'body')
+    console.log(body, 'body')
     const userApi = await authService.getUserByEmailFromApi(body.email);
-    console.log(userApi.data,'user')
+    console.log(userApi.data, 'user')
     if (userApi.data.success) {
         // const updatedUser = await userService.updateUserField(bcryptjs.hashSync(body.password, 10), 'password', user.id);
         const updated = await userService.updateUserByEmail(userApi.data.user.email, { emailVerified: true });
-        const updateApi = await authService.changePassword(userApi.data.user.id,body.password);
+        const updateApi = await authService.changePassword(userApi.data.user.id, body.password);
         //const updateToken = await otherService.updateToken(token, { expired: true });
         if (updateApi) {
 
@@ -319,7 +332,22 @@ async function changeNewPassword(body, token) {
     return false;
 }
 
-function resetPasswordFromEmail(req,res,next){
+async function updateUserPassword(body,user_id){
+    const user = await userService.getUserById(user_id);
+    if(user){
+        const userApi = await authService.getUserByEmailFromApi(user.email);
+        if(userApi.data.success){
+            const updateApi = await authService.updatePassword(userApi.data.user.id, body.currentPassword,body.newPassword);
+            if(updateApi.data.success){
+                return {error:false,msg:"Password Updated"};
+            }
+            return {error:true,msg:updateApi.data.error}  
+        } 
+    }
+    return false;
+}
+
+function resetPasswordFromEmail(req, res, next) {
     renderNewUserPassword(req)
         .then(response => res.render('setNewPassword', { layout: 'main', response }))
         .catch(err => next(err));
@@ -343,10 +371,10 @@ async function resetPassword(body) {
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
         if (user && saveToken) {
-            const message = construct_reset_password(user.firstName,user.email,token);
+            const message = construct_reset_password(user.firstName, user.email, token);
             sgMail.send(message);
             return "Email sent";
-                // return { ...body, token: exists.token, verified: true, passwordChanged: false, processed: false }
+            // return { ...body, token: exists.token, verified: true, passwordChanged: false, processed: false }
 
 
             // return { ...req.params, verified: false, passwordChanged: false, processed: false }
@@ -795,7 +823,7 @@ async function authenticateUsers({ email, password }) {
                 userWithoutPassword.emailVerified = 1;
 
             }
-           // console.log(userWithoutPassword, 'ipass')
+            // console.log(userWithoutPassword, 'ipass')
             return userWithoutPassword;
         }
         //return user.data;
@@ -836,9 +864,9 @@ async function signUpUserApplicant(body) {
     console.log(user.data)
     if (user.data.success) {
         body["role"] = ROLE.APPLICANT;
-        
+
         const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
-        if(user){
+        if (user) {
             const message = construct_email_applicant(user.data.user);
             sgMail.send(message);
             return users;
@@ -880,12 +908,12 @@ async function signUpUserEmployer(body) {
     if (user.data.success) {
         body["role"] = ROLE.EMPLOYER;
         const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
-        if(users){
-            const message = constructEmail(body.firstName,body.email,user.data.user.emailVerificationToken);
+        if (users) {
+            const message = constructEmail(body.firstName, body.email, user.data.user.emailVerificationToken);
             sgMail.send(message);
             return users;
         }
-       
+
     }
 
 
@@ -1218,5 +1246,6 @@ module.exports = {
     facebookAuth,
     googleAuth,
     forgetPassword,
-    resetPasswordFromEmail
+    resetPasswordFromEmail,
+    changePassword
 }

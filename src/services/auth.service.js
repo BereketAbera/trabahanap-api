@@ -22,9 +22,11 @@ async function getUserByEmailFromApi(email){
 }
 
 async function changePassword(user_id,password){
-    console.log(password,'password')
-    console.log(user_id,'id')
     return await axios.post(`${environment}/auth/change_password`,{id:user_id,password:password,confirmPassword:password})
+}
+
+async function updatePassword(user_id,oldPassword,newPassword){
+    return await axios.post(`${environment}/auth/update_password`,{id:user_id,oldPassword:oldPassword,newPassword:newPassword});
 }
 
 
@@ -34,5 +36,6 @@ module.exports = {
     loginFromApi,
     verifyTokens,
     changePassword,
-    getUserByEmailFromApi
+    getUserByEmailFromApi,
+    updatePassword
 };
