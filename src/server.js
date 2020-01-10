@@ -48,10 +48,6 @@ app.use(routes);
 
 app.use(errorHandler);
 
-// const migrate = require('./migrate-data');
-
-// migrate.migrateData();
-
 app.listen(PORT, () => {
     console.log(`server running at port ${PORT}`);
 })
