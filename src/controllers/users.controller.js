@@ -1097,8 +1097,10 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
             throw "invalid social token"
         }
     }
-    const { email, firstName, lastName, role } = localUser;
-    if(!email || !firstName || !lastName){
+    let { email, firstName, lastName, role } = localUser;
+    firstName = firstName ? firstName : "";
+    lastName = lastName ? lastName : "";
+    if(!email){
         throw "invalid user"
     }
 
@@ -1141,6 +1143,9 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
             throw "something went wrong";
         }
 
+
+
+        console.log(authUser.data);
         authUser = authUser.data.user;
 
         // console.log({email, firstName, lastName, phoneNumber: "", socialId});
