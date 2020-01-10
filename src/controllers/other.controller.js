@@ -800,9 +800,9 @@ function advancedSearchQueryBuilder(search, employType, industry, salaryRange, c
         }
     }
     if (haveWhere) {
-        query = query + ` and (cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '%${search}%'))`;
+        query = query + ` and (cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '%${search}%'))`;
     } else {
-        query = query + ` where cityName like '%${cityName}%' and (jobTitle like '%${search}%' or companyName like '%${search}%')`;
+        query = query + ` where cityName like '%${cityName}%' or (jobTitle like '%${search}%' or companyName like '%${search}%')`;
     }
     let selectQuery = `select * from view_companies_jobs_search ` + query + ` LIMIT ${offset},${limit}`;
     let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search` + query + ` LIMIT ${offset},${limit}`;
