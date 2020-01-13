@@ -243,7 +243,7 @@ function getAllEmployers(req, res, next) {
 function facebookAuth(req, res, next){
     const {access_token, social_id, user} = req.body;
     
-    if(!access_token || !social_id || !user){
+    if(!access_token || !social_id || !user || !user.email){
         return res.status(200).send({ success: false, error: 'invalid request' });
     }
 
@@ -255,7 +255,7 @@ function facebookAuth(req, res, next){
 function googleAuth(req, res, next){
     const {access_token, social_id, user} = req.body;
     
-    if(!access_token || !social_id || !user){
+    if(!access_token || !social_id || !user || !user.email){
         return res.status(200).send({ success: false, error: 'invalid request' });
     }
 
@@ -1102,6 +1102,7 @@ async function getAllApplicants(page) {
 }
 
 async function socialAuthHandler(provider, access_token, socialId, localUser){
+    // console.log(localUser);
     if(provider == 'facebook'){
         let facebookAuth = await axios.get(`https://graph.facebook.com/me?access_token=${access_token}`);
         facebookAuth = facebookAuth.data;
@@ -1116,7 +1117,7 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
     }else{
         let googleAuth = await axios.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${access_token}`);
         googleAuth = googleAuth.data;
-    
+
         if(!googleAuth.sub){
             throw "invalid social token"
         }
@@ -1134,17 +1135,16 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
 
     const emailUnique = await isEmailUnique({email});
     if(!emailUnique){
-        let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_login`, {email, socialId});
-        // console.log(authUser.data);
+        let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_login`, {email});
+        
         if(!authUser || !authUser.data.success){
-            
             throw "something went wrong";
         }
 
         authUser = authUser.data.user;
 
         
-        let localUser = await userService.getUserById(authUser.id);
+        let localUser = await userService.getUserByEmail(authUser.email);
         if(!localUser){
             throw "something went wrong";
         }
@@ -1165,15 +1165,12 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
         
         return userWithoutPassword;
     }else{
-        
         let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_signup`, {email, firstName, lastName, phoneNumber: "", socialId});
+        // console.log(authUser);
         if(!authUser){
             throw "something went wrong";
         }
 
-
-
-        console.log(authUser.data);
         authUser = authUser.data.user;
 
         // console.log({email, firstName, lastName, phoneNumber: "", socialId});
