@@ -8,7 +8,7 @@ module.exports = function constructEmail(firstName,email,emailVerificationToken)
         from: "support@trabahanap.com",
         subject: "Email Verification",
         text: "Click hear to activate your account.",
-        html: `<div>
+        html: `<div style="width:50rem">
 		<table cellpadding="0" cellspacing="0" width="600" align="center" style="font-size:0">
 			<tbody>
 				<tr>

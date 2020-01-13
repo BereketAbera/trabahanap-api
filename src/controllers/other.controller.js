@@ -76,19 +76,19 @@ function addEmpIssue(req, res, next) {
             res.status(200).json({ success: false, validationError: valid });
             return;
         }
-        if(localImagePath !=""){
+        if (localImagePath != "") {
             processFileUpload(userId, issue, fileName, localImagePath, 'employer')
-            .then(issue => {
-                fs.unlinkSync(localImagePath);
-                res.status(200).send({ success: true, issue })
-            })
-            .catch(err => next(err));
-        }else{
+                .then(issue => {
+                    fs.unlinkSync(localImagePath);
+                    res.status(200).send({ success: true, issue })
+                })
+                .catch(err => next(err));
+        } else {
             processFileUpload(userId, issue, fileName, localImagePath, 'employer')
-            .then(issue => {
-                res.status(200).send({ success: true, issue })
-            })
-            .catch(err => next(err));
+                .then(issue => {
+                    res.status(200).send({ success: true, issue })
+                })
+                .catch(err => next(err));
         }
     });
 
@@ -128,27 +128,27 @@ function addIssue(req, res, next) {
             res.status(200).json({ success: false, validationError: valid });
             return;
         }
-        if(localImagePath !=""){
+        if (localImagePath != "") {
             processFileUpload(userId, issue, fileName, localImagePath, 'applicant')
-            .then(issue => {
-                fs.unlinkSync(localImagePath);
-                res.status(200).send({ success: true, issue })
-            })
-            .catch(err => next(err));
-        }else{
+                .then(issue => {
+                    fs.unlinkSync(localImagePath);
+                    res.status(200).send({ success: true, issue })
+                })
+                .catch(err => next(err));
+        } else {
             processFileUpload(userId, issue, fileName, localImagePath, 'applicant')
-            .then(issue => {
-                res.status(200).send({ success: true, issue })
-            })
-            .catch(err => next(err));
+                .then(issue => {
+                    res.status(200).send({ success: true, issue })
+                })
+                .catch(err => next(err));
         }
-        
+
     });
 
 }
 
 function getAdminStaff(req, res, next) {
-    getAdminStaffers(req.user.sub)
+    getAdminStaffers(req.user.sub, req.query.pageSize || 8, req.query.page || 1)
         .then(staffs => staffs ? res.status(200).send({ success: true, staffs }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
         .catch(err => next(err));
 }
@@ -333,7 +333,7 @@ function addStaffsCompany(req, res, next) {
 }
 
 async function processFileUpload(userId, issue, fileName, localImagepath, role) {
-    if (localImagepath !="") {
+    if (localImagepath != "") {
         const imgObj = await uploadFile(localImagepath, 'th-employer-logo', fileName)
         // issue.bucket = 'th-employer-logo';
         issue.picture = imgObj.Location;
@@ -458,23 +458,23 @@ async function adminAddCompanyStaffs(body, compProfileId) {
     console.log(body)
     console.log(compProfileId)
     if (compProfileId && body.email) {
-        console.log(body.email,"email");
+        console.log(body.email, "email");
         const userExists = await userService.getUserByEmail(body.email);
         const tokenExists = await otherService.getTokenEmail(body.email);
 
-        console.log(userExists,"user");
-        console.log(tokenExists,'token')
+        console.log(userExists, "user");
+        console.log(tokenExists, 'token')
         if (userExists || tokenExists) {
             return false;
         }
         console.log('to be created')
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
-        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email})
+        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email })
         const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: compProfileId, username: body.email, hasFinishedProfile: true });
         console.log('created')
         if (saveToken && newUser && userApi) {
-            const message = constractStafferEmail(body.firstName,body.email, token);
+            const message = constractStafferEmail(body.firstName, body.email, token);
             sgMail.send(message);
             console.log('sent')
             return true;
@@ -531,12 +531,26 @@ async function getApplicantIssue(userId, issueId) {
     }
 }
 
-async function getAdminStaffers(userId) {
+async function getAdminStaffers(userId, pageSize, page) {
+    const pager = {
+        pageSize: parseInt(pageSize),
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
     const user = await userService.getUserById(userId);
     if (user && user.role === 'ADMIN') {
-        const staffs = await otherService.getAdminStaffs();
+        const staffs = await otherService.getAdminStaffs(offset, limit);
         if (staffs) {
-            return staffs;
+            pager.totalItems = staffs.count;
+            pager.totalPages = Math.ceil(staffs.count / pager.pageSize);
+            return {
+                pager,
+                rows: staffs.rows
+            };
         }
     }
 }
@@ -551,7 +565,7 @@ async function addAdminStaffer(body, userId) {
         }
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
-        const user = await authService.createUserApi({ ...body,password: uuidv4(),role: ROLE.ADMINSTAFF, username: body.email,emailVerificationToken: uuidv4() })
+        const user = await authService.createUserApi({ ...body, password: uuidv4(), role: ROLE.ADMINSTAFF, username: body.email, emailVerificationToken: uuidv4() })
         const newUser = await userService.createUser({ ...body, role: ROLE.ADMINSTAFF, username: body.email });
         if (saveToken && newUser && user.data.success) {
             const message = constractAdminStaffEmail(body.firstName, body.email, token);
@@ -573,10 +587,10 @@ async function addCompanyStaffer(body, userId) {
 
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
-        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email})
+        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email })
         const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: user.companyProfileId, username: body.email, hasFinishedProfile: true });
         if (saveToken && newUser && userApi) {
-            console.log(body,'body in staffer')
+            console.log(body, 'body in staffer')
             const message = constractStafferEmail(body.firstName, body.email, token);
             sgMail.send(message);
             return true;

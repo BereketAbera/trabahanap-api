@@ -18,10 +18,11 @@ app.post('/issue_responses', otherController.addIssueResponse);
 
 app.post('/staff/add', adminAuthorize(ROLE.ADMIN), otherController.addAdminStaff);
 app.get('/staff', adminAuthorize(ROLE.ADMIN), otherController.getAdminStaff);
+app.put('/staff/:id',adminAuthorize(ROLE.ADMIN),userController.deactivateUser)
 
 app.post('/applicants', userController.createApplicant);
 app.get('/applicants', userController.getApplicants);
-app.put('/applicants/:id',userController.deactivateApplicant);
+app.put('/applicants/:id',userController.deactivateUser);
 app.get('/applicant/:id',userController.getApplicantById);
 app.get('/applications', jobsController.getAllApplications);
 

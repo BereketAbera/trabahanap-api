@@ -88,8 +88,8 @@ async function updateToken(token, value){
     return newToken.update(value);
 }
 
-function getAdminStaffs(){
-    return User.findAll({where: {role: ROLE.ADMINSTAFF, emailVerified: true}}).catch(err => console.log(err));
+function getAdminStaffs(offset,limit){
+    return User.findAndCountAll({where: {role: ROLE.ADMINSTAFF, emailVerified: true}, offset, limit }).catch(err => console.log(err));
 }
 
 function getCompanyStaffs(CompanyProfileId){

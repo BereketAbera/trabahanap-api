@@ -104,7 +104,7 @@ function changePassword(req, res, next) {
         res.status(200).json({ success: false, error: "Passwords does not much" })
     }
 
-    updateUserPassword(req.body,req.user.sub)
+    updateUserPassword(req.body, req.user.sub)
         .then(response => response ? res.status(200).json({ success: !response.error, response }) : res.status(200).json({ success: false, response: 'No User with this email' }))
         .catch(err => next(err));
 
@@ -240,10 +240,10 @@ function getAllEmployers(req, res, next) {
         .catch(err => next(err));
 }
 
-function facebookAuth(req, res, next){
-    const {access_token, social_id, user} = req.body;
-    
-    if(!access_token || !social_id || !user){
+function facebookAuth(req, res, next) {
+    const { access_token, social_id, user } = req.body;
+
+    if (!access_token || !social_id || !user) {
         return res.status(200).send({ success: false, error: 'invalid request' });
     }
 
@@ -252,10 +252,10 @@ function facebookAuth(req, res, next){
         .catch(err => next(err));
 }
 
-function googleAuth(req, res, next){
-    const {access_token, social_id, user} = req.body;
-    
-    if(!access_token || !social_id || !user){
+function googleAuth(req, res, next) {
+    const { access_token, social_id, user } = req.body;
+
+    if (!access_token || !social_id || !user) {
         return res.status(200).send({ success: false, error: 'invalid request' });
     }
 
@@ -332,17 +332,17 @@ async function changeNewPassword(body, token) {
     return false;
 }
 
-async function updateUserPassword(body,user_id){
+async function updateUserPassword(body, user_id) {
     const user = await userService.getUserById(user_id);
-    if(user){
+    if (user) {
         const userApi = await authService.getUserByEmailFromApi(user.email);
-        if(userApi.data.success){
-            const updateApi = await authService.updatePassword(userApi.data.user.id, body.currentPassword,body.newPassword);
-            if(updateApi.data.success){
-                return {error:false,msg:"Password Updated"};
+        if (userApi.data.success) {
+            const updateApi = await authService.updatePassword(userApi.data.user.id, body.currentPassword, body.newPassword);
+            if (updateApi.data.success) {
+                return { error: false, msg: "Password Updated" };
             }
-            return {error:true,msg:updateApi.data.error}  
-        } 
+            return { error: true, msg: updateApi.data.error }
+        }
     }
     return false;
 }
@@ -754,8 +754,8 @@ function getApplicants(req, res, next) {
         .catch(err => next(err));
 }
 
-function deactivateApplicant(req, res, next) {
-    deactivateApplicantById(req.params.id)
+function deactivateUser(req, res, next) {
+    deactivateUserById(req.params.id)
         .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -775,7 +775,7 @@ async function getApplicantProfileByUserId(id) {
 
 }
 
-async function deactivateApplicantById(id) {
+async function deactivateUserById(id) {
     //console.log(id);
     const user = await userService.getUserById(id);
     if (user.active) {
@@ -1101,56 +1101,56 @@ async function getAllApplicants(page) {
 
 }
 
-async function socialAuthHandler(provider, access_token, socialId, localUser){
-    if(provider == 'facebook'){
+async function socialAuthHandler(provider, access_token, socialId, localUser) {
+    if (provider == 'facebook') {
         let facebookAuth = await axios.get(`https://graph.facebook.com/me?access_token=${access_token}`);
         facebookAuth = facebookAuth.data;
-        if(!facebookAuth.id){
-            throw "invalid social token"
-        }
-    
-        if(facebookAuth.id != socialId){
+        if (!facebookAuth.id) {
             throw "invalid social token"
         }
 
-    }else{
-        let googleAuth = await axios.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${access_token}`);
-        googleAuth = googleAuth.data;
-    
-        if(!googleAuth.sub){
+        if (facebookAuth.id != socialId) {
             throw "invalid social token"
         }
-    
-        if(googleAuth.sub != socialId){
+
+    } else {
+        let googleAuth = await axios.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${access_token}`);
+        googleAuth = googleAuth.data;
+
+        if (!googleAuth.sub) {
+            throw "invalid social token"
+        }
+
+        if (googleAuth.sub != socialId) {
             throw "invalid social token"
         }
     }
     let { email, firstName, lastName, role } = localUser;
     firstName = firstName ? firstName : "";
     lastName = lastName ? lastName : "";
-    if(!email){
+    if (!email) {
         throw "invalid user"
     }
 
-    const emailUnique = await isEmailUnique({email});
-    if(!emailUnique){
-        let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_login`, {email, socialId});
+    const emailUnique = await isEmailUnique({ email });
+    if (!emailUnique) {
+        let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_login`, { email, socialId });
         // console.log(authUser.data);
-        if(!authUser || !authUser.data.success){
-            
+        if (!authUser || !authUser.data.success) {
+
             throw "something went wrong";
         }
 
         authUser = authUser.data.user;
 
-        
+
         let localUser = await userService.getUserById(authUser.id);
-        if(!localUser){
+        if (!localUser) {
             throw "something went wrong";
         }
 
         const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
-    
+
         // console.log(token);
 
         const userWithoutPassword = {};
@@ -1162,12 +1162,12 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
         });
 
         userWithoutPassword.token = token;
-        
+
         return userWithoutPassword;
-    }else{
-        
-        let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_signup`, {email, firstName, lastName, phoneNumber: "", socialId});
-        if(!authUser){
+    } else {
+
+        let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_signup`, { email, firstName, lastName, phoneNumber: "", socialId });
+        if (!authUser) {
             throw "something went wrong";
         }
 
@@ -1178,13 +1178,13 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
 
         // console.log({email, firstName, lastName, phoneNumber: "", socialId});
 
-        let localUser = await userService.createUser({...authUser, role, active: true, emailVerified:true});
-        if(!localUser){
+        let localUser = await userService.createUser({ ...authUser, role, active: true, emailVerified: true });
+        if (!localUser) {
             throw "something went wrong";
         }
 
         const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
-    
+
         const userWithoutPassword = {};
         _.map(localUser.dataValues, (value, key) => {
             if (key == 'password') {
@@ -1194,7 +1194,7 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
         });
 
         userWithoutPassword.token = token;
-        
+
         return userWithoutPassword;
     }
 }
@@ -1240,7 +1240,7 @@ module.exports = {
     changeUserPassword,
     createApplicant,
     getApplicants,
-    deactivateApplicant,
+    deactivateUser,
     getApplicantById,
     getCompanyProfile,
     facebookAuth,
