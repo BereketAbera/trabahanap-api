@@ -754,7 +754,7 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
     if (salaryRange == "undefined") {
         salaryRange = '';
     }
-
+    
     //console.log(search, employType, industry, cityName, page)
     const offset = (page - 1) * pager.pageSize;
 
@@ -791,35 +791,43 @@ function advancedSearchQueryBuilder(search, employType, industry, salaryRange, c
     }
     if (employType != "") {
         if (haveWhere) {
-            query = query + ` and employmentType='${employType}'`;
+            query = query + ` and employmentType like '%${employType}%'`;
             haveWhere = true;
         } else {
-            query = query + ` where employmentType='${employType}'`;
+            query = query + ` where employmentType like '%${employType}%'`;
         }
 
     } if (industry != "") {
         if (haveWhere) {
-            query = query + ` and industry='${industry}'`;
+            query = query + ` and industry like '%${industry}%'`;
         } else {
-            query = query + ` where industry='${industry}'`;
+            query = query + ` where industry like '%${industry}%'`;
             haveWhere = true;
         }
     }
     if (salaryRange != "") {
         if (haveWhere) {
-            query = query + ` and salaryRange='${salaryRange}'`;
+            query = query + ` and salaryRange like '%${salaryRange}%'`;
         } else {
-            query = query + ` where salaryRange='${salaryRange}'`;
+            query = query + ` where salaryRange like '%${salaryRange}%'`;
+            haveWhere = true;
+        }
+    }
+    if (cityName != "") {
+        if (haveWhere) {
+            query = query + ` and cityName like '%${cityName}%'`;
+        } else {
+            query = query + ` where cityName like '%${cityName}%'`;
             haveWhere = true;
         }
     }
     if (haveWhere) {
-        query = query + ` and (cityName like '%${cityName}%' and (jobTitle like '%${search}%' or cityName like '%${cityName}%' or companyName like '%${search}%'))`;
+        query = query + `  and (jobTitle like '%${search}%'  or companyName like '%${search}%')`;
     } else {
-        query = query + ` where cityName like '%${cityName}%' and (jobTitle like '%${search}%' or cityName like '%${cityName}%' or companyName like '%${search}%')`;
+        query = query + ` where and (jobTitle like '%${search}%' or companyName like '%${search}%')`;
     }
-    let selectQuery = `select * from view_companies_jobs_search ` + query + ` LIMIT ${offset},${limit}`;
-    let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search` + query + ` LIMIT ${offset},${limit}`;
+    let selectQuery = `select * from view_companies_jobs_search ` + query + ` order by createdAt desc LIMIT ${offset},${limit}`;
+    let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search` + query;
     return { selectQuery: selectQuery, count: QueryCount };
 }
 
