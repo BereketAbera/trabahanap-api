@@ -1106,30 +1106,30 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
     if(provider == 'facebook'){
         let facebookAuth = await axios.get(`https://graph.facebook.com/me?access_token=${access_token}`);
         facebookAuth = facebookAuth.data;
-        if (!facebookAuth.id) {
+        if(!facebookAuth.id){
+            throw "invalid social token"
+        }
+    
+        if(facebookAuth.id != socialId){
             throw "invalid social token"
         }
 
-        if (facebookAuth.id != socialId) {
-            throw "invalid social token"
-        }
-
-    } else {
+    }else{
         let googleAuth = await axios.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${access_token}`);
         googleAuth = googleAuth.data;
 
         if(!googleAuth.sub){
             throw "invalid social token"
         }
-
-        if (googleAuth.sub != socialId) {
+    
+        if(googleAuth.sub != socialId){
             throw "invalid social token"
         }
     }
     let { email, firstName, lastName, role } = localUser;
     firstName = firstName ? firstName : "";
     lastName = lastName ? lastName : "";
-    if (!email) {
+    if(!email){
         throw "invalid user"
     }
 
@@ -1150,7 +1150,7 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
         }
 
         const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
-
+    
         // console.log(token);
 
         const userWithoutPassword = {};
@@ -1162,7 +1162,7 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
         });
 
         userWithoutPassword.token = token;
-
+        
         return userWithoutPassword;
     }else{
         let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_signup`, {email, firstName, lastName, phoneNumber: "", socialId});
@@ -1175,13 +1175,13 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
 
         // console.log({email, firstName, lastName, phoneNumber: "", socialId});
 
-        let localUser = await userService.createUser({ ...authUser, role, active: true, emailVerified: true });
-        if (!localUser) {
+        let localUser = await userService.createUser({...authUser, role, active: true, emailVerified:true});
+        if(!localUser){
             throw "something went wrong";
         }
 
         const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
-
+    
         const userWithoutPassword = {};
         _.map(localUser.dataValues, (value, key) => {
             if (key == 'password') {
@@ -1191,7 +1191,7 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
         });
 
         userWithoutPassword.token = token;
-
+        
         return userWithoutPassword;
     }
 }
