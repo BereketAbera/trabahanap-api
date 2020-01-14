@@ -28,6 +28,7 @@ const authService = require('../services/auth.service')
 const formidable = require('formidable');
 const CONSTANTS = require('../../constants.js');
 const axios = require('axios');
+const environment = require('../environmets/environmet')
 
 sgMail.setApiKey(CONSTANTS.SENDGRID_KEY);
 
@@ -1135,7 +1136,7 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
 
     const emailUnique = await isEmailUnique({email});
     if(!emailUnique){
-        let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_login`, {email});
+        let authUser = await axios.post(`${environment}/auth/social_login`, {email});
         
         if(!authUser || !authUser.data.success){
             throw "something went wrong";
@@ -1165,7 +1166,7 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
         
         return userWithoutPassword;
     }else{
-        let authUser = await axios.post(`${CONSTANTS.AUTH_SERVER}/auth/social_signup`, {email, firstName, lastName, phoneNumber: "", socialId});
+        let authUser = await axios.post(`${environment}/auth/social_signup`, {email, firstName, lastName, phoneNumber: "", socialId});
         // console.log(authUser);
         if(!authUser){
             throw "something went wrong";
