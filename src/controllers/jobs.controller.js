@@ -69,7 +69,7 @@ function addJob(req, res, next) {
 }
 
 function deleteJob(req, res, next) {
-    deleteEmployerJob({ ...req.body, user_id: req.user.sub, id: req.params.id })
+    deleteEmployerJob({ ...req.body, id: req.params.id })
         .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
         .catch(err => next(err));
 
@@ -816,9 +816,9 @@ async function editEmployerJob(body) {
 }
 
 async function deleteEmployerJob(body) {
-    const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
+    // const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
     const job = await jobsService.getJobById(body.id);
-    if (user && job) {
+    if (job) {
         const updatedJob = jobsService.editJobById(job.id, {active:0});
         if (updatedJob) {
             return updatedJob;

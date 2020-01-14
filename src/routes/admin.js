@@ -40,6 +40,7 @@ app.get('/employers/applicant/:companyProfileId',jobsController.getCompanyApplic
 app.get('/staff/:companyProfileId',otherController.getStaffsCompany);
 app.post('/staff/:companyProfileId',otherController.addStaffsCompany);
 app.get('/jobs', jobsController.adminGetAllJobs);
+app.put('/jobs/delete/:id',jobsController.deleteJob);
 
 app.get('/filter/jobs',jobsController.adminGetAllCompanyJobFilters);
 app.get('/filter/applications',jobsController.adminGetAllApplicationsFilters);
