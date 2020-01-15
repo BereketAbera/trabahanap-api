@@ -1,16 +1,16 @@
 {
-  "development3": {
-    "username": "ucwfssjelgcnq7zc",
-    "password": "UV2XYZi3g7TY3nXPenzL",
-    "database": "bk4yqi0gmzcpimxfke0a",
-    "host": "bk4yqi0gmzcpimxfke0a-mysql.services.clever-cloud.com",
+  "development2": {
+    "username": "root",
+    "password": "password",
+    "database": "trb_mig_temp",
+    "host": "192.168.0.10",
     "dialect": "mysql"
   },
   "development": {
     "username": "root",
-    "password": "",
-    "database": "trabahanap_development",
-    "host": "localhost",
+    "password": "password",
+    "database": "trabahanap_migration",
+    "host": "192.168.0.10",
     "dialect": "mysql",
     "operatorsAliases": 0
   },

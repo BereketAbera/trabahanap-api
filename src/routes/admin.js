@@ -27,6 +27,9 @@ app.put('/applicants/:id',userController.deactivateUser);
 app.get('/applicant/:id',userController.getApplicantById);
 app.get('/applications', jobsController.getAllApplications);
 
+app.get('/employers/featured', otherController.getFeaturedCompanies);
+app.get('/employers/featured/:id/toggle', otherController.addRemoveFeaturedCompany);
+
 app.post('/location', locationController.addLocationWithImage);
 app.post('/jobs/:companyProfileId', jobsController.adminAddJob);
 app.put('/jobs/:id', jobsController.editCompanyJob);

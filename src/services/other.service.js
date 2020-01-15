@@ -135,6 +135,15 @@ function getFilteredApplicant(CompanyProfileId){
     return JobApplication.findAndCountAll({where: {CompanyProfileId,filtered:1}}).catch(err => console.log(err))
 }
 
+function getFeaturedCompanies(){
+    // console.log('feating companies');
+    return CompanyProfile.findAll({where: {featured: true}}).catch(err => console.log(err));
+}
+
+// function getCompanyProfileById(id){
+//     return CompanyProfile.findOne({where: {id}}).catch(err => console.log(err));
+// }
+
 module.exports = {
     getAdminStats,
     getEmployerStats,
@@ -164,4 +173,5 @@ module.exports = {
     getIndutriesSearch,
     getFilteredApplicant,
     addReports
+    getFeaturedCompanies
 }

@@ -342,6 +342,23 @@ function addStaffsCompany(req, res, next) {
         .catch(err => next(err));
 }
 
+function getFeaturedCompanies(req, res, next){
+    getFeaturedCompaniesHandler()
+        .then(companies => res.status(200).send({ success: true, companies}))
+        .catch(err => next(err));
+}
+
+function addRemoveFeaturedCompany(req, res, next){
+    let id = req.params.id;
+    if(!id){
+        res.status(200).send({success: false, error: 'invlaid request'});
+    }
+
+    addRemoveFeaturedCompanyHandler(id)
+        .then(success => res.status(200).send({ success }))
+        .catch(err => next(err));
+}
+
 async function processFileUpload(userId, issue, fileName, localImagepath, role) {
     if (localImagepath != "") {
         const imgObj = await uploadFile(localImagepath, 'th-employer-logo', fileName)
@@ -859,6 +876,39 @@ function advancedSearchQueryBuilder(search, employType, industry, salaryRange, c
     return { selectQuery: selectQuery, count: QueryCount };
 }
 
+
+async function getFeaturedCompaniesHandler(){
+    const companies = await otherService.getFeaturedCompanies();
+    if(!companies){
+        throw "something went wrong";
+    }
+
+    return companies;
+}
+
+async function addRemoveFeaturedCompanyHandler(id){
+    const company = await userService.getCompanyProfileById(id);
+    if(!company){
+        return false;
+    }
+
+    if(!company.featured){
+        const companies = await otherService.getFeaturedCompanies();
+        if(companies.length >= 8){
+            throw 'maximum_featured_companies_reached';
+        }
+    }
+
+    const featured = userService.updateCompanyField(company.featured ? 0 : 1, "featured", id);
+
+    if (featured) {
+        return true;
+    }
+
+    return false;
+}
+
+
 module.exports = {
     getAdminDashboardCounts,
     getEmployerDashboardCounts,
@@ -893,4 +943,6 @@ module.exports = {
     searchIndustry,
     advancedSearchJob,
     getApplicantReports
+    getFeaturedCompanies,
+    addRemoveFeaturedCompany
 }
