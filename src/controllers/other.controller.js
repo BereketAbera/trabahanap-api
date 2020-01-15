@@ -100,6 +100,11 @@ function getEmpIssues(req, res, next) {
         .catch(err => next(err));
 }
 
+function addReports(req, res, next) {
+    addApplicantReports(req.body, req.user.sub, req.params.id)
+        .then(reports => reports ? res.status(200).send({ success: true, reports }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
 function addIssue(req, res, next) {
     let localImagePath = "";
     let issue = {};
@@ -302,6 +307,11 @@ function getIssueById(req, res, next) {
         .catch(err => next(err));
 }
 
+function getApplicantReports(req,res,next){
+    getAllreportsFromApplicants()
+        .then(reports => reports ? res.status(200).send({ success: true, reports }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
 function getApplicantIssuesAdmin(req, res, next) {
     getAllIssuesFromApplicants()
         .then(issues => issues ? res.status(200).send({ success: true, issues }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
@@ -403,6 +413,18 @@ async function addEmployerIssue(issue, userId) {
             return newIssue;
         }
     }
+}
+
+async function addApplicantReports(reports, userId, jobId) {
+    const applicant = await userService.getApplicantProfileByUserId(userId);
+    if (applicant) {
+        const newReports = await otherService.addReports({ ...reports, ApplicantProfileId: applicant.id,JobId:jobId });
+        if (newReports) {
+            return newReports;
+        }
+    }
+
+
 }
 
 async function getEmployerIssues(userId) {
@@ -700,6 +722,12 @@ async function getAllIssuesFromApplicants() {
         return issues;
     }
 }
+async function getAllreportsFromApplicants(){
+    const reports = await otherService.getAllReportedApplicant();
+    if (reports) {
+        return reports;
+    } 
+}
 
 async function getAllIssuesFromCompany() {
     const issues = await otherService.getAllReportedCompanyIssues();
@@ -754,7 +782,7 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
     if (salaryRange == "undefined") {
         salaryRange = '';
     }
-    
+
     //console.log(search, employType, industry, cityName, page)
     const offset = (page - 1) * pager.pageSize;
 
@@ -838,6 +866,7 @@ module.exports = {
     addEmpIssue,
     getEmpIssues,
     addIssue,
+    addReports,
     getIssues,
     getIssue,
     deleteEmpIssue,
@@ -862,5 +891,6 @@ module.exports = {
     getStaffsCompany,
     addStaffsCompany,
     searchIndustry,
-    advancedSearchJob
+    advancedSearchJob,
+    getApplicantReports
 }

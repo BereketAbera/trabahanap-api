@@ -1,6 +1,6 @@
 const {
     Indutry, Issue,
-    Token, User,
+    Token, User,Reports,
     Job, JobApplication,
     CompanyProfile,
     ApplicantProfile,
@@ -41,7 +41,9 @@ function getIndutriesSearch(search){
 function addIssue(issue){
     return Issue.create(issue).catch(err => console.log(err));
 }
-
+function addReports(reports){
+    return Reports.create(reports).catch(err => console.log(err));
+}
 function getApplicantIssues(ApplicantProfileId){
     return Issue.findAll({where: {ApplicantProfileId}, include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
@@ -108,6 +110,9 @@ function getAllReportedIssues(){
 function getAllReportedApplicantIssues() {
     return Issue.findAll({where: {CompanyProfileId: null}, include: [{model: IssueResponse},{model: ApplicantProfile,include:[{model:User}]}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
+function getAllReportedApplicant(){
+    return Reports.findAll( {limit:8,include: [{model: ApplicantProfile,include:[{model:User}]},{model:Job}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
 
 function getAllReportedCompanyIssues() {
     return Issue.findAll({where: {ApplicantProfileId: null}, include: [{model: IssueResponse},{model: CompanyProfile}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
@@ -151,10 +156,12 @@ module.exports = {
     getAllEmployers,
     getAllReportedIssues,
     getAllReportedApplicantIssues,
+    getAllReportedApplicant,
     getAllReportedCompanyIssues,
     addIssueResponse,
     updateIssueField,
     getIssueById,
     getIndutriesSearch,
-    getFilteredApplicant
+    getFilteredApplicant,
+    addReports
 }

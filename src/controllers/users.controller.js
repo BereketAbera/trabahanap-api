@@ -828,6 +828,9 @@ async function authenticateUsers({ email, password }) {
         }
         //return user.data;
     }
+    else if(!resp.data.success){
+        return {success:false,resp:resp.data.error}
+    }
 
     // const user = await userService.getUserByEmail(email);
     // if (user) {
