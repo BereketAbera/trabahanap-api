@@ -3,6 +3,7 @@ const userController = require('../controllers/users.controller');
 const jobsController = require('../controllers/jobs.controller');
 const locationsController = require('../controllers/locations.controller')
 const otherController = require('../controllers/other.controller');
+const migrationAuthController = require('../controllers/migration_auth.controller')
 
 app.get('/jobs/:id', jobsController.getJob);
 app.get('/jobs', jobsController.getAllJobs);
@@ -19,3 +20,6 @@ app.get('/cities',jobsController.searchCities);
 app.get('/search/location',jobsController.searchByLocation);
 app.get('/search/industry',otherController.searchIndustry);
 app.get('/search/advanced',otherController.advancedSearchJob);
+
+app.get('/user/:email', migrationAuthController.getUserByEmail);
+app.post('/user/validate', migrationAuthController.validateUser)
