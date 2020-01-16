@@ -56,6 +56,13 @@ function getReportedIssueById(id) {
     return Issue.findOne({where: {id}, include: [{model: IssueResponse}]}).catch(err => console.log(err));
 }
 
+function getReportById(id){
+    return Reports.findOne( {where:{id},include: [{model: ApplicantProfile,include:[{model:User}]},{model:Job,include:[{model:CompanyProfile}]}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
+
+function updateReportField(value,fieldName,id){
+    return Reports.update({[fieldName]: value},{where: {id: id}});
+}
 function getApplicantIssueById(ApplicantProfileId, id){
     return Issue.findOne({where: {ApplicantProfileId, id}, include: [{model: IssueResponse}]}).catch(err => console.log(err)); 
 }
@@ -172,6 +179,8 @@ module.exports = {
     getIssueById,
     getIndutriesSearch,
     getFilteredApplicant,
-    addReports
-    getFeaturedCompanies
+    addReports,
+    getFeaturedCompanies,
+    getReportById,
+    updateReportField
 }

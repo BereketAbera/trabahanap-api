@@ -14,6 +14,10 @@ module.exports = function(sequelize, DataTypes) {
       comment:{
         type: DataTypes.STRING
       },
+      checked: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+      },
       ApplicantProfileId: {
         type: DataTypes.CHAR(36),
         allowNull: true,

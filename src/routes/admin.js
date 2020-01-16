@@ -16,6 +16,8 @@ app.get('/issues/applicant', otherController.getApplicantIssuesAdmin);
 app.get('/issues/employer', otherController.getCompanyIssuesAdmin);
 app.post('/issue_responses', otherController.addIssueResponse);
 app.get('/reports',otherController.getApplicantReports);
+app.get('/report/:id',otherController.getReportById);
+app.put('/report/check/:id',otherController.checkReport);
 
 app.post('/staff/add', adminAuthorize(ROLE.ADMIN), otherController.addAdminStaff);
 app.get('/staff', adminAuthorize(ROLE.ADMIN), otherController.getAdminStaff);
