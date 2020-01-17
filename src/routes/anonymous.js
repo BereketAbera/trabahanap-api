@@ -7,7 +7,8 @@ const otherController = require('../controllers/other.controller');
 app.get('/jobs/:id', jobsController.getJob);
 app.get('/jobs', jobsController.getAllJobs);
 app.get('/employers/featured', otherController.getFeaturedCompanies);
-app.get('/jobs/:featureId',jobsController.adminGetAllCompanyJob)
+app.get('/jobs/:featureId',jobsController.adminGetAllCompanyJob);
+app.get('/company/:companyProfileId',otherController.getCompanyDetails);
 
 app.get('/location/cities', locationsController.getAllCities);
 app.get('/location/regions', locationsController.getAllRegions);
