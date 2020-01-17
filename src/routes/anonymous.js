@@ -22,4 +22,8 @@ app.get('/search/industry',otherController.searchIndustry);
 app.get('/search/advanced',otherController.advancedSearchJob);
 
 app.get('/user/:email', migrationAuthController.getUserByEmail);
-app.post('/user/validate', migrationAuthController.validateUser)
+app.post('/user/validate', migrationAuthController.validateUser);
+app.post('/user/set_password', migrationAuthController.setPassword)
+
+app.get('/send_sms/:email', migrationAuthController.sendSMS);
+app.post('/confirm_sms_passcode', migrationAuthController.confirmSMSPasscode);

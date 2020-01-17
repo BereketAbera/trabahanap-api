@@ -135,6 +135,10 @@ function getFeaturedCompanies(){
     return CompanyProfile.findAll({where: {featured: true}}).catch(err => console.log(err));
 }
 
+function getTokenByEmailAndToken(email, token){
+    return Token.findOne({where: {token, email, expired: false}}).catch(err => console.log(err));
+}
+
 // function getCompanyProfileById(id){
 //     return CompanyProfile.findOne({where: {id}}).catch(err => console.log(err));
 // }
@@ -166,5 +170,6 @@ module.exports = {
     getIssueById,
     getIndutriesSearch,
     getFilteredApplicant,
-    getFeaturedCompanies
+    getFeaturedCompanies,
+    getTokenByEmailAndToken
 }

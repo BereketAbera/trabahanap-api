@@ -803,7 +803,7 @@ async function deactivateUserById(id) {
 
 async function authenticateUsers({ email, password }) {
     const resp = await authService.loginFromApi({ email, password });
-    console.log(resp.data);
+    // console.log(resp.data);
     //console.log(resp.data, 'res')
     if (resp.data.success) {
         const user = await userService.getUserByEmail(email);
