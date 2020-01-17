@@ -1,6 +1,6 @@
 const {
     Indutry, Issue,
-    Token, User,
+    Token, User,Reports,
     Job, JobApplication,
     CompanyProfile,
     ApplicantProfile,
@@ -41,7 +41,9 @@ function getIndutriesSearch(search){
 function addIssue(issue){
     return Issue.create(issue).catch(err => console.log(err));
 }
-
+function addReports(reports){
+    return Reports.create(reports).catch(err => console.log(err));
+}
 function getApplicantIssues(ApplicantProfileId){
     return Issue.findAll({where: {ApplicantProfileId}, include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
@@ -54,6 +56,13 @@ function getReportedIssueById(id) {
     return Issue.findOne({where: {id}, include: [{model: IssueResponse}]}).catch(err => console.log(err));
 }
 
+function getReportById(id){
+    return Reports.findOne( {where:{id},include: [{model: ApplicantProfile,include:[{model:User}]},{model:Job,include:[{model:CompanyProfile}]}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
+
+function updateReportField(value,fieldName,id){
+    return Reports.update({[fieldName]: value},{where: {id: id}});
+}
 function getApplicantIssueById(ApplicantProfileId, id){
     return Issue.findOne({where: {ApplicantProfileId, id}, include: [{model: IssueResponse}]}).catch(err => console.log(err)); 
 }
@@ -108,6 +117,9 @@ function getAllReportedIssues(){
 function getAllReportedApplicantIssues() {
     return Issue.findAll({where: {CompanyProfileId: null}, include: [{model: IssueResponse},{model: ApplicantProfile,include:[{model:User}]}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
+function getAllReportedApplicant(){
+    return Reports.findAll( {limit:8,include: [{model: ApplicantProfile,include:[{model:User}]},{model:Job}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
 
 function getAllReportedCompanyIssues() {
     return Issue.findAll({where: {ApplicantProfileId: null}, include: [{model: IssueResponse},{model: CompanyProfile}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
@@ -130,6 +142,15 @@ function getFilteredApplicant(CompanyProfileId){
     return JobApplication.findAndCountAll({where: {CompanyProfileId,filtered:1}}).catch(err => console.log(err))
 }
 
+function getFeaturedCompanies(){
+    // console.log('feating companies');
+    return CompanyProfile.findAll({where: {featured: true}}).catch(err => console.log(err));
+}
+
+// function getCompanyProfileById(id){
+//     return CompanyProfile.findOne({where: {id}}).catch(err => console.log(err));
+// }
+
 module.exports = {
     getAdminStats,
     getEmployerStats,
@@ -151,10 +172,15 @@ module.exports = {
     getAllEmployers,
     getAllReportedIssues,
     getAllReportedApplicantIssues,
+    getAllReportedApplicant,
     getAllReportedCompanyIssues,
     addIssueResponse,
     updateIssueField,
     getIssueById,
     getIndutriesSearch,
-    getFilteredApplicant
+    getFilteredApplicant,
+    addReports,
+    getFeaturedCompanies,
+    getReportById,
+    updateReportField
 }

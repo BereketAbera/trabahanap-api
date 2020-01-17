@@ -15,6 +15,9 @@ app.get('/issue/:id', otherController.getIssueById);
 app.get('/issues/applicant', otherController.getApplicantIssuesAdmin);
 app.get('/issues/employer', otherController.getCompanyIssuesAdmin);
 app.post('/issue_responses', otherController.addIssueResponse);
+app.get('/reports',otherController.getApplicantReports);
+app.get('/report/:id',otherController.getReportById);
+app.put('/report/check/:id',otherController.checkReport);
 
 app.post('/staff/add', adminAuthorize(ROLE.ADMIN), otherController.addAdminStaff);
 app.get('/staff', adminAuthorize(ROLE.ADMIN), otherController.getAdminStaff);
@@ -25,6 +28,9 @@ app.get('/applicants', userController.getApplicants);
 app.put('/applicants/:id',userController.deactivateUser);
 app.get('/applicant/:id',userController.getApplicantById);
 app.get('/applications', jobsController.getAllApplications);
+
+app.get('/employers/featured', otherController.getFeaturedCompanies);
+app.get('/employers/featured/:id/toggle', otherController.addRemoveFeaturedCompany);
 
 app.post('/location', locationController.addLocationWithImage);
 app.post('/jobs/:companyProfileId', jobsController.adminAddJob);
@@ -40,6 +46,7 @@ app.get('/employers/applicant/:companyProfileId',jobsController.getCompanyApplic
 app.get('/staff/:companyProfileId',otherController.getStaffsCompany);
 app.post('/staff/:companyProfileId',otherController.addStaffsCompany);
 app.get('/jobs', jobsController.adminGetAllJobs);
+app.put('/jobs/delete/:id',jobsController.deleteJob);
 
 app.get('/filter/jobs',jobsController.adminGetAllCompanyJobFilters);
 app.get('/filter/applications',jobsController.adminGetAllApplicationsFilters);
