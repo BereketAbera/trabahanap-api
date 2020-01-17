@@ -45,7 +45,7 @@ function authenticate(req, res, next) {
                 res.status(200).json({ success: false, error: user.error });
                 return;
             }
-            user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'username or password is incorrect' })
+            user ? res.status(200).json({ success: user.success, user:user.resp }) : res.status(200).json({ success: false, error: 'username or password is incorrect' })
         })
         .catch(err => next(err));
 }
@@ -825,7 +825,7 @@ async function authenticateUsers({ email, password }) {
 
             }
             // console.log(userWithoutPassword, 'ipass')
-            return userWithoutPassword;
+            return {success:true,resp:userWithoutPassword};
         }
         //return user.data;
     }
@@ -864,17 +864,19 @@ async function authenticateUsers({ email, password }) {
 
 async function signUpUserApplicant(body) {
 
-    const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4() })
+    const resp = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4() })
     console.log(user.data)
-    if (user.data.success) {
+    if (resp.data.success) {
         body["role"] = ROLE.APPLICANT;
 
         const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
-        if (user) {
-            const message = construct_email_applicant(user.data.user);
+        if (users) {
+            const message = construct_email_applicant(resp.data.user);
             sgMail.send(message);
-            return users;
+            return {success:true,resp:users};
         }
+    } else if(!resp.data.success){
+        return {success:false,resp:resp.data.error}
     }
 
     // const unique = await isEmailUnique(body);
