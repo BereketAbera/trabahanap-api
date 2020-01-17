@@ -63,7 +63,13 @@ function signUpApplicant(req, res, next) {
         return;
     }
 
+    if(req.body.recaptcha === '' || req.body.recaptcha === null || req.body.recaptcha === undefined) {
+        res.status(200).json({ success: false, validationError: "Please, select the reCaptcha" });
+        return;
+    }
+
     req.body.username = req.body.email;
+
 
     // axios.post(`${environment}/auth/signup`,req.body).then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'email is not unique' }))
     //     .catch(err => next(err));
@@ -862,32 +868,41 @@ async function authenticateUsers({ email, password }) {
     // }
 }
 
+async function checkRecaptcha(url) {
+   return await axios.get(url)
+}
+
 async function signUpUserApplicant(body) {
+    let secretKey = '6LcbF78UAAAAANG4mMs9YAgsbdftg5sBpegUwJd9';
+    let verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${body.recaptcha}`;
 
-    const resp = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4() })
-    console.log(user.data)
-    if (resp.data.success) {
-        body["role"] = ROLE.APPLICANT;
+    let recaptchaResponse = await checkRecaptcha(verificationUrl);
+    if(recaptchaResponse.data.success) {
 
-        const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
-        if (users) {
-            const message = construct_email_applicant(resp.data.user);
+        const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4() })
+        // console.log(user.data)
+        if (user.data.success) {
+            body["role"] = ROLE.APPLICANT;
+
+            const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
+            if (user) {
+                const message = construct_email_applicant(user.data.user);
+                sgMail.send(message);
+                return users;
+            }
+        }
+
+        const unique = await isEmailUnique(body);
+        if (unique) {
+            body["role"] = ROLE.APPLICANT;
+            const user = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
+            const message = construct_email_applicant(user);
             sgMail.send(message);
-            return {success:true,resp:users};
+            return user;
         }
     } else if(!resp.data.success){
         return {success:false,resp:resp.data.error}
     }
-
-    // const unique = await isEmailUnique(body);
-    // if (unique) {
-    //     body["role"] = ROLE.APPLICANT;
-    //     const user = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
-    //     const message = construct_email_applicant(user);
-    //     sgMail.send(message);
-    //     return user;
-    // }
-
 }
 
 async function signUpUserApplicantFromAdmin(body) {
@@ -909,17 +924,23 @@ async function signUpUserApplicantFromAdmin(body) {
 
 async function signUpUserEmployer(body) {
 
-    const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4() })
-    console.log(user.data)
-    if (user.data.success) {
-        body["role"] = ROLE.EMPLOYER;
-        const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
-        if (users) {
-            const message = constructEmail(body.firstName, body.email, user.data.user.emailVerificationToken);
-            sgMail.send(message);
-            return users;
-        }
+    let secretKey = '6LcbF78UAAAAANG4mMs9YAgsbdftg5sBpegUwJd9';
+    let verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${body.recaptcha}`;
 
+    let recaptchaResponse = await checkRecaptcha(verificationUrl);
+    if(recaptchaResponse.data.success) {
+        const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4() })
+        console.log(user.data)
+        if (user.data.success) {
+            body["role"] = ROLE.EMPLOYER;
+            const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
+            if (users) {
+                const message = constructEmail(body.firstName, body.email, user.data.user.emailVerificationToken);
+                sgMail.send(message);
+                return users;
+            }
+            
+        }
     }
 
 
