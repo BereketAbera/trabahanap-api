@@ -100,6 +100,11 @@ function getEmpIssues(req, res, next) {
         .catch(err => next(err));
 }
 
+function addReports(req, res, next) {
+    addApplicantReports(req.body, req.user.sub, req.params.id)
+        .then(reports => reports ? res.status(200).send({ success: true, reports }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
 function addIssue(req, res, next) {
     let localImagePath = "";
     let issue = {};
@@ -290,18 +295,34 @@ function verifyEmployer(req, res, next) {
         .catch(err => next(err));
 }
 
+function checkReport(req, res, next) {
+    updateCheckReportById(req.params.id)
+        .then(success => res.status(200).send({ success }))
+        .catch(err => next(err));
+}
+
 function getAllIssues(req, res, next) {
     getAllReportedIssues()
         .then(issues => issues ? res.status(200).send({ success: true, issues }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
         .catch(err => next(err));
 }
 
+function getReportById(req, res, next) {
+    reportById(req.params.id)
+        .then(report => report ? res.status(200).send({ success: true, report }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
 function getIssueById(req, res, next) {
     getReportedIssueById(req.params.id)
         .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
         .catch(err => next(err));
 }
 
+function getApplicantReports(req, res, next) {
+    getAllreportsFromApplicants()
+        .then(reports => reports ? res.status(200).send({ success: true, reports }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
 function getApplicantIssuesAdmin(req, res, next) {
     getAllIssuesFromApplicants()
         .then(issues => issues ? res.status(200).send({ success: true, issues }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
@@ -332,16 +353,16 @@ function addStaffsCompany(req, res, next) {
         .catch(err => next(err));
 }
 
-function getFeaturedCompanies(req, res, next){
+function getFeaturedCompanies(req, res, next) {
     getFeaturedCompaniesHandler()
-        .then(companies => res.status(200).send({ success: true, companies}))
+        .then(companies => res.status(200).send({ success: true, companies }))
         .catch(err => next(err));
 }
 
-function addRemoveFeaturedCompany(req, res, next){
+function addRemoveFeaturedCompany(req, res, next) {
     let id = req.params.id;
-    if(!id){
-        res.status(200).send({success: false, error: 'invlaid request'});
+    if (!id) {
+        res.status(200).send({ success: false, error: 'invlaid request' });
     }
 
     addRemoveFeaturedCompanyHandler(id)
@@ -420,6 +441,18 @@ async function addEmployerIssue(issue, userId) {
             return newIssue;
         }
     }
+}
+
+async function addApplicantReports(reports, userId, jobId) {
+    const applicant = await userService.getApplicantProfileByUserId(userId);
+    if (applicant) {
+        const newReports = await otherService.addReports({ ...reports, ApplicantProfileId: applicant.id, JobId: jobId });
+        if (newReports) {
+            return newReports;
+        }
+    }
+
+
 }
 
 async function getEmployerIssues(userId) {
@@ -676,6 +709,25 @@ async function getAllEmployers(page, pageSize) {
     }
 }
 
+async function updateCheckReportById(id) {
+    const report = await otherService.getReportById(id);
+    if (report) {
+        if (report.checked) {
+            const checked = await otherService.updateReportField(false, 'checked', id);
+            if (checked[0] > 0) {
+                return true;
+            }
+        } else {
+            const checked = await otherService.updateReportField(true, 'checked', id);
+            if (checked[0] > 0) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 async function verifyEmployerLicense(id) {
     const companyProfile = await userService.getCompanyProfileById(id);
     if (companyProfile) {
@@ -711,10 +763,23 @@ async function getReportedIssueById(id) {
     }
 }
 
+async function reportById(id) {
+    const report = await otherService.getReportById(id);
+    if (report) {
+        return report;
+    }
+}
+
 async function getAllIssuesFromApplicants() {
     const issues = await otherService.getAllReportedApplicantIssues();
     if (issues) {
         return issues;
+    }
+}
+async function getAllreportsFromApplicants() {
+    const reports = await otherService.getAllReportedApplicant();
+    if (reports) {
+        return reports;
     }
 }
 
@@ -771,7 +836,7 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
     if (salaryRange == "undefined") {
         salaryRange = '';
     }
-    
+
     //console.log(search, employType, industry, cityName, page)
     const offset = (page - 1) * pager.pageSize;
 
@@ -849,24 +914,24 @@ function advancedSearchQueryBuilder(search, employType, industry, salaryRange, c
 }
 
 
-async function getFeaturedCompaniesHandler(){
+async function getFeaturedCompaniesHandler() {
     const companies = await otherService.getFeaturedCompanies();
-    if(!companies){
+    if (!companies) {
         throw "something went wrong";
     }
 
     return companies;
 }
 
-async function addRemoveFeaturedCompanyHandler(id){
+async function addRemoveFeaturedCompanyHandler(id) {
     const company = await userService.getCompanyProfileById(id);
-    if(!company){
+    if (!company) {
         return false;
     }
 
-    if(!company.featured){
+    if (!company.featured) {
         const companies = await otherService.getFeaturedCompanies();
-        if(companies.length >= 8){
+        if (companies.length >= 8) {
             throw 'maximum_featured_companies_reached';
         }
     }
@@ -888,6 +953,7 @@ module.exports = {
     addEmpIssue,
     getEmpIssues,
     addIssue,
+    addReports,
     getIssues,
     getIssue,
     deleteEmpIssue,
@@ -913,6 +979,9 @@ module.exports = {
     addStaffsCompany,
     searchIndustry,
     advancedSearchJob,
+    getApplicantReports,
     getFeaturedCompanies,
-    addRemoveFeaturedCompany
+    addRemoveFeaturedCompany,
+    getReportById,
+    checkReport
 }

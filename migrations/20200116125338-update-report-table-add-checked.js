@@ -1,10 +1,11 @@
 'use strict';
 
+
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.addColumn(
-      'company_profiles',
-      'featured',
+      'reports',
+      'checked',
       {
         type: Sequelize.BOOLEAN,
         defaultValue: false
@@ -14,8 +15,8 @@ module.exports = {
 
   down: (queryInterface, Sequelize) => {
     return queryInterface.removeColumn(
-      'company_profiles',
-      'featured'
+      'reports',
+      'checked'
     );
   }
 };

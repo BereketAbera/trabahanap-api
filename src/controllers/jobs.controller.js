@@ -248,7 +248,7 @@ function searchCities(req, res, next) {
 }
 
 function searchByCity(req, res, next) {
-    getSearchInCity(req.query.key || '', req.query.cityName || '', req.query.page || 1)
+    getSearchInCity(req.query.key || '', req.query.cityName || '',req.query.compId || '', req.query.page || 1)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -699,7 +699,7 @@ async function getCompanyApplicationsWithPaginations(user_id, page) {
 
 }
 
-async function getSearchInCity(search, cityName, page) {
+async function getSearchInCity(search, cityName,compId, page) {
     // console.log(cityName, "city");
     const pager = {
         pageSize: 8,
@@ -710,8 +710,8 @@ async function getSearchInCity(search, cityName, page) {
     const offset = (page - 1) * pager.pageSize;
     const limit = pager.pageSize;
 
-    queryResult = searchQueryBuilder(search || '', cityName || '', offset, limit);
-    // console.log(queryResult)
+    queryResult = searchQueryBuilder(search || '', cityName || '',compId || '', offset, limit);
+    console.log(queryResult)
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
 
     if (jobs) {
@@ -1147,13 +1147,23 @@ async function filterApplication(userId, jobId, applicantId) {
     return false;
 }
 
-function searchQueryBuilder(search, cityName, offset, limit) {
+function searchQueryBuilder(search, cityName,compId, offset, limit) {
     let query = ``;
     let haveWhere = false;
-    //query = ` WHERE CompanyProfileId='${CompanyProfileId}'`;
+    if(compId != ''){
+        query = ` WHERE companyId='${compId}'`;
+        haveWhere=true
+    }
+   
     if (cityName != "") {
-        query = query + ` where cityName like '%${cityName}%'`;
-        haveWhere = true;
+        if(haveWhere){
+            query = query + ` and cityName like '%${cityName}%'`;
+            haveWhere = true;
+        }else{
+            query = query + ` where cityName like '%${cityName}%'`;
+            haveWhere = true;
+        }
+       
     } if (search != "") {
         if (haveWhere) {
             query = query + ` and (jobTitle like '%${search}%' or companyName like '%${search}%' or industryType like '%${search}%')`;
