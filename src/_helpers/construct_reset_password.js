@@ -37,7 +37,7 @@ module.exports = function constractResetEmail(firstName, email, token){
 			
 			<tr style="margin:0;padding:5px 15px;color:#0e0d0d;font-size:18px;font-family:Verdana" align="left">
 				<td><h6>
-						Link not working? Please paste this into your browser <a href="${constants.HOST_URL}/auth/new_staffer/${email}/${token}" target="_blank">${constants.HOST_URL}/auth/new_staffer/${email}/${token}</a>
+						Link not working? Please paste this into your browser <a href="${constants.HOST_URL}/auth/reset_password/${email}/${token}" target="_blank">${constants.HOST_URL}/auth/reset_password/${email}/${token}</a>
 				</h6> 
 				<span>If you didn’t request this please contact us immediately</span>
 				</td>
