@@ -8,7 +8,6 @@ function createUser(user){
 }
 
 async function createUserApi(user){
-    console.log('s')
     return await axios.post(`${environment}/auth/signup`,user);
 }
 

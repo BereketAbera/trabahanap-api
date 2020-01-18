@@ -505,28 +505,28 @@ async function adminGetCompanyStaffs(companyProfileId) {
 }
 
 async function adminAddCompanyStaffs(body, compProfileId) {
-    console.log(body)
-    console.log(compProfileId)
+    // console.log(body)
+    // console.log(compProfileId)
     if (compProfileId && body.email) {
-        console.log(body.email, "email");
+        // console.log(body.email, "email");
         const userExists = await userService.getUserByEmail(body.email);
         const tokenExists = await otherService.getTokenEmail(body.email);
 
-        console.log(userExists, "user");
-        console.log(tokenExists, 'token')
+        // console.log(userExists, "user");
+        // console.log(tokenExists, 'token')
         if (userExists || tokenExists) {
             return false;
         }
-        console.log('to be created')
+        // console.log('to be created')
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
         const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email })
         const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: compProfileId, username: body.email, hasFinishedProfile: true });
-        console.log('created')
+        // console.log('created')
         if (saveToken && newUser && userApi) {
             const message = constractStafferEmail(body.firstName, body.email, token);
             sgMail.send(message);
-            console.log('sent')
+            // console.log('sent')
             return true;
         }
     }
