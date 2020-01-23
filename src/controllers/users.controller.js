@@ -576,18 +576,71 @@ function updateApplicantPicture(req, res, next) {
 }
 
 function editApplicantProfile(req, res, next) {
-    const valid = validateApplicantProfile(req.body);
+    var fileNameCV = "";
+    var fileNameProfilePicture = "";
+    var form = new formidable.IncomingForm();
+    form.multiples = true;
+    //console.log('here')
+    form.on('fileBegin', function (name, file) {
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        let fileName = '';
+        if (name == "applicantPicture") {
+            fileName = fileNameProfilePicture = Date.now() + "applicant-profile";
+        }
 
-    if (valid != true) {
-        res.status(200).json({ success: false, validationError: valid });
-        return;
-    }
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
+    });
 
-    const { body } = req;
+    // const valid = validateApplicantProfile(req.body);
 
-    editUserApplicantProfile({ ...body, user_id: req.user.sub, cityId: body.CityId, regionId: body.RegionId, countryId: body.CountryId }, req.params.id)
-        .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
-        .catch(err => next(err));
+    // if (valid != true) {
+    //     res.status(200).json({ success: false, validationError: valid });
+    //     return;
+    // }
+
+    form.parse(req, (err, fields, files) => {
+        let applicantProfile = {};
+        _.map(fields, (value, key) => {
+            applicantProfile[key] = value;
+        })
+        applicantProfile = { ...applicantProfile, user_id: req.user.sub };
+        const valid = validateApplicantProfile(applicantProfile);
+
+        if (valid != true) {
+            res.status(200).json({ success: false, validationError: valid });
+            return;
+        }
+
+        //console.log('after')
+
+        var profilePictureFile = files['applicantPicture']
+        if (profilePictureFile) {
+            uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                .then(data => {
+                    applicantProfile['applicantPicture'] = data.Location;
+                    return editUserApplicantProfile(applicantProfile, req.params.id);      
+                })
+                .then(applicantProfile => {
+                    fs.unlinkSync(profilePictureFile.path);
+                    //console.log(applicantProfile.applicantProfile,'a')
+                    applicantProfile ? res.status(200).json({ success: true, applicantProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
+                })
+                .catch(err => next(err));
+        }
+        else {
+            // if there the picture is not editted
+            editUserApplicantProfile(applicantProfile, req.params.id)
+                .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
+                .catch(err => next(err));
+        }
+
+    });
+
+    // const { body } = req;
+
+    // editUserApplicantProfile({ ...body, user_id: req.user.sub, cityId: body.CityId, regionId: body.RegionId, countryId: body.CountryId }, req.params.id)
+    //     .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
+    //     .catch(err => next(err));
 }
 
 function createApplicantProfileWithCVAndPicture(req, res, next) {
