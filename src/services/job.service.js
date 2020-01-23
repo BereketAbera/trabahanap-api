@@ -182,6 +182,10 @@ function getAllApplications(offset, limit){
     return sequelize.query(`SELECT * from view_job_applications_applicant order by createdAt DESC LIMIT ${offset},${limit}`,{ type: sequelize.QueryTypes.SELECT })
 }
 
+// function getAllApplications(offset, limit){
+//     return JobApplication.findAndCountAll({limit, offset, include: [{ model: CompanyProfile }, {model: Job}, {model: ApplicantProfile}, {model: User}]});
+// }
+
 function getAllApplicationsCount(){
     return sequelize.query(`SELECT COUNT(*) from view_job_applications_applicant`,{ type: sequelize.QueryTypes.SELECT })  
 }
