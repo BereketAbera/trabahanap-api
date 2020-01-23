@@ -6,7 +6,7 @@ const ROLE = require('../_helpers/role');
 
 var fs = require('fs');
 var path = require('path');
-const { validateIssue } = require('../_helpers/validators');
+const { validateIssue, validateAds } = require('../_helpers/validators');
 const constractStafferEmail = require('../_helpers/construct_staffer_email');
 const constractAdminStaffEmail = require('../_helpers/construct_adminStaff_email');
 const uuidv4 = require('uuid/v4');
@@ -45,6 +45,12 @@ function searchIndustry(req, res, next) {
 function advancedSearchJob(req, res, next) {
     getAdvancedSearched(req.query.search || "", req.query.et || "", req.query.industry || "", req.query.sr || "", req.query.ct || "", req.query.pwd || 1, req.query.page || 1)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
+function deactivateAds(req, res, next) {
+    deactivateAdsById(req.params.id)
+        .then(ads => ads ? res.status(200).json({ success: true, ads }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
 
@@ -105,6 +111,52 @@ function addReports(req, res, next) {
         .then(reports => reports ? res.status(200).send({ success: true, reports }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
         .catch(err => next(err));
 }
+function adminAddAds(req, res, next) {
+    let localImagePath = "";
+    let ads = {};
+    let fileName = ""
+    let userId = req.user.sub;
+    var form = new formidable.IncomingForm();
+    form.on('fileBegin', (name, file) => {
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        if (name == 'image') {
+            fileName = moment().format("YYYYMMDDHHmmssSS");
+            file.path = CONSTANTS.baseDir + '/uploads/' + fileName + "." + fileExt;
+            localImagePath = file.path;
+        }
+    });
+    form.on('file', function (name, file) {
+        console.log('Uploaded ' + file.name);
+    });
+    form.parse(req, function (err, fields, files) {
+        _.map(fields, (value, key) => {
+            ads[key] = value;
+            console.log(key, '=', value)
+        });
+
+        const valid = validateAds(ads);
+        if (valid != true) {
+            res.status(200).json({ success: false, validationError: valid });
+            return;
+        }
+
+        ads = { ...ads,active:1 }
+        console.log(ads)
+        if (localImagePath != "") {
+            console.log('a')
+            processAdsUpload(userId, ads, fileName, localImagePath)
+                .then(ads => {
+                    fs.unlinkSync(localImagePath);
+                    res.status(200).send({ success: true, ads })
+                })
+                .catch(err => next(err));
+        }
+
+    });
+
+}
+
+
 function addIssue(req, res, next) {
     let localImagePath = "";
     let issue = {};
@@ -283,6 +335,18 @@ function getEmployers(req, res, next) {
         .catch(err => next(err));
 }
 
+function adminGetAllAds(req, res, next) {
+    getAllAds(req.query.page || 1, req.query.pageSize || 8)
+        .then(ads => ads ? res.status(200).send({ success: true, ads }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function getAdvertisement(req, res, next) {
+    getAdvertisementOfToday()
+        .then(ads => ads ? res.status(200).send({ success: true, ads }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
 function getCompanyDetails(req, res, next) {
     getCompanyDetailsInfo(req.params.companyProfileId)
         .then(employers => employers ? res.status(200).send({ success: true, employers }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
@@ -385,6 +449,17 @@ async function processFileUpload(userId, issue, fileName, localImagepath, role) 
     }
 }
 
+async function processAdsUpload(userId, ads, fileName, localImagePath) {
+    if (localImagePath != "") {
+        const imgObj = await uploadFile(localImagePath, 'th-employer-logo', fileName)
+        // issue.bucket = 'th-employer-logo';
+        ads.image = imgObj.Location;
+    }
+    console.log(ads.image, 'image')
+    return addAds(ads, userId);
+
+}
+
 function uploadFile(file, bucketName, fileName) {
     return uploadFilePromise(file, bucketName, fileName).then(data => {
         return data;
@@ -453,6 +528,14 @@ async function addApplicantReports(reports, userId, jobId) {
     }
 
 
+}
+
+async function addAds(body, userId) {
+    console.log({ ...body, userId }, 'body')
+    const ads = await otherService.addAdvertisement({ ...body, userId });
+    if (ads) {
+        return ads;
+    }
 }
 
 async function getEmployerIssues(userId) {
@@ -683,6 +766,41 @@ async function changeNewStafferPassword(body, token) {
 
     return false;
 }
+
+async function getAdvertisementOfToday(){
+    const now = moment().utc().format();
+    const endDay = moment().add(1,'days').utc().format();;
+    console.log(now);
+    console.log(endDay,'dea')
+    const ads = await otherService.getAdsByRanges(now,endDay);
+    if(ads){
+        return ads;
+    }
+
+}
+
+async function getAllAds(page, pageSize) {
+    const pager = {
+        pageSize: parseInt(pageSize),
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
+    const ads = await otherService.getAllAdsWithOffset(offset, limit);
+    if (ads) {
+        pager.totalItems = ads.count;
+        pager.totalPages = Math.ceil(ads.count / pager.pageSize);
+        return {
+            pager,
+            rows: ads.rows
+        }
+
+    }
+}
+
 
 async function getAllEmployers(page, pageSize) {
     const pager = {
@@ -945,6 +1063,25 @@ async function addRemoveFeaturedCompanyHandler(id) {
     return false;
 }
 
+async function deactivateAdsById(id) {
+    const ads = await otherService.getAdsById(id);
+    if (ads.active) {
+        const deactivated = await userService.updateAdsField(0, 'active', id);
+        if (deactivated[0] > 0) {
+            return true;
+        }
+    } else {
+        const deactivated = await userService.updateAdsField(1, 'active', id);
+        if (deactivated[0] > 0) {
+            return true;
+        }
+
+    }
+    if (deactivated[0] > 0 && ads) {
+        console.log(user)
+        return ads;
+    }
+}
 
 module.exports = {
     getAdminDashboardCounts,
@@ -983,5 +1120,9 @@ module.exports = {
     getFeaturedCompanies,
     addRemoveFeaturedCompany,
     getReportById,
-    checkReport
+    checkReport,
+    adminAddAds,
+    adminGetAllAds,
+    deactivateAds,
+    getAdvertisement
 }

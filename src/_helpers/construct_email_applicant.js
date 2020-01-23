@@ -13,7 +13,7 @@ module.exports = function construct_email_applicant(user){
 		<tbody>
 			<tr>
 				<td style="margin:0;padding:6px 15px;color:#0e0d0d;font-size:25px;font-family:Verdana" align="left" ><h5>
-                Magandang araw ${user.firstName}, 
+                Magandang araw ${user.firstName},
 				</h5> </td>
 				<br/>
 			</tr>

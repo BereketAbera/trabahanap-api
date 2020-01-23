@@ -45,7 +45,7 @@ function authenticate(req, res, next) {
                 res.status(200).json({ success: false, error: user.error });
                 return;
             }
-            user ? res.status(200).json({ success: user.success, user:user.resp }) : res.status(200).json({ success: false, error: 'username or password is incorrect' })
+            user ? res.status(200).json({ success: user.success, user: user.resp }) : res.status(200).json({ success: false, error: 'username or password is incorrect' })
         })
         .catch(err => next(err));
 }
@@ -63,7 +63,7 @@ function signUpApplicant(req, res, next) {
         return;
     }
 
-    if(req.body.recaptcha === '' || req.body.recaptcha === null || req.body.recaptcha === undefined) {
+    if (req.body.recaptcha === '' || req.body.recaptcha === null || req.body.recaptcha === undefined) {
         res.status(200).json({ success: false, validationError: "Please, select the reCaptcha" });
         return;
     }
@@ -247,10 +247,10 @@ function getAllEmployers(req, res, next) {
         .catch(err => next(err));
 }
 
-function facebookAuth(req, res, next){
-    const {access_token, social_id, user} = req.body;
-    
-    if(!access_token || !social_id || !user || !user.email){
+function facebookAuth(req, res, next) {
+    const { access_token, social_id, user } = req.body;
+
+    if (!access_token || !social_id || !user || !user.email) {
         return res.status(200).send({ success: false, error: 'invalid request' });
     }
 
@@ -259,10 +259,10 @@ function facebookAuth(req, res, next){
         .catch(err => next(err));
 }
 
-function googleAuth(req, res, next){
-    const {access_token, social_id, user} = req.body;
-    
-    if(!access_token || !social_id || !user || !user.email){
+function googleAuth(req, res, next) {
+    const { access_token, social_id, user } = req.body;
+
+    if (!access_token || !social_id || !user || !user.email) {
         return res.status(200).send({ success: false, error: 'invalid request' });
     }
 
@@ -831,12 +831,12 @@ async function authenticateUsers({ email, password }) {
 
             }
             // console.log(userWithoutPassword, 'ipass')
-            return {success:true,resp:userWithoutPassword};
+            return { success: true, resp: userWithoutPassword };
         }
         //return user.data;
     }
-    else if(!resp.data.success){
-        return {success:false,resp:resp.data.error}
+    else if (!resp.data.success) {
+        return { success: false, resp: resp.data.error }
     }
 
     // const user = await userService.getUserByEmail(email);
@@ -869,7 +869,7 @@ async function authenticateUsers({ email, password }) {
 }
 
 async function checkRecaptcha(url) {
-   return await axios.get(url)
+    return await axios.get(url)
 }
 
 async function signUpUserApplicant(body) {
@@ -877,7 +877,7 @@ async function signUpUserApplicant(body) {
     let verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${body.recaptcha}`;
 
     let recaptchaResponse = await checkRecaptcha(verificationUrl);
-    if(recaptchaResponse.data.success) {
+    if (recaptchaResponse.data.success) {
 
         const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4() })
         // console.log(user.data)
@@ -900,8 +900,8 @@ async function signUpUserApplicant(body) {
             sgMail.send(message);
             return user;
         }
-    } else if(!resp.data.success){
-        return {success:false,resp:resp.data.error}
+    } else if (!resp.data.success) {
+        return { success: false, resp: resp.data.error }
     }
 }
 
@@ -928,7 +928,7 @@ async function signUpUserEmployer(body) {
     let verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${body.recaptcha}`;
 
     let recaptchaResponse = await checkRecaptcha(verificationUrl);
-    if(recaptchaResponse.data.success) {
+    if (recaptchaResponse.data.success) {
         const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4() })
         console.log(user.data)
         if (user.data.success) {
@@ -939,7 +939,7 @@ async function signUpUserEmployer(body) {
                 sgMail.send(message);
                 return users;
             }
-            
+
         }
     }
 
@@ -1074,7 +1074,6 @@ async function editUserCompanyProfile(body, id) {
 
 async function verifyUserEmail(req) {
     const user = await authService.verifyUserFromApi(req.query.token);
-    // console.log(user.data);
     if (user.data.success) {
         const updated = await userService.updateUserByEmail(user.data.user.email, { emailVerified: true });
         if (updated) {
@@ -1128,56 +1127,56 @@ async function getAllApplicants(page) {
 
 }
 
-async function socialAuthHandler(provider, access_token, socialId, localUser){
+async function socialAuthHandler(provider, access_token, socialId, localUser) {
     // console.log(localUser);
-    if(provider == 'facebook'){
+    if (provider == 'facebook') {
         let facebookAuth = await axios.get(`https://graph.facebook.com/me?access_token=${access_token}`);
         facebookAuth = facebookAuth.data;
-        if(!facebookAuth.id){
-            throw "invalid social token"
-        }
-    
-        if(facebookAuth.id != socialId){
+        if (!facebookAuth.id) {
             throw "invalid social token"
         }
 
-    }else{
+        if (facebookAuth.id != socialId) {
+            throw "invalid social token"
+        }
+
+    } else {
         let googleAuth = await axios.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${access_token}`);
         googleAuth = googleAuth.data;
 
-        if(!googleAuth.sub){
+        if (!googleAuth.sub) {
             throw "invalid social token"
         }
-    
-        if(googleAuth.sub != socialId){
+
+        if (googleAuth.sub != socialId) {
             throw "invalid social token"
         }
     }
     let { email, firstName, lastName, role } = localUser;
     firstName = firstName ? firstName : "";
     lastName = lastName ? lastName : "";
-    if(!email){
+    if (!email) {
         throw "invalid user"
     }
 
-    const emailUnique = await isEmailUnique({email});
-    if(!emailUnique){
-        let authUser = await axios.post(`${environment}/auth/social_login`, {email});
-        
-        if(!authUser || !authUser.data.success){
+    const emailUnique = await isEmailUnique({ email });
+    if (!emailUnique) {
+        let authUser = await axios.post(`${environment}/auth/social_login`, { email });
+
+        if (!authUser || !authUser.data.success) {
             throw "something went wrong";
         }
 
         authUser = authUser.data.user;
 
-        
+
         let localUser = await userService.getUserByEmail(authUser.email);
-        if(!localUser){
+        if (!localUser) {
             throw "something went wrong";
         }
 
         const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
-    
+
         // console.log(token);
 
         const userWithoutPassword = {};
@@ -1189,12 +1188,12 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
         });
 
         userWithoutPassword.token = token;
-        
+
         return userWithoutPassword;
-    }else{
-        let authUser = await axios.post(`${environment}/auth/social_signup`, {email, firstName, lastName, phoneNumber: "", socialId});
+    } else {
+        let authUser = await axios.post(`${environment}/auth/social_signup`, { email, firstName, lastName, phoneNumber: "", socialId });
         // console.log(authUser);
-        if(!authUser){
+        if (!authUser) {
             throw "something went wrong";
         }
 
@@ -1202,13 +1201,13 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
 
         // console.log({email, firstName, lastName, phoneNumber: "", socialId});
 
-        let localUser = await userService.createUser({...authUser, role, active: true, emailVerified:true});
-        if(!localUser){
+        let localUser = await userService.createUser({ ...authUser, role, active: true, emailVerified: true });
+        if (!localUser) {
             throw "something went wrong";
         }
 
         const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
-    
+
         const userWithoutPassword = {};
         _.map(localUser.dataValues, (value, key) => {
             if (key == 'password') {
@@ -1218,7 +1217,7 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
         });
 
         userWithoutPassword.token = token;
-        
+
         return userWithoutPassword;
     }
 }

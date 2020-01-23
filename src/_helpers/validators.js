@@ -201,11 +201,40 @@ function validateIssue(data){
     return errors;
 }
 
+function validateAds(data){
+    const errors = {};
+    let valid = true;
+    const fields = ["title", "adsStart", "adsEnd"];
+    const keys = _.keys(data);
+    fields.map(field => {
+        if(keys.includes(field)){
+            return;
+        }
+        valid = false
+    }) 
+    if(!valid){
+        return "some required fields are not present";
+    }
+
+    _.map(data, (value, key) => {
+        if(fields.includes(key) && validator.isEmpty(value + '')){
+            errors[key] = `${key} is not valid`;
+            valid = false;
+        }
+    })
+
+    if(valid){
+        return valid;
+    }
+    return errors;
+}
+
 module.exports = {
     validateUser,
     validateApplicantProfile,
     validateCompanyProfile,
     validateLocation,
     validateJob,
-    validateIssue
+    validateIssue,
+    validateAds
 }

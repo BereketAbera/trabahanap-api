@@ -1,16 +1,16 @@
 {
-  "development2": {
-    "username": "root",
-    "password": "password",
-    "database": "trb_mig_temp",
-    "host": "192.168.0.10",
-    "dialect": "mysql"
-  },
   "development": {
     "username": "root",
     "password": "password",
     "database": "trabahanap_migration",
     "host": "192.168.0.10",
+    "dialect": "mysql"
+  },
+  "development2": {
+    "username": "root",
+    "password": "",
+    "database": "trabahanap_development",
+    "host": "localhost",
     "dialect": "mysql",
     "operatorsAliases": 0
   },

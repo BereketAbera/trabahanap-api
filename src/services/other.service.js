@@ -1,6 +1,6 @@
 const {
     Indutry, Issue,
-    Token, User,Reports,
+    Token, User,Reports,Advertisement,
     Job, JobApplication,
     CompanyProfile,
     ApplicantProfile,
@@ -43,6 +43,10 @@ function addIssue(issue){
 }
 function addReports(reports){
     return Reports.create(reports).catch(err => console.log(err));
+}
+function addAdvertisement(ads){
+    console.log(ads)
+    return Advertisement.create(ads).catch(err => console.log(err));
 }
 function getApplicantIssues(ApplicantProfileId){
     return Issue.findAll({where: {ApplicantProfileId}, include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
@@ -142,6 +146,10 @@ function getFilteredApplicant(CompanyProfileId){
     return JobApplication.findAndCountAll({where: {CompanyProfileId,filtered:1}}).catch(err => console.log(err))
 }
 
+function getAllAdsWithOffset(offset,limit){
+    return Advertisement.findAndCountAll({offset,limit}).catch(err => console.log(err))
+}
+
 function getFeaturedCompanies(){
     // console.log('feating companies');
     return CompanyProfile.findAll({where: {featured: true}}).catch(err => console.log(err));
@@ -149,6 +157,13 @@ function getFeaturedCompanies(){
 
 function getTokenByEmailAndToken(email, token){
     return Token.findOne({where: {token, email, expired: false}}).catch(err => console.log(err));
+}
+function getAdsById(id){
+    return Advertisement.findOne({where: { id }}).catch(err => console.log(err));
+}
+
+function getAdsByRanges(now,endDay){
+    return sequelize.query(`SELECT * FROM advertisement WHERE active='1' AND adsStart >= '${now}' AND adsEnd >= '${now}' AND adsStart < '${endDay}' `, { type: sequelize.QueryTypes.SELECT })
 }
 
 // function getCompanyProfileById(id){
@@ -188,5 +203,9 @@ module.exports = {
     addReports,
     getFeaturedCompanies,
     getReportById,
-    updateReportField
+    updateReportField,
+    addAdvertisement,
+    getAllAdsWithOffset,
+    getAdsById,
+    getAdsByRanges
 }
