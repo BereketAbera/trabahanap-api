@@ -5,7 +5,7 @@ const accountAuthorize = require('../_helpers/accountAuthorize')
 
 app.post('/applicant_signup', userController.signUpApplicant);
 
-app.post('/employer_signup', userController.signUpEmployer)
+app.post('/employer_signup', userController.signUpEmployer);
 
 app.post('/login', userController.authenticate);
 

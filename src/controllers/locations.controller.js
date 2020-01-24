@@ -111,7 +111,7 @@ function updateLocation(req, res, next) {
 
 function getLocation(req, res, next) {
     getCompanyLocationById(req.params.id, req.user.sub)
-        .then(location => res.status(200).send({ success: true, location }))
+        .then(location => location ? res.status(200).json({ success: true, location }) : res.status(200).json({ success: false, error: 'something went wrong' }))
         .catch(err => next(err));
 }
 
@@ -159,7 +159,7 @@ function getLocationByCompanyProfile(req, res, next) {
 
 function getLocationById(req, res, next) {
     adminGetLocationById(req.params.id)
-        .then(location => res.status(200).send({ success: true, location }))
+        .then(location => location ? res.status(200).send({ success: true, location }) : res.status(200).send({ success: false, location }))
         .catch(err => next(err));
 }
 
@@ -310,7 +310,7 @@ async function addCompanyLocation(location) {
 
 async function getCompanyLocationById(id, userId) {
     const user = await userService.getUserById(userId);
-    if (user && user.role == "EMPLOYER" && user.company_profile) {
+    if (user && user.company_profile) {
         const location = await locationService.getLocationById(id);
         if (location.companyProfileId == user.companyProfileId) {
             return location;

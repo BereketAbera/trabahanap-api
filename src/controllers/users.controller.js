@@ -756,7 +756,7 @@ function editCompanyProfile(req, res, next) {
 }
 
 function getApplicants(req, res, next) {
-    getAllApplicants(req.query.page || 1)
+    getAllApplicants(req.query.page || 1, req.query.pageSize || 8)
         .then(applicants => applicants ? res.status(200).json({ success: true, applicants }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -810,7 +810,7 @@ async function deactivateUserById(id) {
 async function authenticateUsers({ email, password }) {
     const resp = await authService.loginFromApi({ email, password });
     // console.log(resp.data);
-    //console.log(resp.data, 'res')
+    console.log(resp.data, 'res')
     if (resp.data.success) {
         const user = await userService.getUserByEmail(email);
         if (user) {
@@ -822,13 +822,20 @@ async function authenticateUsers({ email, password }) {
 
             });
             userWithoutPassword['token'] = token;
-            if (user.role = 'APPLICANT') {
+            if (user.role = 'APPLICANT' && user.hasFinishedProfile) {
                 applicantProfile = await userService.getApplicantProfileByUserId(user.id);
                 userWithoutPassword['applicantProfile'] = applicantProfile;
+                if (user.firstName != resp.data.user.firstName || user.lastName != resp.data.user.lastName) {
+                    console.log("should update the local now");
+                    const updatedUser = await userService.updateUserById(user.id, { firstName: resp.data.user.firstName, lastName: resp.data.user.lastName })
+                    if (updatedUser) {
+                        userWithoutPassword.firstName = updatedUser.firstName;
+                        userWithoutPassword.lastName = updatedUser.lastName;
+                    }
+                }
             }
             if (resp.data.user.emailVerified) {
                 userWithoutPassword.emailVerified = 1;
-
             }
             // console.log(userWithoutPassword, 'ipass')
             return { success: true, resp: userWithoutPassword };
@@ -1104,9 +1111,9 @@ async function isEmailUnique({ email }) {
     return true;
 }
 
-async function getAllApplicants(page) {
+async function getAllApplicants(page, pageSize) {
     const pager = {
-        pageSize: 6,
+        pageSize: parseInt(pageSize),
         totalItems: 0,
         totalPages: 0,
         currentPage: parseInt(page)
@@ -1171,9 +1178,12 @@ async function socialAuthHandler(provider, access_token, socialId, localUser) {
 
 
         let localUser = await userService.getUserByEmail(authUser.email);
+
         if (!localUser) {
             throw "something went wrong";
         }
+
+
 
         const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
 
@@ -1186,6 +1196,20 @@ async function socialAuthHandler(provider, access_token, socialId, localUser) {
             }
             userWithoutPassword[key] = value;
         });
+        console.log(authUser.firstName, 'api firstname');
+        console.log(localUser.firstName, "firstName");
+        if (localUser.role == "APPLICANT" && localUser.hasFinishedProfile) {
+            if (authUser.firstName != localUser.firstName || authUser.lastName != localUser.lastName) {
+               
+                console.log("should update the local now");
+                const updatedUser = await userService.updateUserById(localUser.id, { firstName: authUser.firstName, lastName: authUser.lastName })
+                if (updatedUser) {
+                    userWithoutPassword.firstName = updatedUser.firstName;
+                    userWithoutPassword.lastName = updatedUser.lastName;
+                }
+            }
+        }
+
 
         userWithoutPassword.token = token;
 

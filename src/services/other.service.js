@@ -45,7 +45,6 @@ function addReports(reports){
     return Reports.create(reports).catch(err => console.log(err));
 }
 function addAdvertisement(ads){
-    console.log(ads)
     return Advertisement.create(ads).catch(err => console.log(err));
 }
 function getApplicantIssues(ApplicantProfileId){
