@@ -779,6 +779,7 @@ function createApplicant(req, res, next) {
 }
 
 function getApplicantProfile(req, res, next) {
+    // console.log(req.user);
     getUserApplicantProfile(req.user.sub)
         .then(applicantProfile => {
             if (applicantProfile) {
