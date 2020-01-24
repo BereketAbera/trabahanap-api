@@ -613,8 +613,9 @@ function editApplicantProfile(req, res, next) {
 
         //console.log('after')
 
-        var profilePictureFile = files['applicantPicture']
+        let profilePictureFile = files['applicantPicture']
         if (profilePictureFile) {
+            console.log(profilePictureFile.path, "the path")
             uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
                 .then(data => {
                     applicantProfile['applicantPicture'] = data.Location;
@@ -630,7 +631,7 @@ function editApplicantProfile(req, res, next) {
         else {
             // if there the picture is not editted
             editUserApplicantProfile(applicantProfile, req.params.id)
-                .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
+                .then(applicant => applicant ? res.status(200).json({ success: true, applicantProfile: applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
                 .catch(err => next(err));
         }
 
@@ -1017,10 +1018,11 @@ async function getUserById(user_id) {
 
 async function editUserApplicantProfile(body, id) {
     body = { ...body, cityId: body.CityId, countryId: body.countryId, regionId: body.regionId };
+    const updatedUser = await userService.updateUserById(body.user_id, body);
     let applicantProfile = await userService.getApplicantProfileByUserId(body.user_id);
     if (applicantProfile && applicantProfile.id == id) {
         const updatedProfile = await userService.updateApplicantProfile(applicantProfile, body);
-        if (updatedProfile) {
+        if (updatedProfile && updatedUser) {
             return updatedProfile;
         }
     }
