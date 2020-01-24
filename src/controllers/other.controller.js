@@ -520,7 +520,7 @@ async function adminAddCompanyStaffs(body, compProfileId) {
         // console.log('to be created')
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
-        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email })
+        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email, role: ROLE.STAFFER })
         const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: compProfileId, username: body.email, hasFinishedProfile: true });
         // console.log('created')
         if (saveToken && newUser && userApi) {
@@ -637,7 +637,7 @@ async function addCompanyStaffer(body, userId) {
 
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
-        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email })
+        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email, role: ROLE.STAFFER})
         const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: user.companyProfileId, username: body.email, hasFinishedProfile: true });
         if (saveToken && newUser && userApi) {
             console.log(body, 'body in staffer')

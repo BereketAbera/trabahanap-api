@@ -227,7 +227,7 @@ async function adminSignUpEmployerUser(body) {
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
         const { email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile } = { ...body };
-        const userApi = await authService.createUserApi({ email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile })
+        const userApi = await authService.createUserApi({ email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile, role: ROLE.EMPLOYER })
         const user = await userService.createUser({ email, username, phoneNumber, firstName, lastName, gender, role, emailVerified, hasFinishedProfile });
 
         if (saveToken && user && userApi.data.success) {
@@ -933,7 +933,7 @@ async function signUpUserApplicant(body) {
     let recaptchaResponse = await checkRecaptcha(verificationUrl);
     if(recaptchaResponse.data.success) {
 
-        const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4() })
+        const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4(), role: ROLE.APPLICANT})
         // console.log(user.data)
         if (user.data.success) {
             body["role"] = ROLE.APPLICANT;
@@ -964,7 +964,7 @@ async function signUpUserApplicantFromAdmin(body) {
     if (unique) {
         body["role"] = ROLE.APPLICANT;
         body["emailVerified"] = true;
-        const userApi = await authService.createUserApi(body);
+        const userApi = await authService.createUserApi({...body, role: ROLE.ADMIN});
         const user = await userService.createUser(body);
         console.log(userApi.data)
         if (user && userApi.data.success) {
@@ -983,7 +983,7 @@ async function signUpUserEmployer(body) {
 
     let recaptchaResponse = await checkRecaptcha(verificationUrl);
     if(recaptchaResponse.data.success) {
-        const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4() })
+        const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4(), role: ROLE.EMPLOYER })
         console.log(user.data)
         if (user.data.success) {
             body["role"] = ROLE.EMPLOYER;
