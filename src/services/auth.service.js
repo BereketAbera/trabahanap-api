@@ -28,7 +28,9 @@ async function changePassword(user_id,password){
 async function updatePassword(user_id,oldPassword,newPassword){
     return await axios.post(`${environment}/auth/update_password`,{id:user_id,oldPassword:oldPassword,newPassword:newPassword});
 }
-
+async function updateUser(user_id,body){
+    return await axios.post(`${environment}/auth/update_user`,{id:user_id,firstName:body.firstName,lastName:body.lastName,phoneNumber:body.phoneNumber})
+}
 
 module.exports = {
     createUserApi,
@@ -37,5 +39,6 @@ module.exports = {
     verifyTokens,
     changePassword,
     getUserByEmailFromApi,
-    updatePassword
+    updatePassword,
+    updateUser
 };

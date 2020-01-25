@@ -140,7 +140,7 @@ function adminAddAds(req, res, next) {
             return;
         }
 
-        ads = { ...ads,active:1 }
+        ads = { ...ads, active: 1 }
         console.log(ads)
         if (localImagePath != "") {
             console.log('a')
@@ -699,12 +699,15 @@ async function addAdminStaffer(body, userId) {
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
         const user = await authService.createUserApi({ ...body, password: uuidv4(), role: ROLE.ADMINSTAFF, username: body.email, emailVerificationToken: uuidv4() })
-        const newUser = await userService.createUser({ ...body, role: ROLE.ADMINSTAFF, username: body.email });
-        if (saveToken && newUser && user.data.success) {
-            const message = constractAdminStaffEmail(body.firstName, body.email, token);
-            sgMail.send(message);
-            return true;
+        if (user.data.success) {
+            const newUser = await userService.createUser({ ...body,id:user.data.user.id, role: ROLE.ADMINSTAFF, username: body.email });
+            if (saveToken && newUser && user.data.success) {
+                const message = constractAdminStaffEmail(body.firstName, body.email, token);
+                sgMail.send(message);
+                return true;
+            }
         }
+
     }
     return false;
 }
@@ -720,14 +723,17 @@ async function addCompanyStaffer(body, userId) {
 
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
-        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email })
-        const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: user.companyProfileId, username: body.email, hasFinishedProfile: true });
-        if (saveToken && newUser && userApi) {
-            console.log(body, 'body in staffer')
-            const message = constractStafferEmail(body.firstName, body.email, token);
-            sgMail.send(message);
-            return true;
+        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email });
+        if (userApi.data.success) {
+            const newUser = await userService.createUser({ ...body, id: userApi.data.user.id, role: ROLE.STAFFER, companyProfileId: user.companyProfileId, username: body.email, hasFinishedProfile: true });
+            if (saveToken && newUser) {
+                console.log(body, 'body in staffer')
+                const message = constractStafferEmail(body.firstName, body.email, token);
+                sgMail.send(message);
+                return true;
+            }
         }
+
     }
     return false;
 }
@@ -767,13 +773,13 @@ async function changeNewStafferPassword(body, token) {
     return false;
 }
 
-async function getAdvertisementOfToday(){
+async function getAdvertisementOfToday() {
     const now = moment().utc().format();
-    const endDay = moment().add(1,'days').utc().format();;
+    const endDay = moment().add(1, 'days').utc().format();;
     console.log(now);
-    console.log(endDay,'dea')
-    const ads = await otherService.getAdsByRanges(now,endDay);
-    if(ads){
+    console.log(endDay, 'dea')
+    const ads = await otherService.getAdsByRanges(now, endDay);
+    if (ads) {
         return ads;
     }
 

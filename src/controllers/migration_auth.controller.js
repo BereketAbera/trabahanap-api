@@ -57,7 +57,7 @@ function sendSMS(req, res, next){
         throw "invalid request";
     }
 
-    sendSMsHandle(email)
+    sendSMSHandler(email)
         .then(success => res.status(200).send({success}))
         .catch(err => next(err));
 }
@@ -145,7 +145,7 @@ async function setPasswordHandler(obj){
     }
 }
 
-async function sendSMsHandle(email){
+async function sendSMSHandler(email){
     const randomNumber = Math.floor(Math.random()*900000) + 100000;
     const user = await userService.getUserByEmail(email);
     if(!user){
@@ -157,8 +157,13 @@ async function sendSMsHandle(email){
         throw 'something went wrong';
     }
 
+    let phoneNumber = user.phoneNumber;
+    if(phoneNumber[0] != "+"){
+        phoneNumber = "+" + phoneNumber;
+    }
+
     const messageSent = await twilio.messages.create({
-        to: user.phoneNumber,
+        to: phoneNumber,
         from: "+17039409429",
         body: `Comfirmation No: ${randomNumber}`
     });

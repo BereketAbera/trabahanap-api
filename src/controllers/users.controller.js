@@ -228,13 +228,16 @@ async function adminSignUpEmployerUser(body) {
         const saveToken = await otherService.saveToken(token, body.email);
         const { email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile } = { ...body };
         const userApi = await authService.createUserApi({ email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile })
-        const user = await userService.createUser({ email, username, phoneNumber, firstName, lastName, gender, role, emailVerified, hasFinishedProfile });
+        if (userApi.data.success) {
+            const user = await userService.createUser({ id: userApi.data.user.id, email, username, phoneNumber, firstName, lastName, gender, role, emailVerified, hasFinishedProfile });
 
-        if (saveToken && user && userApi.data.success) {
-            const message = construct_employer_email(body.email, token);
-            sgMail.send(message);
-            return user;
+            if (saveToken && user) {
+                const message = construct_employer_email(body.email, token);
+                sgMail.send(message);
+                return user;
+            }
         }
+
     }
     else {
         return "Email is not unique"
@@ -576,18 +579,72 @@ function updateApplicantPicture(req, res, next) {
 }
 
 function editApplicantProfile(req, res, next) {
-    const valid = validateApplicantProfile(req.body);
+    var fileNameCV = "";
+    var fileNameProfilePicture = "";
+    var form = new formidable.IncomingForm();
+    form.multiples = true;
+    //console.log('here')
+    form.on('fileBegin', function (name, file) {
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        let fileName = '';
+        if (name == "applicantPicture") {
+            fileName = fileNameProfilePicture = Date.now() + "applicant-profile";
+        }
 
-    if (valid != true) {
-        res.status(200).json({ success: false, validationError: valid });
-        return;
-    }
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
+    });
 
-    const { body } = req;
+    // const valid = validateApplicantProfile(req.body);
 
-    editUserApplicantProfile({ ...body, user_id: req.user.sub, cityId: body.CityId, regionId: body.RegionId, countryId: body.CountryId }, req.params.id)
-        .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
-        .catch(err => next(err));
+    // if (valid != true) {
+    //     res.status(200).json({ success: false, validationError: valid });
+    //     return;
+    // }
+
+    form.parse(req, (err, fields, files) => {
+        let applicantProfile = {};
+        _.map(fields, (value, key) => {
+            applicantProfile[key] = value;
+        })
+        applicantProfile = { ...applicantProfile, user_id: req.user.sub };
+        const valid = validateApplicantProfile(applicantProfile);
+
+        if (valid != true) {
+            res.status(200).json({ success: false, validationError: valid });
+            return;
+        }
+
+        //console.log('after')
+
+        let profilePictureFile = files['applicantPicture']
+        if (profilePictureFile) {
+            console.log(profilePictureFile.path, "the path")
+            uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                .then(data => {
+                    applicantProfile['applicantPicture'] = data.Location;
+                    return editUserApplicantProfile(applicantProfile, req.params.id);
+                })
+                .then(applicantProfile => {
+                    fs.unlinkSync(profilePictureFile.path);
+                    //console.log(applicantProfile.applicantProfile,'a')
+                    applicantProfile ? res.status(200).json({ success: true, applicantProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
+                })
+                .catch(err => next(err));
+        }
+        else {
+            // if there the picture is not editted
+            editUserApplicantProfile(applicantProfile, req.params.id)
+                .then(applicant => applicant ? res.status(200).json({ success: true, applicantProfile: applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
+                .catch(err => next(err));
+        }
+
+    });
+
+    // const { body } = req;
+
+    // editUserApplicantProfile({ ...body, user_id: req.user.sub, cityId: body.CityId, regionId: body.RegionId, countryId: body.CountryId }, req.params.id)
+    //     .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
+    //     .catch(err => next(err));
 }
 
 function createApplicantProfileWithCVAndPicture(req, res, next) {
@@ -725,6 +782,7 @@ function createApplicant(req, res, next) {
 }
 
 function getApplicantProfile(req, res, next) {
+    // console.log(req.user);
     getUserApplicantProfile(req.user.sub)
         .then(applicantProfile => {
             if (applicantProfile) {
@@ -891,7 +949,7 @@ async function signUpUserApplicant(body) {
         if (user.data.success) {
             body["role"] = ROLE.APPLICANT;
 
-            const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
+            const users = await userService.createUser({ ...body, id: user.data.user.id, emailVerificationToken: uuidv4() });
             if (user) {
                 const message = construct_email_applicant(user.data.user);
                 sgMail.send(message);
@@ -918,11 +976,13 @@ async function signUpUserApplicantFromAdmin(body) {
         body["role"] = ROLE.APPLICANT;
         body["emailVerified"] = true;
         const userApi = await authService.createUserApi(body);
-        const user = await userService.createUser(body);
-        console.log(userApi.data)
-        if (user && userApi.data.success) {
-            return user;
+        if(userApi.data.success){
+            const user = await userService.createUser({...body,id:userApi.data.user.id});
+            if (user && userApi.data.success) {
+                return user;
+            }
         }
+       
         throw "Something went wrong.";
     } else {
         throw "Email is not unique";
@@ -940,7 +1000,7 @@ async function signUpUserEmployer(body) {
         console.log(user.data)
         if (user.data.success) {
             body["role"] = ROLE.EMPLOYER;
-            const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
+            const users = await userService.createUser({ ...body, id: user.data.user.id, emailVerificationToken: uuidv4() });
             if (users) {
                 const message = constructEmail(body.firstName, body.email, user.data.user.emailVerificationToken);
                 sgMail.send(message);
@@ -970,14 +1030,21 @@ async function getUserById(user_id) {
 }
 
 async function editUserApplicantProfile(body, id) {
+    console.log("hi")
     body = { ...body, cityId: body.CityId, countryId: body.countryId, regionId: body.regionId };
+    const updatedLinguanUser = await authService.updateUser(body.user_id, body);
+    console.log(updatedLinguanUser.data)
+    if (updatedLinguanUser.data.success) {
+        const updatedUser = await userService.updateUserById(body.user_id, body);
+    }
     let applicantProfile = await userService.getApplicantProfileByUserId(body.user_id);
     if (applicantProfile && applicantProfile.id == id) {
         const updatedProfile = await userService.updateApplicantProfile(applicantProfile, body);
-        if (updatedProfile) {
+        if (updatedProfile && updatedLinguanUser) {
             return updatedProfile;
         }
     }
+
 }
 
 async function updateCompanyField(value, fieldName, userId) {
@@ -1196,12 +1263,8 @@ async function socialAuthHandler(provider, access_token, socialId, localUser) {
             }
             userWithoutPassword[key] = value;
         });
-        console.log(authUser.firstName, 'api firstname');
-        console.log(localUser.firstName, "firstName");
         if (localUser.role == "APPLICANT" && localUser.hasFinishedProfile) {
             if (authUser.firstName != localUser.firstName || authUser.lastName != localUser.lastName) {
-               
-                console.log("should update the local now");
                 const updatedUser = await userService.updateUserById(localUser.id, { firstName: authUser.firstName, lastName: authUser.lastName })
                 if (updatedUser) {
                     userWithoutPassword.firstName = updatedUser.firstName;
