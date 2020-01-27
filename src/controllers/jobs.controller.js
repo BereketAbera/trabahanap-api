@@ -967,9 +967,10 @@ async function getEmployerGetJobApplicants(jobId, userId) {
 async function getEmployerFilteredJobApplicants(jobId, userId) {
     const user = await userService.getUserById(userId);
     const job = await jobsService.getJobById(jobId);
-
+    console.log(jobId)
     if (user && job && user.companyProfileId == job.companyProfileId) {
         const applicants = await jobsService.getFilteredJobApplicants(jobId);
+        console.log(applicants)
         if (applicants[0]) {
             //console.log(applicants);
             return applicants[0];

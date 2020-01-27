@@ -1334,8 +1334,6 @@ module.exports = {
     signUpApplicant,
     signUpEmployer,
     verifyEmail,
-    // createApplicantProfile,
-    // createCompanyProfile,
     editCompanyProfile,
     createCompanyProfileWithBusinessLicenseAndLogo,
     getApplicantProfile,
