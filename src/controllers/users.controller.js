@@ -945,12 +945,12 @@ async function signUpUserApplicant(body) {
     if (recaptchaResponse.data.success) {
 
         const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4(), role: ROLE.APPLICANT})
-        // console.log(user.data)
+         //console.log(user.data)
         if (user.data.success) {
             body["role"] = ROLE.APPLICANT;
 
             const users = await userService.createUser({ ...body, id: user.data.user.id, emailVerificationToken: uuidv4() });
-            if (user) {
+            if (users) {
                 const message = construct_email_applicant(user.data.user);
                 sgMail.send(message);
                 return users;
