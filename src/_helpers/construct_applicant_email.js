@@ -6,7 +6,7 @@ module.exports = function constructApplicantEmail(email, token){
     const msg = {
         to: email,
         from: "support@trabahanap.com",
-        subject: "Staffer Invitations",
+        subject: "Applicant Invitations",
         text: "Click hear to accept invitation",
 		html: `
 		<table cellpadding="0" cellspacing="0" width="600" align="center" style="font-size:0">

@@ -1,12 +1,12 @@
 {
-  "development2": {
+  "development": {
     "username": "root",
     "password": "password",
-    "database": "trb_mig_temp",
+    "database": "trabahanap_migration",
     "host": "192.168.0.10",
     "dialect": "mysql"
   },
-  "development": {
+  "development2": {
     "username": "root",
     "password": "",
     "database": "trabahanap_development",

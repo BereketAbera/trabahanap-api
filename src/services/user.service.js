@@ -1,4 +1,4 @@
-const { User, ApplicantProfile, CompanyProfile } = require('../models');
+const { User, ApplicantProfile, CompanyProfile,Advertisement } = require('../models');
 // import { environment } from '../environmets/environmet';
 const environment = require('../environmets/environmet')
 const axios = require('axios');
@@ -22,6 +22,7 @@ function getUserByEmailToken(token){
 function getUserById(id){
     return User.findOne({where: { id }, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
 }
+
 
 function getUserByIdAndRole(id, role){
     return User.findOne({where: { id, role}, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
@@ -69,6 +70,10 @@ function getAllCompanyProfile(){
 
 function updateUserField(value, fieldName, userId){
     return User.update({[fieldName]: value},{where: {id: userId}});
+}
+
+function updateAdsField(value, fieldName, adsId){
+    return Advertisement.update({[fieldName]: value},{where: {id: adsId}});
 }
 
 function getApplicantProfileByUserId(userId){
@@ -127,5 +132,7 @@ module.exports = {
     getCompanyWithOffsetAndLimit,
     getAllByCompanyProfileId,
     createUserApi,
-    updateUserByEmail
+    updateUserByEmail,
+    updateAdsField
+
 };

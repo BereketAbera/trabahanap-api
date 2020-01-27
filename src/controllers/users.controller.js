@@ -45,7 +45,7 @@ function authenticate(req, res, next) {
                 res.status(200).json({ success: false, error: user.error });
                 return;
             }
-            user ? res.status(200).json({ success: user.success, user:user.resp }) : res.status(200).json({ success: false, error: 'username or password is incorrect' })
+            user ? res.status(200).json({ success: user.success, user: user.resp }) : res.status(200).json({ success: false, error: 'username or password is incorrect' })
         })
         .catch(err => next(err));
 }
@@ -63,7 +63,7 @@ function signUpApplicant(req, res, next) {
         return;
     }
 
-    if(req.body.recaptcha === '' || req.body.recaptcha === null || req.body.recaptcha === undefined) {
+    if (req.body.recaptcha === '' || req.body.recaptcha === null || req.body.recaptcha === undefined) {
         res.status(200).json({ success: false, validationError: "Please, select the reCaptcha" });
         return;
     }
@@ -227,14 +227,17 @@ async function adminSignUpEmployerUser(body) {
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
         const { email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile } = { ...body };
-        const userApi = await authService.createUserApi({ email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile, role: ROLE.EMPLOYER })
-        const user = await userService.createUser({ email, username, phoneNumber, firstName, lastName, gender, role, emailVerified, hasFinishedProfile });
+        const userApi = await authService.createUserApi({ email, username, phoneNumber, password, firstName, lastName, gender, role, emailVerified, hasFinishedProfile })
+        if (userApi.data.success) {
+            const user = await userService.createUser({ id: userApi.data.user.id, email, username, phoneNumber, firstName, lastName, gender, role, emailVerified, hasFinishedProfile, role: ROLE.EMPLOYER });
 
-        if (saveToken && user && userApi.data.success) {
-            const message = construct_employer_email(body.email, token);
-            sgMail.send(message);
-            return user;
+            if (saveToken && user) {
+                const message = construct_employer_email(body.email, token);
+                sgMail.send(message);
+                return user;
+            }
         }
+
     }
     else {
         return "Email is not unique"
@@ -247,10 +250,10 @@ function getAllEmployers(req, res, next) {
         .catch(err => next(err));
 }
 
-function facebookAuth(req, res, next){
-    const {access_token, social_id, user} = req.body;
-    
-    if(!access_token || !social_id || !user || !user.email){
+function facebookAuth(req, res, next) {
+    const { access_token, social_id, user } = req.body;
+
+    if (!access_token || !social_id || !user || !user.email) {
         return res.status(200).send({ success: false, error: 'invalid request' });
     }
 
@@ -259,10 +262,10 @@ function facebookAuth(req, res, next){
         .catch(err => next(err));
 }
 
-function googleAuth(req, res, next){
-    const {access_token, social_id, user} = req.body;
-    
-    if(!access_token || !social_id || !user || !user.email){
+function googleAuth(req, res, next) {
+    const { access_token, social_id, user } = req.body;
+
+    if (!access_token || !social_id || !user || !user.email) {
         return res.status(200).send({ success: false, error: 'invalid request' });
     }
 
@@ -613,12 +616,13 @@ function editApplicantProfile(req, res, next) {
 
         //console.log('after')
 
-        var profilePictureFile = files['applicantPicture']
+        let profilePictureFile = files['applicantPicture']
         if (profilePictureFile) {
+            console.log(profilePictureFile.path, "the path")
             uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
                 .then(data => {
                     applicantProfile['applicantPicture'] = data.Location;
-                    return editUserApplicantProfile(applicantProfile, req.params.id);      
+                    return editUserApplicantProfile(applicantProfile, req.params.id);
                 })
                 .then(applicantProfile => {
                     fs.unlinkSync(profilePictureFile.path);
@@ -630,7 +634,7 @@ function editApplicantProfile(req, res, next) {
         else {
             // if there the picture is not editted
             editUserApplicantProfile(applicantProfile, req.params.id)
-                .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
+                .then(applicant => applicant ? res.status(200).json({ success: true, applicantProfile: applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
                 .catch(err => next(err));
         }
 
@@ -810,7 +814,7 @@ function editCompanyProfile(req, res, next) {
 }
 
 function getApplicants(req, res, next) {
-    getAllApplicants(req.query.page || 1)
+    getAllApplicants(req.query.page || 1, req.query.pageSize || 8)
         .then(applicants => applicants ? res.status(200).json({ success: true, applicants }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -864,7 +868,7 @@ async function deactivateUserById(id) {
 async function authenticateUsers({ email, password }) {
     const resp = await authService.loginFromApi({ email, password });
     // console.log(resp.data);
-    //console.log(resp.data, 'res')
+    console.log(resp.data, 'res')
     if (resp.data.success) {
         const user = await userService.getUserByEmail(email);
         if (user) {
@@ -876,21 +880,28 @@ async function authenticateUsers({ email, password }) {
 
             });
             userWithoutPassword['token'] = token;
-            if (user.role = 'APPLICANT') {
+            if (user.role = 'APPLICANT' && user.hasFinishedProfile) {
                 applicantProfile = await userService.getApplicantProfileByUserId(user.id);
                 userWithoutPassword['applicantProfile'] = applicantProfile;
+                if (user.firstName != resp.data.user.firstName || user.lastName != resp.data.user.lastName) {
+                    console.log("should update the local now");
+                    const updatedUser = await userService.updateUserById(user.id, { firstName: resp.data.user.firstName, lastName: resp.data.user.lastName })
+                    if (updatedUser) {
+                        userWithoutPassword.firstName = updatedUser.firstName;
+                        userWithoutPassword.lastName = updatedUser.lastName;
+                    }
+                }
             }
             if (resp.data.user.emailVerified) {
                 userWithoutPassword.emailVerified = 1;
-
             }
             // console.log(userWithoutPassword, 'ipass')
-            return {success:true,resp:userWithoutPassword};
+            return { success: true, resp: userWithoutPassword };
         }
         //return user.data;
     }
-    else if(!resp.data.success){
-        return {success:false,resp:resp.data.error}
+    else if (!resp.data.success) {
+        return { success: false, resp: resp.data.error }
     }
 
     // const user = await userService.getUserByEmail(email);
@@ -923,7 +934,7 @@ async function authenticateUsers({ email, password }) {
 }
 
 async function checkRecaptcha(url) {
-   return await axios.get(url)
+    return await axios.get(url)
 }
 
 async function signUpUserApplicant(body) {
@@ -931,14 +942,14 @@ async function signUpUserApplicant(body) {
     let verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${body.recaptcha}`;
 
     let recaptchaResponse = await checkRecaptcha(verificationUrl);
-    if(recaptchaResponse.data.success) {
+    if (recaptchaResponse.data.success) {
 
         const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4(), role: ROLE.APPLICANT})
         // console.log(user.data)
         if (user.data.success) {
             body["role"] = ROLE.APPLICANT;
 
-            const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
+            const users = await userService.createUser({ ...body, id: user.data.user.id, emailVerificationToken: uuidv4() });
             if (user) {
                 const message = construct_email_applicant(user.data.user);
                 sgMail.send(message);
@@ -954,8 +965,8 @@ async function signUpUserApplicant(body) {
             sgMail.send(message);
             return user;
         }
-    } else if(!resp.data.success){
-        return {success:false,resp:resp.data.error}
+    } else if (!resp.data.success) {
+        return { success: false, resp: resp.data.error }
     }
 }
 
@@ -965,11 +976,13 @@ async function signUpUserApplicantFromAdmin(body) {
         body["role"] = ROLE.APPLICANT;
         body["emailVerified"] = true;
         const userApi = await authService.createUserApi({...body, role: ROLE.ADMIN});
-        const user = await userService.createUser(body);
-        console.log(userApi.data)
-        if (user && userApi.data.success) {
-            return user;
+        if(userApi.data.success){
+            const user = await userService.createUser({...body,id:userApi.data.user.id});
+            if (user && userApi.data.success) {
+                return user;
+            }
         }
+       
         throw "Something went wrong.";
     } else {
         throw "Email is not unique";
@@ -982,18 +995,18 @@ async function signUpUserEmployer(body) {
     let verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${body.recaptcha}`;
 
     let recaptchaResponse = await checkRecaptcha(verificationUrl);
-    if(recaptchaResponse.data.success) {
+    if (recaptchaResponse.data.success) {
         const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4(), role: ROLE.EMPLOYER })
-        console.log(user.data)
+        // console.log(user.data)
         if (user.data.success) {
             body["role"] = ROLE.EMPLOYER;
-            const users = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
+            const users = await userService.createUser({ ...body, id: user.data.user.id, emailVerificationToken: uuidv4() });
             if (users) {
                 const message = constructEmail(body.firstName, body.email, user.data.user.emailVerificationToken);
                 sgMail.send(message);
                 return users;
             }
-            
+
         }
     }
 
@@ -1017,14 +1030,21 @@ async function getUserById(user_id) {
 }
 
 async function editUserApplicantProfile(body, id) {
+    console.log("hi")
     body = { ...body, cityId: body.CityId, countryId: body.countryId, regionId: body.regionId };
+    const updatedLinguanUser = await authService.updateUser(body.user_id, body);
+    console.log(updatedLinguanUser.data)
+    if (updatedLinguanUser.data.success) {
+        const updatedUser = await userService.updateUserById(body.user_id, body);
+    }
     let applicantProfile = await userService.getApplicantProfileByUserId(body.user_id);
     if (applicantProfile && applicantProfile.id == id) {
         const updatedProfile = await userService.updateApplicantProfile(applicantProfile, body);
-        if (updatedProfile) {
+        if (updatedProfile && updatedLinguanUser) {
             return updatedProfile;
         }
     }
+
 }
 
 async function updateCompanyField(value, fieldName, userId) {
@@ -1128,7 +1148,6 @@ async function editUserCompanyProfile(body, id) {
 
 async function verifyUserEmail(req) {
     const user = await authService.verifyUserFromApi(req.query.token);
-    // console.log(user.data);
     if (user.data.success) {
         const updated = await userService.updateUserByEmail(user.data.user.email, { emailVerified: true });
         if (updated) {
@@ -1159,9 +1178,9 @@ async function isEmailUnique({ email }) {
     return true;
 }
 
-async function getAllApplicants(page) {
+async function getAllApplicants(page, pageSize) {
     const pager = {
-        pageSize: 6,
+        pageSize: parseInt(pageSize),
         totalItems: 0,
         totalPages: 0,
         currentPage: parseInt(page)
@@ -1182,56 +1201,59 @@ async function getAllApplicants(page) {
 
 }
 
-async function socialAuthHandler(provider, access_token, socialId, localUser){
+async function socialAuthHandler(provider, access_token, socialId, localUser) {
     // console.log(localUser);
-    if(provider == 'facebook'){
+    if (provider == 'facebook') {
         let facebookAuth = await axios.get(`https://graph.facebook.com/me?access_token=${access_token}`);
         facebookAuth = facebookAuth.data;
-        if(!facebookAuth.id){
-            throw "invalid social token"
-        }
-    
-        if(facebookAuth.id != socialId){
+        if (!facebookAuth.id) {
             throw "invalid social token"
         }
 
-    }else{
+        if (facebookAuth.id != socialId) {
+            throw "invalid social token"
+        }
+
+    } else {
         let googleAuth = await axios.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${access_token}`);
         googleAuth = googleAuth.data;
 
-        if(!googleAuth.sub){
+        if (!googleAuth.sub) {
             throw "invalid social token"
         }
-    
-        if(googleAuth.sub != socialId){
+
+        if (googleAuth.sub != socialId) {
             throw "invalid social token"
         }
     }
     let { email, firstName, lastName, role } = localUser;
     firstName = firstName ? firstName : "";
     lastName = lastName ? lastName : "";
-    if(!email){
+    if (!email) {
         throw "invalid user"
     }
 
-    const emailUnique = await isEmailUnique({email});
-    if(!emailUnique){
-        let authUser = await axios.post(`${environment}/auth/social_login`, {email});
-        
-        if(!authUser || !authUser.data.success){
+    const emailUnique = await isEmailUnique({ email });
+    if (!emailUnique) {
+        let authUser = await axios.post(`${environment}/auth/social_login`, { email });
+
+        if (!authUser || !authUser.data.success) {
             throw "something went wrong";
         }
 
         authUser = authUser.data.user;
 
-        
+
         let localUser = await userService.getUserByEmail(authUser.email);
-        if(!localUser){
+
+        if (!localUser) {
             throw "something went wrong";
         }
 
+
+
         const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
-    
+
         // console.log(token);
 
         const userWithoutPassword = {};
@@ -1241,14 +1263,24 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
             }
             userWithoutPassword[key] = value;
         });
+        if (localUser.role == "APPLICANT" && localUser.hasFinishedProfile) {
+            if (authUser.firstName != localUser.firstName || authUser.lastName != localUser.lastName) {
+                const updatedUser = await userService.updateUserById(localUser.id, { firstName: authUser.firstName, lastName: authUser.lastName })
+                if (updatedUser) {
+                    userWithoutPassword.firstName = updatedUser.firstName;
+                    userWithoutPassword.lastName = updatedUser.lastName;
+                }
+            }
+        }
+
 
         userWithoutPassword.token = token;
-        
+
         return userWithoutPassword;
-    }else{
-        let authUser = await axios.post(`${environment}/auth/social_signup`, {email, firstName, lastName, phoneNumber: "", socialId});
+    } else {
+        let authUser = await axios.post(`${environment}/auth/social_signup`, { email, firstName, lastName, phoneNumber: "", socialId, APPLICATION: "TRABAHANAP", role: ROLE.APPLICANT });
         // console.log(authUser);
-        if(!authUser){
+        if (!authUser) {
             throw "something went wrong";
         }
 
@@ -1256,13 +1288,13 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
 
         // console.log({email, firstName, lastName, phoneNumber: "", socialId});
 
-        let localUser = await userService.createUser({...authUser, role, active: true, emailVerified:true});
-        if(!localUser){
+        let localUser = await userService.createUser({ ...authUser, role, active: true, emailVerified: true });
+        if (!localUser) {
             throw "something went wrong";
         }
 
         const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
-    
+
         const userWithoutPassword = {};
         _.map(localUser.dataValues, (value, key) => {
             if (key == 'password') {
@@ -1272,7 +1304,7 @@ async function socialAuthHandler(provider, access_token, socialId, localUser){
         });
 
         userWithoutPassword.token = token;
-        
+
         return userWithoutPassword;
     }
 }

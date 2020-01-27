@@ -6,7 +6,7 @@ const ROLE = require('../_helpers/role');
 
 var fs = require('fs');
 var path = require('path');
-const { validateIssue } = require('../_helpers/validators');
+const { validateIssue, validateAds } = require('../_helpers/validators');
 const constractStafferEmail = require('../_helpers/construct_staffer_email');
 const constractAdminStaffEmail = require('../_helpers/construct_adminStaff_email');
 const uuidv4 = require('uuid/v4');
@@ -48,6 +48,12 @@ function advancedSearchJob(req, res, next) {
         .catch(err => next(err));
 }
 
+function deactivateAds(req, res, next) {
+    deactivateAdsById(req.params.id)
+        .then(ads => ads ? res.status(200).json({ success: true, ads }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
 function addEmpIssue(req, res, next) {
     let localImagePath = "";
     let issue = {};
@@ -55,16 +61,16 @@ function addEmpIssue(req, res, next) {
     let userId = req.user.sub;
     var form = new formidable.IncomingForm();
 
-    console.log("file extenstion")
+    // console.log("file extenstion")
     form.on('fileBegin', (name, file) => {
-        console.log(file.size, "file extenstion")
+        // console.log(file.size, "file extenstion")
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         fileName = moment().format("YYYYMMDDHHmmssSS");
         file.path = CONSTANTS.baseDir + '/uploads/' + fileName + "." + fileExt;
         localImagePath = file.path;
     });
     form.on('file', function (name, file) {
-        console.log('Uploaded ' + file.name);
+        // console.log('Uploaded ' + file.name);
     });
     form.parse(req, function (err, fields, files) {
         _.map(fields, (value, key) => {
@@ -105,6 +111,52 @@ function addReports(req, res, next) {
         .then(reports => reports ? res.status(200).send({ success: true, reports }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
         .catch(err => next(err));
 }
+function adminAddAds(req, res, next) {
+    let localImagePath = "";
+    let ads = {};
+    let fileName = ""
+    let userId = req.user.sub;
+    var form = new formidable.IncomingForm();
+    form.on('fileBegin', (name, file) => {
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        if (name == 'image') {
+            fileName = moment().format("YYYYMMDDHHmmssSS");
+            file.path = CONSTANTS.baseDir + '/uploads/' + fileName + "." + fileExt;
+            localImagePath = file.path;
+        }
+    });
+    form.on('file', function (name, file) {
+        // console.log('Uploaded ' + file.name);
+    });
+    form.parse(req, function (err, fields, files) {
+        _.map(fields, (value, key) => {
+            ads[key] = value;
+            // console.log(key, '=', value)
+        });
+
+        const valid = validateAds(ads);
+        if (valid != true) {
+            res.status(200).json({ success: false, validationError: valid });
+            return;
+        }
+
+        ads = { ...ads, active: 1 }
+        // console.log(ads)
+        if (localImagePath != "") {
+            // console.log('a')
+            processAdsUpload(userId, ads, fileName, localImagePath)
+                .then(ads => {
+                    fs.unlinkSync(localImagePath);
+                    res.status(200).send({ success: true, ads })
+                })
+                .catch(err => next(err));
+        }
+
+    });
+
+}
+
+
 function addIssue(req, res, next) {
     let localImagePath = "";
     let issue = {};
@@ -120,7 +172,7 @@ function addIssue(req, res, next) {
         }
     });
     form.on('file', function (name, file) {
-        console.log('Uploaded ' + file.name);
+        // console.log('Uploaded ' + file.name);
     });
 
     form.parse(req, function (err, fields, files) {
@@ -283,6 +335,18 @@ function getEmployers(req, res, next) {
         .catch(err => next(err));
 }
 
+function adminGetAllAds(req, res, next) {
+    getAllAds(req.query.page || 1, req.query.pageSize || 8)
+        .then(ads => ads ? res.status(200).send({ success: true, ads }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
+function getAdvertisement(req, res, next) {
+    getAdvertisementOfToday()
+        .then(ads => ads ? res.status(200).send({ success: true, ads }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next(err));
+}
+
 function getCompanyDetails(req, res, next) {
     getCompanyDetailsInfo(req.params.companyProfileId)
         .then(employers => employers ? res.status(200).send({ success: true, employers }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
@@ -385,6 +449,17 @@ async function processFileUpload(userId, issue, fileName, localImagepath, role) 
     }
 }
 
+async function processAdsUpload(userId, ads, fileName, localImagePath) {
+    if (localImagePath != "") {
+        const imgObj = await uploadFile(localImagePath, 'th-employer-logo', fileName)
+        // issue.bucket = 'th-employer-logo';
+        ads.image = imgObj.Location;
+    }
+    // console.log(ads.image, 'image')
+    return addAds(ads, userId);
+
+}
+
 function uploadFile(file, bucketName, fileName) {
     return uploadFilePromise(file, bucketName, fileName).then(data => {
         return data;
@@ -453,6 +528,14 @@ async function addApplicantReports(reports, userId, jobId) {
     }
 
 
+}
+
+async function addAds(body, userId) {
+    // console.log({ ...body, userId }, 'body')
+    const ads = await otherService.addAdvertisement({ ...body, userId });
+    if (ads) {
+        return ads;
+    }
 }
 
 async function getEmployerIssues(userId) {
@@ -616,12 +699,15 @@ async function addAdminStaffer(body, userId) {
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
         const user = await authService.createUserApi({ ...body, password: uuidv4(), role: ROLE.ADMINSTAFF, username: body.email, emailVerificationToken: uuidv4() })
-        const newUser = await userService.createUser({ ...body, role: ROLE.ADMINSTAFF, username: body.email });
-        if (saveToken && newUser && user.data.success) {
-            const message = constractAdminStaffEmail(body.firstName, body.email, token);
-            sgMail.send(message);
-            return true;
+        if (user.data.success) {
+            const newUser = await userService.createUser({ ...body,id:user.data.user.id, role: ROLE.ADMINSTAFF, username: body.email });
+            if (saveToken && newUser && user.data.success) {
+                const message = constractAdminStaffEmail(body.firstName, body.email, token);
+                sgMail.send(message);
+                return true;
+            }
         }
+
     }
     return false;
 }
@@ -637,14 +723,16 @@ async function addCompanyStaffer(body, userId) {
 
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
-        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email, role: ROLE.STAFFER})
-        const newUser = await userService.createUser({ ...body, role: ROLE.STAFFER, companyProfileId: user.companyProfileId, username: body.email, hasFinishedProfile: true });
-        if (saveToken && newUser && userApi) {
-            console.log(body, 'body in staffer')
-            const message = constractStafferEmail(body.firstName, body.email, token);
-            sgMail.send(message);
-            return true;
+        const userApi = await authService.createUserApi({ ...body, password: uuidv4(), username: body.email, role: ROLE.STAFFER });
+        if (userApi.data.success) {
+            const newUser = await userService.createUser({ ...body, id: userApi.data.user.id, role: ROLE.STAFFER, companyProfileId: user.companyProfileId, username: body.email, hasFinishedProfile: true });
+            if (saveToken && newUser) {
+                const message = constractStafferEmail(body.firstName, body.email, token);
+                sgMail.send(message);
+                return true;
+            }
         }
+
     }
     return false;
 }
@@ -683,6 +771,41 @@ async function changeNewStafferPassword(body, token) {
 
     return false;
 }
+
+async function getAdvertisementOfToday() {
+    const now = moment().utc().format();
+    const endDay = moment().add(1, 'days').utc().format();;
+    // console.log(now);
+    // console.log(endDay, 'dea')
+    const ads = await otherService.getAdsByRanges(now, endDay);
+    if (ads) {
+        return ads;
+    }
+
+}
+
+async function getAllAds(page, pageSize) {
+    const pager = {
+        pageSize: parseInt(pageSize),
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
+    const ads = await otherService.getAllAdsWithOffset(offset, limit);
+    if (ads) {
+        pager.totalItems = ads.count;
+        pager.totalPages = Math.ceil(ads.count / pager.pageSize);
+        return {
+            pager,
+            rows: ads.rows
+        }
+
+    }
+}
+
 
 async function getAllEmployers(page, pageSize) {
     const pager = {
@@ -826,7 +949,7 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
         currentPage: parseInt(page)
     }
 
-    console.log(cityName, employType, industry, salaryRange, search, page, pwd, 'asd')
+    // console.log(cityName, employType, industry, salaryRange, search, page, pwd, 'asd')
     if (cityName == "undefined") {
         cityName = '';
     }
@@ -843,7 +966,7 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
     const limit = pager.pageSize;
 
     queryResult = advancedSearchQueryBuilder(search || '', employType || '', industry || '', salaryRange || '', cityName || '', pwd, offset || 0, limit || 8);
-    console.log(queryResult)
+    // console.log(queryResult)
     // console.log(queryResult.count);
 
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
@@ -864,7 +987,7 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
 
 
 function advancedSearchQueryBuilder(search, employType, industry, salaryRange, cityName, pwd, offset, limit) {
-    console.log(pwd, 'pwd')
+    // console.log(pwd, 'pwd')
     let query = ``;
     let haveWhere = false;
     if (pwd) {
@@ -945,6 +1068,25 @@ async function addRemoveFeaturedCompanyHandler(id) {
     return false;
 }
 
+async function deactivateAdsById(id) {
+    const ads = await otherService.getAdsById(id);
+    if (ads.active) {
+        const deactivated = await userService.updateAdsField(0, 'active', id);
+        if (deactivated[0] > 0) {
+            return true;
+        }
+    } else {
+        const deactivated = await userService.updateAdsField(1, 'active', id);
+        if (deactivated[0] > 0) {
+            return true;
+        }
+
+    }
+    if (deactivated[0] > 0 && ads) {
+        // console.log(user)
+        return ads;
+    }
+}
 
 module.exports = {
     getAdminDashboardCounts,
@@ -983,5 +1125,9 @@ module.exports = {
     getFeaturedCompanies,
     addRemoveFeaturedCompany,
     getReportById,
-    checkReport
+    checkReport,
+    adminAddAds,
+    adminGetAllAds,
+    deactivateAds,
+    getAdvertisement
 }

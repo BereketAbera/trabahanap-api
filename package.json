@@ -2,9 +2,9 @@
   "name": "trabahanap-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "/src/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "nodemon src/server.js",
+    "start": "nodemon server.js",
     "test": "mocha src/**/*.test.js --timeout 5000",
     "test-watch": "nodemon --exec 'npm test'"
   },

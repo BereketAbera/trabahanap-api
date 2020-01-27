@@ -52,3 +52,7 @@ app.get('/filter/jobs',jobsController.adminGetAllCompanyJobFilters);
 app.get('/filter/applications',jobsController.adminGetAllApplicationsFilters);
 app.get('/filter/employers',jobsController.adminGetAllEmployersFilters);
 app.get('/filter/applicants',jobsController.adminGetAllApplicantFilters);
+
+app.post('/advertisement',otherController.adminAddAds);
+app.get('/advertisement',otherController.adminGetAllAds);
+app.put('/advertisement/:id',otherController.deactivateAds);
