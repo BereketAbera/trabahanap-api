@@ -795,6 +795,7 @@ async function getAllAds(page, pageSize) {
     const limit = pager.pageSize;
 
     const ads = await otherService.getAllAdsWithOffset(offset, limit);
+    console.log(ads)
     if (ads) {
         pager.totalItems = ads.count;
         pager.totalPages = Math.ceil(ads.count / pager.pageSize);

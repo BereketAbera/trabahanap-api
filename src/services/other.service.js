@@ -121,7 +121,7 @@ function getAllReportedApplicantIssues() {
     return Issue.findAll({where: {CompanyProfileId: null}, include: [{model: IssueResponse},{model: ApplicantProfile,include:[{model:User}]}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
 function getAllReportedApplicant(){
-    return Reports.findAll( {limit:8,include: [{model: ApplicantProfile,include:[{model:User}]},{model:Job}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+    return Reports.findAll( {where:{ checked:false },limit:8,include: [{model: ApplicantProfile,include:[{model:User}]},{model:Job}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
 
 function getAllReportedCompanyIssues() {
