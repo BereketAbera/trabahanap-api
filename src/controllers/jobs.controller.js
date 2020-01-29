@@ -848,6 +848,13 @@ async function addJobApplication(body) {
         }
         const jobApplication = jobsService.addJobApplication({ JobId: job.id, ApplicantProfileId: applicantProfile.id, CompanyProfileId: job.CompanyProfileId, applicationDate: new Date() });
         if (jobApplication) {
+            const alreadySaved = await jobsService.getSavedJob(applicantProfile.id, job.id)
+            if (alreadySaved) {
+                const remove = await jobsService.removeJobFromLaterReview(applicantProfile.id, job.id);
+                if (remove) {
+                    return true;
+                }
+            } 
             return true;
         }
     }
