@@ -24,6 +24,12 @@ function getAdminDashboardCounts(req, res, next) {
         .catch(err => next(err));
 }
 
+function getApplicantDashboardCounts(req, res, next) {
+    getApplicantStats(req.user.sub)
+        .then(stats => res.status(200).send({ success: true, stats }))
+        .catch(err => next(err));
+}
+
 function getEmployerDashboardCounts(req, res, next) {
     getEmployerStats(req.user.sub)
         .then(stats => res.status(200).send({ success: true, stats }))
@@ -501,6 +507,14 @@ async function getEmployerStats(userId) {
     }
 }
 
+async function getApplicantStats(userId){
+    const user = await userService.getApplicantProfileByUserId(userId);
+    if (user) {
+        const stats = await otherService.getApplicantStats(user.id);
+        if (stats) { return stats }
+    }
+}
+
 async function getIndutries() {
     const industries = await otherService.getAllIndustries();
     if (industries) {
@@ -700,7 +714,7 @@ async function addAdminStaffer(body, userId) {
         const saveToken = await otherService.saveToken(token, body.email);
         const user = await authService.createUserApi({ ...body, password: uuidv4(), role: ROLE.ADMINSTAFF, username: body.email, emailVerificationToken: uuidv4() })
         if (user.data.success) {
-            const newUser = await userService.createUser({ ...body,id:user.data.user.id, role: ROLE.ADMINSTAFF, username: body.email });
+            const newUser = await userService.createUser({ ...body, id: user.data.user.id, role: ROLE.ADMINSTAFF, username: body.email });
             if (saveToken && newUser && user.data.success) {
                 const message = constractAdminStaffEmail(body.firstName, body.email, token);
                 sgMail.send(message);
@@ -795,6 +809,7 @@ async function getAllAds(page, pageSize) {
     const limit = pager.pageSize;
 
     const ads = await otherService.getAllAdsWithOffset(offset, limit);
+    console.log(ads)
     if (ads) {
         pager.totalItems = ads.count;
         pager.totalPages = Math.ceil(ads.count / pager.pageSize);
@@ -1091,6 +1106,7 @@ async function deactivateAdsById(id) {
 module.exports = {
     getAdminDashboardCounts,
     getEmployerDashboardCounts,
+    getApplicantDashboardCounts,
     getAllIndustries,
     addEmpIssue,
     getEmpIssues,

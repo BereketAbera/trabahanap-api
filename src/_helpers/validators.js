@@ -118,7 +118,7 @@ function validateCompanyProfile(data){
     }
 
     _.map(data, (value, key) => {
-        if(key == "contactNumber" || key == "zipCode" || key == "businessLicense"){
+        if(key == "zipCode" || key == "businessLicense"){
             if(!validator.isNumeric(value + '')){
                 errors[key] = `${key} should be a number`;
                 valid = false;
@@ -143,7 +143,7 @@ function validateCompanyProfile(data){
 function validateLocation(data){
     const errors = {};
     let valid = true;
-    const fields = ["locationName", "locationPhoneNumber", "isHeadOffice", "address", "email", "companyProfileId", "cityId", "regionId", "countryId", "latitude", "longitude"];
+    const fields = ["locationName", "locationPhoneNumber", "isHeadOffice", "address", "email", "cityId", "regionId", "countryId", "latitude", "longitude"];
     const keys = _.keys(data);
     fields.map(field => {
         if(keys.includes(field)){
@@ -156,7 +156,7 @@ function validateLocation(data){
     }
 
     _.map(data, (value, key) => {
-        if(key == "locationPhoneNumber", key == "latitude", key == "longitude"){
+        if(key == "latitude", key == "longitude"){
             if(!validator.isNumeric(value + '')){
                 errors[key] = `${key} should be a number`;
                 valid = false;

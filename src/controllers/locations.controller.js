@@ -104,9 +104,62 @@ function updateLocationByAdmin(req, res, next) {
 }
 
 function updateLocation(req, res, next) {
-    updateCompanyLocation(req.body, req.params.id, req.user.sub)
-        .then(location => res.status(200).send({ success: true, location }))
-        .catch(err => next(err));
+    var fileNameLocationPicture = "";
+    var form = new formidable.IncomingForm();
+    form.multiples = true;
+    //console.log('here')
+    form.on('fileBegin', function (name, file) {
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        let fileName = '';
+        if (name == "picture") {
+            fileName = fileNameLocationPicture = Date.now() + "company-logo";
+        }
+
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
+    });
+
+    form.parse(req, (err, fields, files) => {
+        let companyLocation = {};
+        _.map(fields, (value, key) => {
+            companyLocation[key] = value;
+        })
+
+        const valid = validateLocation(companyLocation);
+
+        if (valid != true) {
+            res.status(200).json({ success: false, validationError: valid });
+            return;
+        }
+
+        // console.log('after')
+        companyLocation = { ...companyLocation, CityId: companyLocation.cityId, RegionId: companyLocation.regionId, CountryId: companyLocation.countryId };
+        
+        let locationPictureFile = files['picture'];
+        if (locationPictureFile) {
+            // console.log(locationPictureFile.path, "the path")
+            uploadFilePromise(locationPictureFile.path, 'th-employer-logo', fileNameLocationPicture)
+                .then(data => {
+                    companyLocation['picture'] = data.Location;
+                    return updateCompanyLocation(companyLocation, req.params.id, req.user.sub);
+                })
+                .then(location => {
+                    fs.unlinkSync(locationPictureFile.path);
+                    //console.log(companyProfile.companyProfile,'a')
+                    location ? res.status(200).json({ success: true, location }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
+                })
+                .catch(err => next(err));
+        }
+        else {
+            // if there the picture is not editted
+            updateCompanyLocation(companyLocation, req.params.id, req.user.sub)
+                .then(location => res.status(200).send({ success: true, location }))
+                .catch(err => next(err));
+        }
+
+    });
+    // updateCompanyLocation(req.body, req.params.id, req.user.sub)
+    //     .then(location => res.status(200).send({ success: true, location }))
+    //     .catch(err => next(err));
 }
 
 function getLocation(req, res, next) {
@@ -192,15 +245,17 @@ async function getCitiesByRegionsId(regionId) {
 }
 
 async function updateCompanyLocation(nLocation, locationId, user_id) {
-    const { CityId, RegionId, CountryId } = nLocation;
-    if (CityId) { nLocation.cityId = CityId }
-    if (RegionId) { nLocation.regionId = RegionId }
-    if (CountryId) { nLocation.countryId = CountryId }
+    // const { CityId, RegionId, CountryId } = nLocation;
+    // if (CityId) { nLocation.cityId = CityId }
+    // if (RegionId) { nLocation.regionId = RegionId }
+    // if (CountryId) { nLocation.countryId = CountryId }
+    nLocation.isHeadOffice = nLocation.isHeadOffice == 'false' ? false : true;
+    console.log(nLocation)
     var location = await locationService.getLocationById(locationId);
     var user = await userService.getUserById(user_id);
-    console.log(user.role, "the role of the user", location.locationName)
+    // console.log(user.role, "the role of the user", location.locationName)
     if (location && user && (location.CompanyProfileId == user.CompanyProfileId || user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
-        console.log("about to edit your locations")
+        // console.log("about to edit your locations")
         var updatedLocation = await locationService.updateLocation(location, nLocation)
         if (updatedLocation) {
             return updatedLocation;

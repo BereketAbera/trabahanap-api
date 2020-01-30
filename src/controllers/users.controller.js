@@ -618,7 +618,7 @@ function editApplicantProfile(req, res, next) {
 
         let profilePictureFile = files['applicantPicture']
         if (profilePictureFile) {
-            console.log(profilePictureFile.path, "the path")
+            // console.log(profilePictureFile.path, "the path")
             uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
                 .then(data => {
                     applicantProfile['applicantPicture'] = data.Location;
@@ -801,16 +801,63 @@ function verifyEmail(req, res, next) {
 }
 
 function editCompanyProfile(req, res, next) {
-    const valid = validateCompanyProfile(req.body);
+    var fileNameProfilePicture = "";
+    var form = new formidable.IncomingForm();
+    form.multiples = true;
+    //console.log('here')
+    form.on('fileBegin', function (name, file) {
+        let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
+        let fileName = '';
+        if (name == "companyLogo") {
+            fileName = fileNameProfilePicture = Date.now() + "company-logo";
+        }
 
-    if (valid != true) {
-        res.status(200).json({ success: false, validationError: valid });
-        return;
-    }
+        file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
+    });
 
-    editUserCompanyProfile({ ...req.body, user_id: req.user.sub }, req.params.id)
-        .then(companyProfile => companyProfile ? res.status(200).json({ success: true, companyProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+    form.parse(req, (err, fields, files) => {
+        let companyProfile = {};
+        _.map(fields, (value, key) => {
+            companyProfile[key] = value;
+        })
+
+        companyProfile = { ...companyProfile, user_id: req.user.sub, CityId: companyProfile.cityId, RegionId: companyProfile.regionId, CountryId: companyProfile.countryId };
+        const valid = validateCompanyProfile(companyProfile);
+
+        if (valid != true) {
+            res.status(200).json({ success: false, validationError: valid });
+            return;
+        }
+
+        // console.log('after')
+
+        let profilePictureFile = files['companyLogo']
+        if (profilePictureFile) {
+            // console.log(profilePictureFile.path, "the path")
+            uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                .then(data => {
+                    companyProfile['companyLogo'] = data.Location;
+                    return editUserCompanyProfile(companyProfile, req.params.id);
+                })
+                .then(companyProfile => {
+                    fs.unlinkSync(profilePictureFile.path);
+                    //console.log(companyProfile.companyProfile,'a')
+                    companyProfile ? res.status(200).json({ success: true, companyProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
+                })
+                .catch(err => next(err));
+        }
+        else {
+            // if there the picture is not editted
+            editUserCompanyProfile(companyProfile, req.params.id)
+                .then(applicant => applicant ? res.status(200).json({ success: true, companyProfile: applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
+                .catch(err => next(err));
+        }
+
+    });
+
+    // editUserCompanyProfile({ ...req.body, user_id: req.user.sub }, req.params.id)
+    //     .then(companyProfile => companyProfile ? res.status(200).json({ success: true, companyProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
+    //     .catch(err => next(err));
 }
 
 function getApplicants(req, res, next) {
@@ -945,12 +992,12 @@ async function signUpUserApplicant(body) {
     if (recaptchaResponse.data.success) {
 
         const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4(), role: ROLE.APPLICANT})
-        // console.log(user.data)
+         //console.log(user.data)
         if (user.data.success) {
             body["role"] = ROLE.APPLICANT;
 
             const users = await userService.createUser({ ...body, id: user.data.user.id, emailVerificationToken: uuidv4() });
-            if (user) {
+            if (users) {
                 const message = construct_email_applicant(user.data.user);
                 sgMail.send(message);
                 return users;
@@ -1334,8 +1381,6 @@ module.exports = {
     signUpApplicant,
     signUpEmployer,
     verifyEmail,
-    // createApplicantProfile,
-    // createCompanyProfile,
     editCompanyProfile,
     createCompanyProfileWithBusinessLicenseAndLogo,
     getApplicantProfile,

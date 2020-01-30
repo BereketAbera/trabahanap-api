@@ -160,30 +160,30 @@ html {
 }
 
 .varification_container {
-  width: 80%;
-  margin: 10% auto;
+  margin: 12rem auto;
   color: #2a2a2a;
   font-size: 2rem;
 
 }
 
 .main-content {
-  width: 55%;
+  width: 40rem;
   margin: auto;
+
 }
 
 .success {
   text-align: center;
 }
 .success_header {
-  font-size: 2.3rem;
+  font-size: 3rem;
   color: #888;
   margin-bottom: 1rem;
 }
 .success_text {
-  font-size: 1.5rem;
+  font-size: 2.1rem;
   color: #333;
-  max-width: 50%;
+  max-width: 70%;
   margin: 0 auto;
 }
 a {
@@ -212,17 +212,19 @@ a {
 .form__btn {
   width: 150px;
   padding: 5px 15px;
-  width: 30%;
+  width: 23rem;
 }
 
 .form__header {
-  font-size: 1.8rem;
+  font-size: 2.3rem;
 }
 
 .form__group {
   margin: 1rem;
   /* width: 100%; */
+ 
 }
+
 .form__group--last {
   display: flex;
   flex-direction: row;
@@ -235,7 +237,7 @@ a {
 }
 .form__input {
   width: 100%;
-  font-size: 1.5rem;
+  font-size: 2.2rem;
   padding: 0.5rem;
   border: none;
   border-bottom: 1px solid rgba(0, 0, 0, 0.5);
@@ -260,7 +262,7 @@ a {
   color: transparent;
 }
 .form__input:focus:invalid {
-  border-bottom: 1px solid orangered;
+  border-bottom: 1px solid #ce2127;
 }
 .form__input:not(:placeholder-shown) + label,
 .form__input:focus + label {
@@ -282,7 +284,7 @@ a {
   padding: 10px 20px;
   /* width: 12rem;
     height: 4rem; */
-  border-radius: 6rem;
+  border-radius: 3rem;
   text-transform: uppercase;
   transition: all 0.2s;
 }
@@ -297,11 +299,11 @@ a {
   transform: scale(0.95);
 }
 .th-btn--primary {
-  background-color: red;
-  /* For browsers that do not support gradients */
-  background-image: linear-gradient(80deg, #bd0909, #e1a223);
+  background-color: red; /* For browsers that do not support gradients */
+  background-image: linear-gradient(120deg, #7d1216, #ce2127);
   border: none;
   color: #fff;
+  width: 23rem;
 }
 .th-btn--secondary {
   border: 1px solid #fff;
@@ -311,8 +313,8 @@ a {
 .btn-outline {
   background-color: white;
   border: 1px solid tomato;
-  border-radius: 3px;
-  color: tomato;
+  border-radius: 2px;
+  color: #aa111d;
   padding: 0.5rem 1rem;
   text-decoration: none;
   font-weight: 600;
