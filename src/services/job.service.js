@@ -102,7 +102,7 @@ function getApplicantSavedJobs(applicantId,offset,limit) {
 }
 
 function getAllSavedJobs(applicantId){
-    return sequelize.query(`SELECT * from view_jobs_saved_review_later where applicantProfileId = '${applicantId}'`);
+    return sequelize.query(`SELECT * from view_jobs_saved_review_later where applicantProfileId = '${applicantId}' order by createdAt DESC`);
 }
 function countGetApplicantSavedJobs(applicantId){
     return sequelize.query(`SELECT COUNT(*) from view_jobs_saved_review_later where applicantProfileId = '${applicantId}'`);
