@@ -15,11 +15,21 @@ async function getAdminStats() {
     let employers = await CompanyProfile.count({ where: { verified: true }});
     let applicants = await User.count({ where: { role: ROLE.APPLICANT }});
     let jobs = await Job.count({where:{ active:1}});
-    let applications = await sequelize.query(`SELECT COUNT(*) FROM view_filtered_job_applications AS count`, { type: sequelize.QueryTypes.SELECT });
+    let applications = await JobApplication.count();
+    // let applications = await sequelize.query(`SELECT COUNT(*) FROM view_filtered_job_applications AS count`, { type: sequelize.QueryTypes.SELECT });
 
-    return { employers, applicants, jobs, applications: Object.values(applications[0])[0] }
+    return { employers, applicants, jobs, applications:applications }
 }
+async function getApplicantStats(ApplicantProfileId){
+    let jobCount = await Job.count({ where: {active:1}});
+    let employers = await CompanyProfile.count({ where: { verified: true }});
+    let applications = await JobApplication.count({ where: {ApplicantProfileId}});
+    let filtered = await JobApplication.count({ where: {ApplicantProfileId,filtered:1}});
 
+    // let filtered = await sequelize.query(`SELECT COUNT(*) FROM view_filtered_job_applications AS count WHERE CompanyProfileId='${CompanyProfileId}' `, { type: sequelize.QueryTypes.SELECT })
+    
+    return { jobs: jobCount, emp: employers, applications, filtered:filtered}
+}
 async function getEmployerStats(CompanyProfileId) {
     let jobCount = await Job.count({ where: {CompanyProfileId,active:1}});
     let staffCount = await User.count({ where: {CompanyProfileId, role: ROLE.STAFFER, emailVerified: true}});
@@ -172,6 +182,7 @@ function getAdsByRanges(now,endDay){
 module.exports = {
     getAdminStats,
     getEmployerStats,
+    getApplicantStats,
     getAllIndustries,
     addIssue,
     getApplicantIssues,

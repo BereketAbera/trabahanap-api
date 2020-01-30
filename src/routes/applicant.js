@@ -6,6 +6,7 @@ const otherController = require('../controllers/other.controller');
 // app.get('/jobs', (req, res) => {
 //     res.send({msg: 'from applicant'})
 // })
+app.get('/counters', otherController.getApplicantDashboardCounts);
 app.get('/jobs', jobsController.getApplicantAppliedJobs)
 app.get('/jobs/saved', jobsController.getJobsLaterReview);
 app.get('/jobs/saved/all',jobsController.getAllSavedJobs);
