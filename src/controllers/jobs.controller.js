@@ -155,7 +155,7 @@ function filterAllJobs(req, res, next) {
 }
 
 function getJobApplicants(req, res, next) {
-    getEmployerGetJobApplicants(req.params.id, req.user.sub)
+    getEmployerGetJobApplicants(req.params.id, req.user.sub, req.query.page || 1, req.query.pageSize || 5)
         .then(applicants => applicants ? res.status(200).json({ success: true, applicants }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -931,6 +931,7 @@ async function getEmployerJobWithApplications(user_id, page, pageSize) {
     if (user) {
 
         const jobWithApplications = await jobsService.getJobsWithApplications(user.companyProfileId, offset, limit).catch(err => console.log(err));;
+        console.log(jobWithApplications);
         const jobscount = await jobsService.getCountJobsWithApplication(user.companyProfileId);
 
         if (jobWithApplications) {
@@ -984,14 +985,24 @@ async function getEmployerFilteredJobWithApplications(user_id, page, pageSize) {
     return false;
 }
 
-async function getEmployerGetJobApplicants(jobId, userId) {
+async function getEmployerGetJobApplicants(jobId, userId, page, pageSize) {
+    const pager = {
+        pageSize: parseInt(pageSize),
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
     const user = await userService.getUserById(userId);
     const job = await jobsService.getJobById(jobId);
 
     if (user && job && user.companyProfileId == job.companyProfileId) {
-        const applicants = await jobsService.getJobApplicants(jobId);
+        const applicants = await jobsService.getJobApplicants(jobId, (page-1)*pageSize, pageSize);
+        const count = await jobsService.getCountJobApplicants(jobId);;
+        pager.totalItems = Object.values(count[0][0])[0];
+        pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+        
         if (applicants[0]) {
-            return applicants[0];
+            return { pager, rows: applicants[0] };
         }
     }
 }

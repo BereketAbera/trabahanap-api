@@ -114,7 +114,7 @@ function getCompanyAllApplicant(offset, limit, CompanyProfileId) {
 
 function getJobsWithApplications(CompanyProfileId, offset, limit) {
   return sequelize.query(
-    `SELECT * FROM view_job_applications WHERE CompanyProfileId='${CompanyProfileId}' LIMIT ${limit} offset ${offset}`,
+    `SELECT * FROM view_job_applications WHERE CompanyProfileId='${CompanyProfileId}' order by applicationStartDate DESC LIMIT ${limit} offset ${offset}`,
     { type: sequelize.QueryTypes.SELECT }
   );
 }
@@ -127,7 +127,7 @@ function getCountJobsWithApplication(CompanyProfileId) {
 
 function getFilteredJobsWithApplications(CompanyProfileId, offset, limit) {
   return sequelize.query(
-    `SELECT * FROM view_filtered_job_applications WHERE CompanyProfileId='${CompanyProfileId}' LIMIT ${limit} offset ${offset}`,
+    `SELECT * FROM view_filtered_job_applications WHERE CompanyProfileId='${CompanyProfileId}' order by applicationStartDate DESC  LIMIT ${limit} offset ${offset}`,
     { type: sequelize.QueryTypes.SELECT }
   );
 }
@@ -149,15 +149,21 @@ function getApplicantById(applicantId) {
   return ApplicantProfile.findOne({ where: { id: applicantId } });
 }
 
-function getJobApplicants(jobId) {
+function getJobApplicants(jobId, offset, limit) {
   return sequelize.query(
-    `SELECT a.id, a.currentEmployer, a.gender, a.dateOfBirth, a.address, u.email, u.firstName, u.lastName from job_applications ja LEFT JOIN applicant_profiles a ON a.id = ja.applicantProfileId LEFT JOIN users u ON u.id = a.userId where ja.jobId = '${jobId}'`
+    `SELECT a.id, a.currentEmployer, a.gender, a.dateOfBirth, a.address, a.applicantPicture, u.email, u.firstName, u.lastName, ja.createdAt from job_applications ja LEFT JOIN applicant_profiles a ON a.id = ja.applicantProfileId LEFT JOIN users u ON u.id = a.userId where ja.jobId = '${jobId}' order by ja.createdAt DESC LIMIT ${offset},${limit}`
+  );
+}
+
+function getCountJobApplicants(jobId) {
+  return sequelize.query(
+    `SELECT count(*) from job_applications ja LEFT JOIN applicant_profiles a ON a.id = ja.applicantProfileId LEFT JOIN users u ON u.id = a.userId where ja.jobId = '${jobId}'`
   );
 }
 
 function getFilteredJobApplicants(jobId) {
   return sequelize.query(
-    `SELECT a.id, a.currentEmployer, a.gender, a.dateOfBirth, a.address, u.email, ja.id as applicationId, u.firstName, u.lastName from job_applications ja LEFT JOIN applicant_profiles a ON a.id = ja.applicantProfileId LEFT JOIN users u ON u.id = a.userId where ja.jobId = '${jobId}' AND ja.filtered = true`
+    `SELECT a.id, a.currentEmployer, a.gender, a.dateOfBirth, a.address, a.applicantPicture, u.email, ja.id as applicationId, u.firstName, ja.createdAt, u.lastName from job_applications ja LEFT JOIN applicant_profiles a ON a.id = ja.applicantProfileId LEFT JOIN users u ON u.id = a.userId where ja.jobId = '${jobId}' AND ja.filtered = true`
   );
 }
 
@@ -362,6 +368,7 @@ module.exports = {
   countGetApplicantAppliedJobs,
   countGetApplicantSavedJobs,
   getAllSavedJobs,
-  updateJobsField
+  updateJobsField,
+  getCountJobApplicants
   // getApplicantApplication
 };
