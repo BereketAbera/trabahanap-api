@@ -61,6 +61,10 @@ async function getJobById(id) {
   }).catch(err => console.log(err));
 }
 
+function updateJobsField(value, fieldName, jobId){
+  return Job.update({[fieldName]: value},{where: {id: jobId}});
+}
+
 async function getHiredApplicant(ApplicantProfileId, jobId) {
   return JobApplication.findOne({
     where: { ApplicantProfileId, jobId }
@@ -110,7 +114,7 @@ function getCompanyAllApplicant(offset, limit, CompanyProfileId) {
 
 function getJobsWithApplications(CompanyProfileId, offset, limit) {
   return sequelize.query(
-    `SELECT * FROM view_job_applications WHERE CompanyProfileId='${CompanyProfileId}' order by createdAt DESC LIMIT ${limit} offset ${offset}`,
+    `SELECT * FROM view_job_applications WHERE CompanyProfileId='${CompanyProfileId}' LIMIT ${limit} offset ${offset}`,
     { type: sequelize.QueryTypes.SELECT }
   );
 }
@@ -123,7 +127,7 @@ function getCountJobsWithApplication(CompanyProfileId) {
 
 function getFilteredJobsWithApplications(CompanyProfileId, offset, limit) {
   return sequelize.query(
-    `SELECT * FROM view_filtered_job_applications WHERE CompanyProfileId='${CompanyProfileId}' order by createdAt DESC  LIMIT ${limit} offset ${offset}`,
+    `SELECT * FROM view_filtered_job_applications WHERE CompanyProfileId='${CompanyProfileId}' LIMIT ${limit} offset ${offset}`,
     { type: sequelize.QueryTypes.SELECT }
   );
 }
@@ -357,6 +361,7 @@ module.exports = {
   getCompanyApplicationsCount,
   countGetApplicantAppliedJobs,
   countGetApplicantSavedJobs,
-  getAllSavedJobs
+  getAllSavedJobs,
+  updateJobsField
   // getApplicantApplication
 };

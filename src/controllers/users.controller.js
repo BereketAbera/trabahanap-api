@@ -52,7 +52,7 @@ function authenticate(req, res, next) {
 
 function getCompanyProfile(req, res, next) {
     getUserById(req.user.sub)
-        .then(employer => employer ? res.status(200).json({ success: true, employer }) : res.status(200).json({ success: false, error: 'email is not unique' }))
+        .then(employer => employer ? res.status(200).json({ success: true, employer }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
         .catch(err => next(err));
 }
 
@@ -75,7 +75,7 @@ function signUpApplicant(req, res, next) {
     //     .catch(err => next(err));
 
     signUpUserApplicant(req.body)
-        .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'email is not unique' }))
+        .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
         .catch(err => next(err));
 
 }
@@ -90,7 +90,7 @@ function signUpEmployer(req, res, next) {
     req.body.username = req.body.email;
 
     signUpUserEmployer(req.body)
-        .then(employer => employer ? res.status(200).json({ success: true, employer }) : res.status(200).json({ success: false, error: 'email is not unique' }))
+        .then(employer => employer ? res.status(200).json({ success: true, employer }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
         .catch(err => next(err));
 }
 
@@ -240,7 +240,7 @@ async function adminSignUpEmployerUser(body) {
 
     }
     else {
-        return "Email is not unique"
+        return "Email is already in use"
     }
 }
 
@@ -1032,7 +1032,7 @@ async function signUpUserApplicantFromAdmin(body) {
        
         throw "Something went wrong.";
     } else {
-        throw "Email is not unique";
+        throw "Email is already in use";
     }
 }
 

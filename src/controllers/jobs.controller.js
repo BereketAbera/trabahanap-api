@@ -75,7 +75,11 @@ function deleteJob(req, res, next) {
 
 }
 
-
+function suspendJob(req, res, next) {
+    suspendEmployerJob(req.params.id)
+        .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
+        .catch(err => next(err));
+}
 
 function adminAddJob(req, res, next) {
     const valid = validateJob(req.body);
@@ -115,7 +119,7 @@ function getApplicantApplications(req, res, next) {
 }
 
 function getJobWithApplications(req, res, next) {
-    getEmployerJobWithApplications(req.user.sub, req.query.page || 1, req.query.ageSize || 6)
+    getEmployerJobWithApplications(req.user.sub, req.query.page || 1, req.query.pageSize || 6)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -827,6 +831,27 @@ async function deleteEmployerJob(body) {
     }
 }
 
+
+async function suspendEmployerJob(id){
+    const job = await jobsService.getJobById(id);
+    if (job.suspended) {
+        const deactivated = await jobsService.updateJobsField(0, 'suspended', id);
+        if (deactivated[0] > 0) {
+            return true;
+        }
+    } else {
+        const deactivated = await jobsService.updateJobsField(1, 'suspended', id);
+        if (deactivated[0] > 0) {
+            return true;
+        }
+
+    }
+    // if (deactivated[0] > 0 && job) {
+    //     // console.log(user)
+    //     return job;
+    // }
+}
+
 async function adminEditJob(body) {
     const job = await jobsService.getJobById(body.id);
     if (job) {
@@ -1091,7 +1116,7 @@ async function getApplicantLaterReviewJobs(userId, page, pageSize) {
             }
         }))
     }
-    
+
     if (applicant) {
         const applications = await jobsService.getApplicantApplications(applicant.id);
         const jobs = await jobsService.getApplicantSavedJobs(applicant.id, offset || 0, limit || 6);
@@ -1419,5 +1444,6 @@ module.exports = {
     filterAllJobs,
     filterApplicantSavedJobs,
     filterApplicantAppliedJobs,
-    deleteJob
+    deleteJob,
+    suspendJob
 }
