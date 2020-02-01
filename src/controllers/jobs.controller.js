@@ -906,7 +906,7 @@ async function getEmployerJobWithApplications(user_id, page, pageSize) {
     if (user) {
 
         const jobWithApplications = await jobsService.getJobsWithApplications(user.companyProfileId, offset, limit).catch(err => console.log(err));;
-        console.log(jobWithApplications);
+        // console.log(jobWithApplications);
         const jobscount = await jobsService.getCountJobsWithApplication(user.companyProfileId);
 
         if (jobWithApplications) {
@@ -1180,6 +1180,8 @@ async function filterApplication(userId, jobId, applicantId) {
 }
 
 function searchQueryBuilder(search, cityName, compId, offset, limit) {
+    let now = new Date().toISOString().toString().split('T')[0];
+    console.log(now);
     let query = ``;
     let haveWhere = false;
     if (compId != '') {
@@ -1203,7 +1205,12 @@ function searchQueryBuilder(search, cityName, compId, offset, limit) {
             query = query + ` where (jobTitle like '%${search}%' or companyName like '%${search}%' or industryType like '%${search}%')`;
         }
     }
-    let selectQuery = `select * from view_companies_jobs_search ` + query + `order by createdAt desc LIMIT ${offset},${limit}`;
+    if(!haveWhere){
+        query += ` where applicationStartDate < "${now}" AND applicationEndDate > "${now}"`;
+    }else{
+        query += ` AND applicationStartDate < "${now}" AND applicationEndDate > "${now}"`;
+    }
+    let selectQuery = `select * from view_companies_jobs_search ` + query + ` order by createdAt desc LIMIT ${offset},${limit}`;
     let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search` + query;
     return { selectQuery: selectQuery, count: QueryCount };
 }

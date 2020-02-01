@@ -303,7 +303,7 @@ function changeUserPassword(req, res, next) {
         res.render('setNewPassword', { layout: 'main', response });
         return;
     } else if (req.body.password != req.body.comfirm_password) {
-        response.error = "Passwords does not much";
+        response.error = "Passwords do not much";
         res.render('setNewPassword', { layout: 'main', response });
         return;
     }
@@ -530,7 +530,8 @@ function updateApplicantCV(req, res, next) {
     form.parse(req, (err, fields, files) => {
         var applicantCV = files['cv'];
         if (applicantCV && applicantCV.path) {
-            uploadFilePromise(applicantCV.path, 'th-applicant-cv', fileNameCV)
+            // console.log('from update uplicant cv');
+            uploadFilePromise(applicantCV.path, 'live.jobsearch/ABS_Images', fileNameCV)
                 .then(data => {
                     return updateApplicantField(data.Location, "cv", req.user.sub);
                 })

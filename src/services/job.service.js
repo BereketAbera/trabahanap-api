@@ -16,8 +16,17 @@ const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
 async function getJobsWithOffsetAndLimit(offset, limit) {
+  let now = new Date().toISOString();
   return await Job.findAndCountAll({
-    where: { active: 1 },
+    where: {
+      active: 1,
+      applicationStartDate: {
+        lt: now
+      },
+      applicationEndDate: {
+        gt: now
+      }
+    },
     offset,
     limit,
     include: [{ model: CompanyProfile }],

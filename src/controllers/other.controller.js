@@ -1003,6 +1003,7 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
 
 function advancedSearchQueryBuilder(search, employType, industry, salaryRange, cityName, pwd, offset, limit) {
     // console.log(pwd, 'pwd')
+    let now = new Date().toISOString().toString().split('T')[0];
     let query = ``;
     let haveWhere = false;
     if (pwd) {
@@ -1045,6 +1046,12 @@ function advancedSearchQueryBuilder(search, employType, industry, salaryRange, c
         query = query + `  and (jobTitle like '%${search}%'  or companyName like '%${search}%')`;
     } else {
         query = query + ` where and (jobTitle like '%${search}%' or companyName like '%${search}%')`;
+    }
+
+    if(!haveWhere){
+        query += ` where applicationStartDate < "${now}" AND applicationEndDate > "${now}"`;
+    }else{
+        query += ` AND applicationStartDate < "${now}" AND applicationEndDate > "${now}"`;
     }
     let selectQuery = `select * from view_companies_jobs_search ` + query + ` order by createdAt desc LIMIT ${offset},${limit}`;
     let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search` + query;
