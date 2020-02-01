@@ -326,14 +326,12 @@ function changeUserPassword(req, res, next) {
 }
 
 async function changeNewPassword(body, token) {
-    console.log(body, 'body')
     const userApi = await authService.getUserByEmailFromApi(body.email);
-    console.log(userApi.data, 'user')
     if (userApi.data.success) {
         // const updatedUser = await userService.updateUserField(bcryptjs.hashSync(body.password, 10), 'password', user.id);
         const updated = await userService.updateUserByEmail(userApi.data.user.email, { emailVerified: true });
         const updateApi = await authService.changePassword(userApi.data.user.id, body.password);
-        //const updateToken = await otherService.updateToken(token, { expired: true });
+        const updateToken = await otherService.updateToken(token, { expired: true });
         if (updateApi) {
 
             return true;
