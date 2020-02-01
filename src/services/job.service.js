@@ -62,7 +62,7 @@ function getCompanyAllApplicant(offset,limit,CompanyProfileId){
 }
 
 function getJobsWithApplications(CompanyProfileId, offset, limit) {
-    return sequelize.query(`SELECT * FROM view_job_applications WHERE CompanyProfileId='${CompanyProfileId}' order by createdAt DESC LIMIT ${limit} offset ${offset}`, { type: sequelize.QueryTypes.SELECT })
+    return sequelize.query(`SELECT * FROM view_job_applications WHERE CompanyProfileId='${CompanyProfileId}' LIMIT ${limit} offset ${offset}`, { type: sequelize.QueryTypes.SELECT })
 }
 
 function getCountJobsWithApplication(CompanyProfileId) {

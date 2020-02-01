@@ -115,7 +115,7 @@ function getAdminStaffs(offset,limit){
 }
 
 function getCompanyStaffs(CompanyProfileId){
-    return User.findAll({where: {role: ROLE.STAFFER, CompanyProfileId, emailVerified: true}}).catch(err => console.log(err));
+    return User.findAll({where: {role: ROLE.STAFFER, CompanyProfileId}}).catch(err => console.log(err));
 }
 
 function getAllEmployers(){

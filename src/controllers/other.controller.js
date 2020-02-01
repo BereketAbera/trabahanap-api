@@ -260,7 +260,7 @@ function deleteAppIssue(req, res, next) {
 
 function addStaff(req, res, next) {
     addCompanyStaffer(req.body, req.user.sub)
-        .then(success => res.status(200).send({ success }))
+        .then(staff => staff ? res.status(200).send({ success: true, staff }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
         .catch(err => next(err));
 }
 
@@ -743,12 +743,12 @@ async function addCompanyStaffer(body, userId) {
             if (saveToken && newUser) {
                 const message = constractStafferEmail(body.firstName, body.email, token);
                 sgMail.send(message);
-                return true;
+                return newUser;
             }
         }
 
     }
-    return false;
+    // return false;
 }
 
 async function renderNewStafferPassword(req) {

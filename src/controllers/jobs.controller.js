@@ -115,7 +115,7 @@ function getApplicantApplications(req, res, next) {
 }
 
 function getJobWithApplications(req, res, next) {
-    getEmployerJobWithApplications(req.user.sub, req.query.page || 1, req.query.ageSize || 6)
+    getEmployerJobWithApplications(req.user.sub, req.query.page || 1, req.query.pageSize || 6)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
