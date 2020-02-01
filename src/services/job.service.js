@@ -70,6 +70,10 @@ async function getJobById(id) {
   }).catch(err => console.log(err));
 }
 
+function updateJobsField(value, fieldName, jobId){
+  return Job.update({[fieldName]: value},{where: {id: jobId}});
+}
+
 async function getHiredApplicant(ApplicantProfileId, jobId) {
   return JobApplication.findOne({
     where: { ApplicantProfileId, jobId }
@@ -373,6 +377,7 @@ module.exports = {
   countGetApplicantAppliedJobs,
   countGetApplicantSavedJobs,
   getAllSavedJobs,
+  updateJobsField,
   getCountJobApplicants
   // getApplicantApplication
 };

@@ -115,7 +115,7 @@ function getAdminStaffs(offset,limit){
 }
 
 function getCompanyStaffs(CompanyProfileId){
-    return User.findAll({where: {role: ROLE.STAFFER, CompanyProfileId, emailVerified: true}}).catch(err => console.log(err));
+    return User.findAll({where: {role: ROLE.STAFFER, CompanyProfileId}}).catch(err => console.log(err));
 }
 
 function getAllEmployers(){
@@ -172,7 +172,7 @@ function getAdsById(id){
 }
 
 function getAdsByRanges(now,endDay){
-    return sequelize.query(`SELECT * FROM advertisement WHERE active='1' AND adsStart >= '${now}' AND adsEnd >= '${now}' AND adsStart < '${endDay}' `, { type: sequelize.QueryTypes.SELECT })
+    return sequelize.query(`SELECT * FROM advertisement WHERE active='1'  AND adsEnd >= '${now}' AND adsStart < '${endDay}' `, { type: sequelize.QueryTypes.SELECT })
 }
 
 // function getCompanyProfileById(id){

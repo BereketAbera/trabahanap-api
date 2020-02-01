@@ -52,7 +52,7 @@ function authenticate(req, res, next) {
 
 function getCompanyProfile(req, res, next) {
     getUserById(req.user.sub)
-        .then(employer => employer ? res.status(200).json({ success: true, employer }) : res.status(200).json({ success: false, error: 'email is not unique' }))
+        .then(employer => employer ? res.status(200).json({ success: true, employer }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
         .catch(err => next(err));
 }
 
@@ -75,7 +75,7 @@ function signUpApplicant(req, res, next) {
     //     .catch(err => next(err));
 
     signUpUserApplicant(req.body)
-        .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'email is not unique' }))
+        .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
         .catch(err => next(err));
 
 }
@@ -90,7 +90,7 @@ function signUpEmployer(req, res, next) {
     req.body.username = req.body.email;
 
     signUpUserEmployer(req.body)
-        .then(employer => employer ? res.status(200).json({ success: true, employer }) : res.status(200).json({ success: false, error: 'email is not unique' }))
+        .then(employer => employer ? res.status(200).json({ success: true, employer }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
         .catch(err => next(err));
 }
 
@@ -240,7 +240,7 @@ async function adminSignUpEmployerUser(body) {
 
     }
     else {
-        return "Email is not unique"
+        return "Email is already in use"
     }
 }
 
@@ -326,14 +326,12 @@ function changeUserPassword(req, res, next) {
 }
 
 async function changeNewPassword(body, token) {
-    console.log(body, 'body')
     const userApi = await authService.getUserByEmailFromApi(body.email);
-    console.log(userApi.data, 'user')
     if (userApi.data.success) {
         // const updatedUser = await userService.updateUserField(bcryptjs.hashSync(body.password, 10), 'password', user.id);
         const updated = await userService.updateUserByEmail(userApi.data.user.email, { emailVerified: true });
         const updateApi = await authService.changePassword(userApi.data.user.id, body.password);
-        //const updateToken = await otherService.updateToken(token, { expired: true });
+        const updateToken = await otherService.updateToken(token, { expired: true });
         if (updateApi) {
 
             return true;
@@ -1033,7 +1031,7 @@ async function signUpUserApplicantFromAdmin(body) {
        
         throw "Something went wrong.";
     } else {
-        throw "Email is not unique";
+        throw "Email is already in use";
     }
 }
 

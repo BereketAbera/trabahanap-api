@@ -1,6 +1,6 @@
 /* jshint indent: 2 */
 
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('jobs', {
     id: {
       primaryKey: true,
@@ -39,7 +39,10 @@ module.exports = function(sequelize, DataTypes) {
     employmentType: {
       type: DataTypes.STRING(255),
       allowNull: true
-    },active: {
+    }, active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    }, suspended: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
     },
