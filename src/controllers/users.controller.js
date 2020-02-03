@@ -373,7 +373,7 @@ async function renderNewUserPassword(req) {
 
 
 async function resetPassword(body) {
-    console.log(body)
+   // console.log(body)
     if (body.email) {
         const user = await userService.getUserByEmail(body.email);
         const token = uuidv4();
@@ -436,8 +436,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
                 })
                 .then(data => {
                     companyProfile["businessLicense"] = data.Location;
-                    console.log("lkjds")
-                    return createUserCompanyProfile({ ...companyProfile, user_id: req.user.sub });
+                     return createUserCompanyProfile({ ...companyProfile, user_id: req.user.sub });
                 })
                 .then(companyProfile => {
                     fs.unlinkSync(fileLogo.path);
@@ -685,7 +684,7 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
         if (cvFile) {
             uploadFilePromise(cvFile.path, 'th-applicant-cv', fileNameCV)
                 .then(data => {
-                    console.log(data)
+                    //console.log(data)
                     applicantProfile['cv'] = data.Location;
                     if (profilePictureFile) {
                         return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
@@ -906,7 +905,7 @@ async function deactivateUserById(id) {
 
     }
     if (deactivated && user) {
-        console.log(user)
+       // console.log(user)
         return user;
     }
 }
@@ -914,7 +913,7 @@ async function deactivateUserById(id) {
 async function authenticateUsers({ email, password }) {
     const resp = await authService.loginFromApi({ email, password });
     // console.log(resp.data);
-    console.log(resp.data, 'res')
+   // console.log(resp.data, 'res')
     if (resp.data.success) {
         const user = await userService.getUserByEmail(email);
         if (user) {
@@ -1076,10 +1075,10 @@ async function getUserById(user_id) {
 }
 
 async function editUserApplicantProfile(body, id) {
-    console.log("hi")
+    
     body = { ...body, cityId: body.CityId, countryId: body.countryId, regionId: body.regionId };
     const updatedLinguanUser = await authService.updateUser(body.user_id, body);
-    console.log(updatedLinguanUser.data)
+    //console.log(updatedLinguanUser.data)
     if (updatedLinguanUser.data.success) {
         const updatedUser = await userService.updateUserById(body.user_id, body);
     }

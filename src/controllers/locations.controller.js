@@ -250,7 +250,7 @@ async function updateCompanyLocation(nLocation, locationId, user_id) {
     // if (RegionId) { nLocation.regionId = RegionId }
     // if (CountryId) { nLocation.countryId = CountryId }
     nLocation.isHeadOffice = nLocation.isHeadOffice == 'false' ? false : true;
-    console.log(nLocation)
+    //console.log(nLocation)
     var location = await locationService.getLocationById(locationId);
     var user = await userService.getUserById(user_id);
     // console.log(user.role, "the role of the user", location.locationName)
