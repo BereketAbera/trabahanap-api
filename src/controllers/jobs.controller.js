@@ -1226,8 +1226,10 @@ function searchQueryBuilder(search, cityName, compId, offset, limit) {
     } if (search != "") {
         if (haveWhere) {
             query = query + ` and (jobTitle like '%${search}%' or companyName like '%${search}%' or industryType like '%${search}%')`;
+            haveWhere = true;
         } else {
             query = query + ` where (jobTitle like '%${search}%' or companyName like '%${search}%' or industryType like '%${search}%')`;
+            haveWhere = true;
         }
     }
     if(!haveWhere){

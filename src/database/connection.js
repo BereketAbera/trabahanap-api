@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
 
-const sequelize = new Sequelize("trb_mig_temp_2", "root", "password", {
+const sequelize = new Sequelize("trabahanap_v4", "root", "password", {
   host: "192.168.0.10",
   dialect: "mysql",
   logging: false
