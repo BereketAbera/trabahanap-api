@@ -793,7 +793,7 @@ async function addEmployerJob(body) {
 
         //console.log(compProfileId)
         if (compProfileId) {
-            const job = await jobsService.addJob({ ...body, companyProfileId: compProfileId, userId: user.id });
+            const job = await jobsService.addJob({ ...body, companyProfileId: compProfileId, userId: user.id,suspended:0 });
             if (job) {
 
                 return job;
@@ -1231,9 +1231,9 @@ function searchQueryBuilder(search, cityName, compId, offset, limit) {
         }
     }
     if(!haveWhere){
-        query += ` where applicationStartDate < "${now}" AND applicationEndDate > "${now}"`;
+        query += ` where applicationStartDate <= "${now}" AND applicationEndDate >= "${now}"`;
     }else{
-        query += ` AND applicationStartDate < "${now}" AND applicationEndDate > "${now}"`;
+        query += ` AND applicationStartDate <= "${now}" AND applicationEndDate >= "${now}"`;
     }
     let selectQuery = `select * from view_companies_jobs_search ` + query + ` order by createdAt desc LIMIT ${offset},${limit}`;
     let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search` + query;

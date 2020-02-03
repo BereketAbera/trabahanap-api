@@ -981,7 +981,7 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
     const limit = pager.pageSize;
 
     queryResult = advancedSearchQueryBuilder(search || '', employType || '', industry || '', salaryRange || '', cityName || '', pwd, offset || 0, limit || 8);
-    // console.log(queryResult)
+     console.log(queryResult)
     // console.log(queryResult.count);
 
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
@@ -1049,9 +1049,9 @@ function advancedSearchQueryBuilder(search, employType, industry, salaryRange, c
     }
 
     if(!haveWhere){
-        query += ` where applicationStartDate < "${now}" AND applicationEndDate > "${now}"`;
+        query += ` where applicationStartDate <= "${now}" and applicationEndDate >= "${now}"`;
     }else{
-        query += ` AND applicationStartDate < "${now}" AND applicationEndDate > "${now}"`;
+        query += ` AND applicationStartDate <= "${now}" and applicationEndDate >= "${now}"`;
     }
     let selectQuery = `select * from view_companies_jobs_search ` + query + ` order by createdAt desc LIMIT ${offset},${limit}`;
     let QueryCount = `SELECT COUNT(*) FROM view_companies_jobs_search` + query;

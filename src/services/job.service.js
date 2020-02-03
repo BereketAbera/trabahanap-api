@@ -66,7 +66,7 @@ async function editJobById(id, newJob) {
 async function getJobById(id) {
   return Job.findOne({
     where: { id, active: 1 },
-    include: [{ model: CompanyProfile }, { model: Location }]
+    include: [{ model: CompanyProfile }, { model: Location, include: [{model: City}, {model: Region}] }]
   }).catch(err => console.log(err));
 }
 
