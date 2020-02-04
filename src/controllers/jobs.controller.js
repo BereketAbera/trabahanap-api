@@ -454,7 +454,7 @@ async function adminFilterApplicantsPagination(name, email, page, pageSize) {
         totalPages: 0,
         currentPage: parseInt(page)
     }
-    console.log(pager)
+   // console.log(pager)
     const offset = (page - 1) * pager.pageSize;
     const limit = pager.pageSize;
 
@@ -520,7 +520,7 @@ async function filterAllJobsApplicationsWithPaginations(user_id, jobtitle, indus
     if (user) {
 
         queryResult = filterEmployerApplicantionsQueryBuilder(user.companyProfileId || '', jobtitle || '', industry || '', position || '',active ||'', offset || 0, limit || 6);
-         console.log(queryResult)
+        // console.log(queryResult)
         const applications = await jobsService.executeSearchQuery(queryResult.selectQuery);
         if (applications) {
             counts = await jobsService.executeSearchQuery(queryResult.count);
@@ -716,7 +716,7 @@ async function getSearchInCity(search, cityName, compId, page, pageSize) {
     const limit = pager.pageSize;
 
     queryResult = searchQueryBuilder(search || '', cityName || '', compId || '', offset, limit);
-    console.log(queryResult)
+   // console.log(queryResult)
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
 
     if (jobs) {
@@ -1206,7 +1206,7 @@ async function filterApplication(userId, jobId, applicantId) {
 
 function searchQueryBuilder(search, cityName, compId, offset, limit) {
     let now = new Date().toISOString().toString().split('T')[0];
-    console.log(now);
+   // console.log(now);
     let query = ``;
     let haveWhere = false;
     if (compId != '') {
@@ -1226,8 +1226,10 @@ function searchQueryBuilder(search, cityName, compId, offset, limit) {
     } if (search != "") {
         if (haveWhere) {
             query = query + ` and (jobTitle like '%${search}%' or companyName like '%${search}%' or industryType like '%${search}%')`;
+            haveWhere = true;
         } else {
             query = query + ` where (jobTitle like '%${search}%' or companyName like '%${search}%' or industryType like '%${search}%')`;
+            haveWhere = true;
         }
     }
     if(!haveWhere){
