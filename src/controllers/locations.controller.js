@@ -289,21 +289,29 @@ async function getCitiesByRegionsId(regionId) {
 }
 
 async function updateCompanyLocation(nLocation, locationId, user_id) {
-    // const { CityId, RegionId, CountryId } = nLocation;
-    // if (CityId) { nLocation.cityId = CityId }
-    // if (RegionId) { nLocation.regionId = RegionId }
-    // if (CountryId) { nLocation.countryId = CountryId }
-    nLocation.isHeadOffice = nLocation.isHeadOffice == 'false' ? false : true;
-    //console.log(nLocation)
-    var location = await locationService.getLocationById(locationId);
-    var user = await userService.getUserById(user_id);
-    // console.log(user.role, "the role of the user", location.locationName)
-    if (location && user && (location.CompanyProfileId == user.CompanyProfileId || user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
-        // console.log("about to edit your locations")
-        var updatedLocation = await locationService.updateLocation(location, nLocation)
-        if (updatedLocation) {
-            return updatedLocation;
-        }
+  // const { CityId, RegionId, CountryId } = nLocation;
+  // if (CityId) { nLocation.cityId = CityId }
+  // if (RegionId) { nLocation.regionId = RegionId }
+  // if (CountryId) { nLocation.countryId = CountryId }
+  nLocation.isHeadOffice = nLocation.isHeadOffice == "false" ? false : true;
+  //console.log(nLocation)
+  var location = await locationService.getLocationById(locationId);
+  var user = await userService.getUserById(user_id);
+  // console.log(user.role, "the role of the user", location.locationName)
+  if (
+    location &&
+    user &&
+    (location.CompanyProfileId == user.CompanyProfileId ||
+      user.role === ROLE.ADMIN ||
+      user.role === ROLE.ADMINSTAFF)
+  ) {
+    // console.log("about to edit your locations")
+    var updatedLocation = await locationService.updateLocation(
+      location,
+      nLocation
+    );
+    if (updatedLocation) {
+      return updatedLocation;
     }
   }
 }
