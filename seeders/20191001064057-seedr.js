@@ -1,17 +1,87 @@
-'use strict';
-const faker = require('faker');
-const bcryptjs = require('bcryptjs');
+"use strict";
+const faker = require("faker");
+const bcryptjs = require("bcryptjs");
 
-const ROLES = ['ADMIN', 'EMPLOYER', 'APPLICANT'];
+const ROLES = ["ADMIN", "EMPLOYER", "APPLICANT"];
 
 console.log("running seedr");
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const industries = [];
-    const ind = ["Agriculture", "Airline", "Arts", "Automotive", "Banking/Financial", "Call Center", "Communication", "Construction", "Distribution", "Education", "Energy", "Engineering", "Fast Food", "Gaming", "Healthcare", "Hospitality", "Hotel", "Human Resources", "Information Technology", "Insurance", "Landscaping", "Manpower Services", "Manufacturing", "Marketing", "Media", "Others", "Publishing", "Real Estate", "Restaurant", "Retail", "Sales", "Sciences", "Services", "Warehouse"]
-    const tempindid = ["AGRICULTURE", "AIRLINE", "ARTS", "AUTOMOTIVE", "BANKINGFINANCIAL", "CALLCENTER", "COMMUNICATION", "CONSTRUCTION", "DISTRIBUTION", "EDUCATION", "ENERGY", "ENGINEERING", "FASTFOOD", "GAMING", "HEALTHCARE", "HOSPITALITY", "HOTEL", "HUMANRESOURCES", "INFOTECH", "INSURANCE", "LANDSCAPING", "MANPOWERSERVICE", "MANUFACTURING", "MARKETING", "MEDIA", "OTHER", "PUBLISHING", "REALESTATE", "RESTAURANT", "RETAIL", "SALES", "SCIENCES", "SERVICES", "WAREHOUSE"]
-    
+    const ind = [
+      "Agriculture",
+      "Airline",
+      "Arts",
+      "Automotive",
+      "Banking/Financial",
+      "Call Center",
+      "Communication",
+      "Construction",
+      "Distribution",
+      "Education",
+      "Energy",
+      "Engineering",
+      "Fast Food",
+      "Gaming",
+      "Healthcare",
+      "Hospitality",
+      "Hotel",
+      "Human Resources",
+      "Information Technology",
+      "Insurance",
+      "Landscaping",
+      "Manpower Services",
+      "Manufacturing",
+      "Marketing",
+      "Media",
+      "Others",
+      "Publishing",
+      "Real Estate",
+      "Restaurant",
+      "Retail",
+      "Sales",
+      "Sciences",
+      "Services",
+      "Warehouse"
+    ];
+    const tempindid = [
+      "AGRICULTURE",
+      "AIRLINE",
+      "ARTS",
+      "AUTOMOTIVE",
+      "BANKINGFINANCIAL",
+      "CALLCENTER",
+      "COMMUNICATION",
+      "CONSTRUCTION",
+      "DISTRIBUTION",
+      "EDUCATION",
+      "ENERGY",
+      "ENGINEERING",
+      "FASTFOOD",
+      "GAMING",
+      "HEALTHCARE",
+      "HOSPITALITY",
+      "HOTEL",
+      "HUMANRESOURCES",
+      "INFOTECH",
+      "INSURANCE",
+      "LANDSCAPING",
+      "MANPOWERSERVICE",
+      "MANUFACTURING",
+      "MARKETING",
+      "MEDIA",
+      "OTHER",
+      "PUBLISHING",
+      "REALESTATE",
+      "RESTAURANT",
+      "RETAIL",
+      "SALES",
+      "SCIENCES",
+      "SERVICES",
+      "WAREHOUSE"
+    ];
+
     // const ind = ["Agriculture", "Airline", "Arts", "Automotive", "Banking/Financial",
     //  "Call Center", "Communication", "Construction", "Distribution", "Education", "Energy",
     //  "Engineering", "Fast Food", "Gaming", "HealthCare", "Hospitality", "Hotel", "Human Resources",
@@ -19,16 +89,15 @@ module.exports = {
     //  "Marketing", "Media", "Others", "Publishing", "Real Estate",
     //  "Restaurant", "Retail", "Sales", "Science", "Services", "Warehouse"]
 
-    for(var x = 0; x < ind.length; x ++){
+    for (var x = 0; x < ind.length; x++) {
       industries.push({
         industryName: ind[x],
         createdAt: new Date(),
         updatedAt: new Date()
-      })
+      });
     }
 
-    await queryInterface.bulkInsert('industries', industries, {});
-
+    await queryInterface.bulkInsert("industries", industries, {});
 
     let countries = [
       {
@@ -38,45 +107,173 @@ module.exports = {
       }
     ];
 
-    await queryInterface.bulkInsert('countries', countries, {});
+    await queryInterface.bulkInsert("countries", countries, {});
 
     const countryIds = await queryInterface.sequelize.query(
       `SELECT id from countries;`
     );
     let regions = [];
     // let rleft = ["Northern Mindanao", "Soccsksargen", "Westerb Visayas", "Zanboanga"];
-    let r = ["ARMM", "Bicol", "Cagayan", "Calabarzon", "CAR", "Caraga", "Central Luzon", "Central Visayas", "Davao", "Eastern Visayas", "Ilocos", "Mimaraopa", "NCR","Northern Mindanao","Soccsksargen","Western Visayas","Zamboanga"];
-    for(var i = 0; i<r.length; i++){
+    let r = [
+      "NCR",
+      "CAR",
+      "Ilocos",
+      "Cagayan",
+      "Central Luzon",
+      "Calabarzon",
+      "Mimaraopa",
+      "Bicol",
+      "Eastern Visayas",
+      "Central Visayas",
+      "Western Visayas",
+      "Zamboanga",
+      "Northern Mindanao",
+      "Davao",
+      "Soccsksargen",
+      "Caraga",
+      "ARMM"
+    ];
+    for (var i = 0; i < r.length; i++) {
       var region = {
         regionName: r[i],
         CountryId: countryIds[0][0].id,
         createdAt: new Date(),
         updatedAt: new Date()
-      }
+      };
       regions.push(region);
     }
 
     let c = [
-      ["Basilan", "Lanao del Sur", "Maguindanao", "Sulu", "Tawi-Tawi"], 
-      ["Albay", "Camarines Norte", "Camarines Sur", "Catanduanes", "Masbate", "Naga", "Sorsogon"], 
-      ["Batanes", "Cagayan", "Isabela", "Nueva Vizcaya", "Quirino", "Santiago"], 
-      ["Batangas", "Cavite", "Laguna", "Lucena", "Quezon", "Rizal"], 
-      ["Abra", "Apayao", "Baguio", "Benguet", "Ifugao", "Kalinga", "Mt. Province"],
-      ["Agusan del Norte", "Agusa del Sur", "Butuan", "Dinagat Islands", "Surigao del Norte", "Surigao del Sur"],
-      ["Angeles", "Aurora", "Bataan", "Bulacan", "Nueva Ecija", "Olongapo", "Pampanga", "Tarlac", "Zambales"],
-      ["Bohol", "Cebu", "Cebu City", "Lapu Lapu", "Negros Oriental", "Siquijor"],
-      ["Compostela Valley", "Davao City", "Davao del Norte", "Davao del Sur", "Davao Oriental"],
-      ["Biliran", "Eastern Samar", "Leyte", "Northern Samar", "Ormoc", "Samar", "Southern Leyte", "Tacloban"],
+      [
+        "Caloocan",
+        "Las Piñas",
+        "Makati",
+        "Malabon",
+        "Mandaluyong",
+        "Manila",
+        "Marikina",
+        "Muntinlupa",
+        "Navotas",
+        "Parañaque",
+        "Pasay",
+        "Pasig",
+        "Pateros",
+        "Quezon City",
+        "San Juan",
+        "Taguig",
+        "Valenzuela"
+      ],
+      [
+        "Abra",
+        "Apayao",
+        "Baguio",
+        "Benguet",
+        "Ifugao",
+        "Kalinga",
+        "Mt. Province"
+      ],
       ["Ilocos Norte", "Ilocos Sur", "La Union", "Pangasinan"],
-      ["Marindugue", "Occidental Mindoro", "Oriental Mindoro", "Palawan", "Puerto Princesa", "Romblon"],
-      ["Caloocan", "Las Pinas", "Makati", "Malabon", "Mandaluyong", "Manila", "Marikina", "Muntinlupa", "Navotas", "Paranaque", "Pasay", "Pasig", "Pateros", "Quezon City", "San Juan", "Taguig", "Valenzuela"],
-      ["Bukidnon","Cagayan de Oro","Camiguin","Iligan","Lanao del Norte","Misamis Occidental","Misamis Oriental"],
-      ["Cotabato","Cotabato City","General Santos","Saranggani","South Cotabato","Sultan Kudarat"],
-      ["Aklan","Antique","Bacolod","Capiz","Guimaras","Iloilo","Iloilo City","Negros Occidental"],
-      ["Isabela City","Zamboanga City","Zamboanga del Norte","Zamboanga del Sur","Zamboanga Sibugay"]
-    ]
+      ["Batanes", "Cagayan", "Isabela", "Nueva Vizcaya", "Quirino", "Santiago"],
+      [
+        "Angeles",
+        "Aurora",
+        "Bataan",
+        "Bulacan",
+        "Nueva Ecija",
+        "Olongapo",
+        "Pampanga",
+        "Tarlac",
+        "Zambales"
+      ],
+      ["Batangas", "Cavite", "Laguna", "Lucena", "Quezon", "Rizal"],
+      [
+        "Marinduque",
+        "Occidental Mindoro",
+        "Oriental Mindoro",
+        "Palawan",
+        "Puerto Princesa",
+        "Romblon"
+      ],
+      [
+        "Albay",
+        "Camarines Sur",
+        "Camarines Norte",
+        "Catanduanes",
+        "Masbate",
+        "Naga",
+        "Sorsogon"
+      ],
+      [
+        "Aklan",
+        "Antique",
+        "Bacolod",
+        "Capiz",
+        "Guimaras",
+        "Iloilo",
+        "Iloilo City",
+        "Negros Occidental"
+      ],
+      [
+        "Bohol",
+        "Cebu",
+        "Cebu City",
+        "Lapu Lapu",
+        "Negros Oriental",
+        "Siquijor"
+      ],
+      [
+        "Biliran",
+        "Eastern Samar",
+        "Leyte",
+        "Northern Samar",
+        "Ormoc",
+        "Samar",
+        "Southern Leyte",
+        "Tacloban"
+      ],
+      [
+        "Isabela City",
+        "Zamboanga City",
+        "Zamboanga del Norte",
+        "Zamboanga del Sur",
+        "Zamboanga Sibugay"
+      ],
+      [
+        "Bukidnon",
+        "Cagayan de Oro",
+        "Camiguin",
+        "Iligan",
+        "Lanao del Norte",
+        "Misamis Occidental",
+        "Misamis Oriental"
+      ],
+      [
+        "Compostela Valley",
+        "Davao City",
+        "Davao del Norte",
+        "Davao del Sur",
+        "Davao Oriental"
+      ],
+      [
+        "Cotabato",
+        "Cotabato City",
+        "General Santos",
+        "Saranggani",
+        "South Cotabato",
+        "Sultan Kudarat"
+      ],
+      [
+        "Agusan del Norte",
+        "Agusan del Sur",
+        "Butuan",
+        "Dinagat Islands",
+        "Surigao del Norte",
+        "Surigao del Sur"
+      ],
+      ["Basilan", "Lanao del Sur", "Maguindanao", "Sulu", "Tawi-Tawi"]
+    ];
 
-    await queryInterface.bulkInsert('regions', regions, {});
+    await queryInterface.bulkInsert("regions", regions, {});
 
     const regionIds = await queryInterface.sequelize.query(
       `SELECT id from regions;`
@@ -84,27 +281,25 @@ module.exports = {
 
     let cities = [];
     let cityId = 0;
-    for(var i = 0; i<r.length; i++){
-      for(var j = 0; j<c[i].length; j++){
+    for (var i = 0; i < r.length; i++) {
+      for (var j = 0; j < c[i].length; j++) {
         cityId = cityId + 1;
         var city = {
           cityName: c[i][j],
           RegionId: regionIds[0][i].id,
           createdAt: new Date(),
           updatedAt: new Date()
-        }
+        };
         cities.push(city);
       }
-      
-
     }
 
-    await queryInterface.bulkInsert('cities', cities, {});
+    await queryInterface.bulkInsert("cities", cities, {});
 
     // const cityIds = await queryInterface.sequelize.query(
     //   `SELECT id from cities;`
     // );
-    
+
     // let companyProfiles = [];
     // for(var i = 0; i<15; i++){
     //   var companyProfile = {
@@ -219,15 +414,11 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('jobs', null, {});
-    await queryInterface.bulkDelete('users', null, {});
-    await queryInterface.bulkDelete('company_profiles', null, {});
-    await queryInterface.bulkDelete('cities', null, {});
-    await queryInterface.bulkDelete('regions', null, {});
-    await queryInterface.bulkDelete('countries', null, {});
+    await queryInterface.bulkDelete("cities", null, {});
+    await queryInterface.bulkDelete("regions", null, {});
+    await queryInterface.bulkDelete("countries", null, {});
   }
 };
-
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));

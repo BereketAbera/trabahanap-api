@@ -809,7 +809,7 @@ async function getAllAds(page, pageSize) {
     const limit = pager.pageSize;
 
     const ads = await otherService.getAllAdsWithOffset(offset, limit);
-    console.log(ads)
+   // console.log(ads)
     if (ads) {
         pager.totalItems = ads.count;
         pager.totalPages = Math.ceil(ads.count / pager.pageSize);
@@ -981,7 +981,7 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
     const limit = pager.pageSize;
 
     queryResult = advancedSearchQueryBuilder(search || '', employType || '', industry || '', salaryRange || '', cityName || '', pwd, offset || 0, limit || 8);
-     console.log(queryResult)
+     //console.log(queryResult)
     // console.log(queryResult.count);
 
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);

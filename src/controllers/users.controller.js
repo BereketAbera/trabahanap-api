@@ -171,10 +171,10 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
         var fileLogo = files["companyLogo"];
         var fileLicense = files["businessLicense"];
         if (fileLogo && fileLicense && fileLogo.path && fileLicense.path) {
-            uploadFilePromise(fileLogo.path, 'th-employer-logo', fileNameLogo)
+            uploadFilePromise(fileLogo.path, 'live.jobsearch/th-employer-logo', fileNameLogo)
                 .then(data => {
                     companyProfile["companyLogo"] = data.Location;
-                    return uploadFilePromise(fileLicense.path, 'th-employer-license', fileNameBusinessLisence);
+                    return uploadFilePromise(fileLicense.path, 'live.jobsearch/th-employer-license', fileNameBusinessLisence);
                 })
                 .then(data => {
                     companyProfile["businessLicense"] = data.Location;
@@ -373,7 +373,7 @@ async function renderNewUserPassword(req) {
 
 
 async function resetPassword(body) {
-    console.log(body)
+   // console.log(body)
     if (body.email) {
         const user = await userService.getUserByEmail(body.email);
         const token = uuidv4();
@@ -427,15 +427,14 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
         var fileLogo = files["companyLogo"];
         var fileLicense = files["businessLicense"];
         if (fileLogo && fileLicense && fileLogo.path && fileLicense.path) {
-            uploadFilePromise(fileLogo.path, 'th-employer-logo', fileNameLogo)
+            uploadFilePromise(fileLogo.path, 'live.jobsearch/th-employer-logo', fileNameLogo)
                 .then(data => {
                     companyProfile["companyLogo"] = data.Location;
-                    return uploadFilePromise(fileLicense.path, 'th-employer-license', fileNameBusinessLisence);
+                    return uploadFilePromise(fileLicense.path, 'live.jobsearch/th-employer-license', fileNameBusinessLisence);
                 })
                 .then(data => {
                     companyProfile["businessLicense"] = data.Location;
-                    console.log("lkjds")
-                    return createUserCompanyProfile({ ...companyProfile, user_id: req.user.sub });
+                     return createUserCompanyProfile({ ...companyProfile, user_id: req.user.sub });
                 })
                 .then(companyProfile => {
                     fs.unlinkSync(fileLogo.path);
@@ -465,7 +464,7 @@ function updateCompanyLogo(req, res, next) {
     form.parse(req, (err, fields, files) => {
         var companyLogo = files['companyLogo'];
         if (companyLogo && companyLogo.path) {
-            uploadFilePromise(companyLogo.path, 'th-employer-logo', fileNameLogo)
+            uploadFilePromise(companyLogo.path, 'live.jobsearch/th-employer-logo', fileNameLogo)
                 .then(data => {
                     return updateCompanyField(data.Location, "companyLogo", req.user.sub);
                 })
@@ -496,7 +495,7 @@ function updateCompanyBusinessLicense(req, res, next) {
     form.parse(req, (err, fields, files) => {
         var businessLicense = files['businessLicense'];
         if (businessLicense && businessLicense.path) {
-            uploadFilePromise(businessLicense.path, 'th-employer-license', fileBusinessLicense)
+            uploadFilePromise(businessLicense.path, 'live.jobsearch/th-employer-license', fileBusinessLicense)
                 .then(data => {
                     return updateCompanyField(data.Location, "businessLicense", req.user.sub);
                 })
@@ -559,7 +558,7 @@ function updateApplicantPicture(req, res, next) {
         var applicantPicture = files['applicantPicture'];
         // console.log("console.log");
         if (applicantPicture && applicantPicture.path) {
-            uploadFilePromise(applicantPicture.path, 'th-employer-logo', fileNameApplicantPicture)
+            uploadFilePromise(applicantPicture.path, 'live.jobsearch/th-employer-logo', fileNameApplicantPicture)
                 .then(data => {
                     return updateApplicantField(data.Location, "applicantPicture", req.user.sub);
                 })
@@ -616,7 +615,7 @@ function editApplicantProfile(req, res, next) {
         let profilePictureFile = files['applicantPicture']
         if (profilePictureFile) {
             // console.log(profilePictureFile.path, "the path")
-            uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+            uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
                 .then(data => {
                     applicantProfile['applicantPicture'] = data.Location;
                     return editUserApplicantProfile(applicantProfile, req.params.id);
@@ -681,12 +680,12 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
         var cvFile = files['cv'];
         var profilePictureFile = files['applicantPicture']
         if (cvFile) {
-            uploadFilePromise(cvFile.path, 'th-applicant-cv', fileNameCV)
+            uploadFilePromise(cvFile.path, 'live.jobsearch/th-applicant-cv', fileNameCV)
                 .then(data => {
-                    console.log(data)
+                    //console.log(data)
                     applicantProfile['cv'] = data.Location;
                     if (profilePictureFile) {
-                        return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                        return uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
                     }
                     //return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
                 })
@@ -751,13 +750,13 @@ function createApplicant(req, res, next) {
         var cvFile = files['cv'];
         var profilePictureFile = files['applicantPicture'];
         if (cvFile && cvFile.path) {
-            uploadFilePromise(cvFile.path, 'th-applicant-cv', fileNameCV)
+            uploadFilePromise(cvFile.path, 'live.jobsearch/th-applicant-cv', fileNameCV)
                 .then(data => {
                     applicantProfile['cv'] = data.Location;
                     if (profilePictureFile) {
-                        return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                        return uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
                     }
-                    //return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+                    //return uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
                 })
                 .then(data => {
                     if (profilePictureFile) {
@@ -831,7 +830,7 @@ function editCompanyProfile(req, res, next) {
         let profilePictureFile = files['companyLogo']
         if (profilePictureFile) {
             // console.log(profilePictureFile.path, "the path")
-            uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
+            uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
                 .then(data => {
                     companyProfile['companyLogo'] = data.Location;
                     return editUserCompanyProfile(companyProfile, req.params.id);
@@ -904,7 +903,7 @@ async function deactivateUserById(id) {
 
     }
     if (deactivated && user) {
-        console.log(user)
+       // console.log(user)
         return user;
     }
 }
@@ -912,7 +911,7 @@ async function deactivateUserById(id) {
 async function authenticateUsers({ email, password }) {
     const resp = await authService.loginFromApi({ email, password });
     // console.log(resp.data);
-    console.log(resp.data, 'res')
+   // console.log(resp.data, 'res')
     if (resp.data.success) {
         const user = await userService.getUserByEmail(email);
         if (user) {
@@ -1074,10 +1073,10 @@ async function getUserById(user_id) {
 }
 
 async function editUserApplicantProfile(body, id) {
-    console.log("hi")
+    
     body = { ...body, cityId: body.CityId, countryId: body.countryId, regionId: body.regionId };
     const updatedLinguanUser = await authService.updateUser(body.user_id, body);
-    console.log(updatedLinguanUser.data)
+    //console.log(updatedLinguanUser.data)
     if (updatedLinguanUser.data.success) {
         const updatedUser = await userService.updateUserById(body.user_id, body);
     }

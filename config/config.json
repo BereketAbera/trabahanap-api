@@ -2,7 +2,7 @@
   "development": {
     "username": "root",
     "password": "password",
-    "database": "trb_mig_temp_2",
+    "database": "trabahanap_v4",
     "host": "192.168.0.10",
     "dialect": "mysql"
   },
