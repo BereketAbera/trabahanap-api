@@ -1087,6 +1087,7 @@ async function getApplicantSavedReviewJobs(userId) {
     let applicationIds;
     if (applicant) {
         const applications = await jobsService.getApplicantApplications(applicant.id);
+        applicationIds = applications.map(app => { return app.JobId});
         const jobs = await jobsService.getAllSavedJobs(applicant.id);
         if (jobs[0] && applications) {
             Promise.all(applications.map(application => {

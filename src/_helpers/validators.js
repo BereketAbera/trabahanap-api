@@ -104,7 +104,7 @@ function validateApplicantProfile(data){
 function validateCompanyProfile(data){
     const errors = {};
     let valid = true;
-    const fields = ["zipcode", "companyName", "contactPerson", "contactNumber", "industryType", "companyDescription", "businessLicenseNumber", "CityId", "RegionId", "CountryId"];
+    const fields = ["companyName", "contactPerson", "contactNumber", "industryType", "companyDescription", "businessLicenseNumber", "CityId", "RegionId", "CountryId"];
     const keys = _.keys(data);
     fields.map(field => {
         if(keys.includes(field)){
@@ -118,12 +118,12 @@ function validateCompanyProfile(data){
     }
 
     _.map(data, (value, key) => {
-        if(key == "zipCode" || key == "businessLicense"){
+        if((key == "zipCode" && value) || key == "businessLicense"){
             if(!validator.isNumeric(value + '')){
                 errors[key] = `${key} should be a number`;
                 valid = false;
             }
-        }else if(key == "zipcode"){
+        }else if(key == "zipcode" && value){
             if(!validator.isPostalCode(value + '', 'US')){
                 errors[key] = `zipcode is not valid`;
                 valid = false;
