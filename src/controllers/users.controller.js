@@ -424,8 +424,6 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
             return;
         }
 
-        console.log("no validation")
-
         var fileLogo = files["companyLogo"];
         var fileLicense = files["businessLicense"];
         if (fileLogo && fileLicense && fileLogo.path && fileLicense.path) {
