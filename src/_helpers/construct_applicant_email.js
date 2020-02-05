@@ -40,7 +40,7 @@ module.exports = function constructApplicantEmail(email, token){
 			
 			<tr style="margin:0;padding:5px 15px;color:#0e0d0d;font-size:25px;font-family:Verdana" align="left">
 				<td><h6>
-                    Hindi bumubukas ang confirm email button? I-paste ito sa iyong web browser:  https: <a href="${constants.HOST_URL}/auth/reset_password/${email}/${token}" target="_blank">${constants.HOST_URL}/auth/reset_password/${email}/${token} </a>
+                    Hindi bumubukas ang confirm email button? I-paste ito sa iyong web browser: <a href="${constants.HOST_URL}/auth/reset_password/${email}/${token}" target="_blank">${constants.HOST_URL}/auth/reset_password/${email}/${token} </a>
 				</h6> 
 					<span>Para sa ibang katanungan, maaaring  mag-iwan ng mensahe sa aming support email address.</span></td>
 			</tr>
