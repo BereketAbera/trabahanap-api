@@ -409,17 +409,19 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
         }
         file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
     });
-
+   
     form.parse(req, (err, fields, files) => {
         let companyProfile = {};
         _.map(fields, (value, key) => {
             companyProfile[key] = value;
         })
-
+        
         //companyProfile ={ ...companyProfile }
         companyProfile = { ...companyProfile, CityId: companyProfile.cityId, RegionId: companyProfile.regionId, CountryId: companyProfile.countryId };
         const valid = validateCompanyProfile(companyProfile);
+    
         if (valid != true) {
+  
             res.status(200).json({ success: false, validationError: valid });
             return;
         }
