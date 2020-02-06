@@ -120,7 +120,6 @@ function changePassword(req, res, next) {
 
 
 function UserById(req, res, next) {
-    console.log("hello")
     getUserById(req.params.id)
         .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
         .catch(err => next(err));
@@ -998,7 +997,7 @@ async function signUpUserApplicant(body) {
     if (recaptchaResponse.data.success) {
 
         const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4(), role: ROLE.APPLICANT})
-         //console.log(user.data)
+         console.log(user.data)
         if (user.data.success) {
             body["role"] = ROLE.APPLICANT;
 
@@ -1076,11 +1075,22 @@ async function signUpUserEmployer(body) {
 }
 
 async function getUserById(user_id) {
-    console.log(user_id)
-    const user = userService.getUserById(user_id);
-    console.log(user)
+    const user = await userService.getUserById(user_id);
     if (user) {
-        return user;
+        const userWithoutPassword = {};
+        console.log(user)
+        _.map(user.dataValues, (value, key) => {
+            userWithoutPassword[key] = value;
+        });
+
+        // user.map()
+
+        applicantProfile = await userService.getApplicantProfileByUserIdOnly(user_id);
+        if(applicantProfile){
+            userWithoutPassword['applicantProfile'] = applicantProfile;
+        }
+        //console.log(userWithoutPassword.applicantProfile,'user')
+        return userWithoutPassword;
     }
 }
 

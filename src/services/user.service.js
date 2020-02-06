@@ -79,6 +79,11 @@ function updateAdsField(value, fieldName, adsId){
 function getApplicantProfileByUserId(userId){
     return ApplicantProfile.findOne({where: {userId},include: [{model: User}]}).catch(err => console.log(err));
 }
+
+function getApplicantProfileByUserIdOnly(userId){
+    return ApplicantProfile.findOne({where: {userId},}).catch(err => console.log(err));
+
+}
 function getUserbyCompanyProfileId(id){
     return CompanyProfile.findOne({where:{id}}).catch(err => console.log(err));
 }
@@ -133,6 +138,7 @@ module.exports = {
     getAllByCompanyProfileId,
     createUserApi,
     updateUserByEmail,
-    updateAdsField
+    updateAdsField,
+    getApplicantProfileByUserIdOnly
 
 };
