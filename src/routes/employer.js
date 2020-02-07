@@ -7,7 +7,7 @@ const empAutorize = require('../_helpers/empAutorize');
 const ROLE = require('../_helpers/role');
 
 app.get('/counters', otherController.getEmployerDashboardCounts);
-app.get('/locations/:companyProfileId', locationController.getCompanyLocations);
+app.get('/locations', locationController.getCompanyLocations);
 app.post('/location', locationController.addLocationWithImage);
 
 app.get('/jobs/applications', jobsController.getJobWithApplications);

@@ -235,7 +235,7 @@ function getRegionCities(req, res, next) {
 }
 
 function getCompanyLocations(req, res, next) {
-  getLocationByCompanyProfileId(req.params.companyProfileId, req.user.sub)
+  getLocationByCompanyProfileId(req.user.sub)
     .then(locations => res.status(200).send({ success: true, locations }))
     .catch(err => next(err));
 }
@@ -332,12 +332,12 @@ async function updateCompanyLocation(nLocation, locationId, user_id) {
   }
 }
 
-async function getLocationByCompanyProfileId(companyProfileId, user_id) {
+async function getLocationByCompanyProfileId(user_id) {
   const user = await userService.getUserById(user_id);
   if (user) {
-    if (user.company_profile.id == companyProfileId) {
+    if (user.company_profile.id) {
       const location = await locationService
-        .getCompanyLocations(companyProfileId)
+        .getCompanyLocations(user.company_profile.id)
         .catch(err => console.log(err));
       if (location) {
         return location;
