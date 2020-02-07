@@ -3,8 +3,8 @@ var fs = require('fs');
 var path = require('path');
 var AWS = require('aws-sdk');
 const _ = require('lodash');
-var credentials = new AWS.SharedIniFileCredentials({ profile: 'liguam' });
-AWS.config.credentials = credentials;
+// var credentials = new AWS.SharedIniFileCredentials({ profile: 'liguam' });
+// AWS.config.credentials = credentials;
 // Set the region 
 AWS.config.update({ region: 'us-west-2' });
 var moment = require('moment');

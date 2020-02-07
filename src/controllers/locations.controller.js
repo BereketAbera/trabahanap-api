@@ -6,9 +6,9 @@ const _ = require("lodash");
 //     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
 //     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 // };
-var credentials = new AWS.SharedIniFileCredentials({ profile: "liguam" });
+// var credentials = new AWS.SharedIniFileCredentials({ profile: "liguam" });
 var ROLE = require("../_helpers/role");
-AWS.config.credentials = credentials;
+// AWS.config.credentials = credentials;
 // Set the region
 AWS.config.update({ region: "us-west-2" });
 // Create S3 service object
@@ -35,10 +35,10 @@ function addLocationWithImage(req, res, next) {
       localImagePath = file.path;
     }
   });
-  form.on("file", function(name, file) {
+  form.on("file", function (name, file) {
     console.log("Uploaded " + file.name);
   });
-  form.parse(req, function(err, fields, files) {
+  form.parse(req, function (err, fields, files) {
     _.map(fields, (value, key) => {
       location[key] = value;
     });
@@ -76,7 +76,7 @@ function updateLocationPicture(req, res, next) {
   var form = new formidable.IncomingForm();
   form.multiples = true;
 
-  form.on("fileBegin", function(name, file) {
+  form.on("fileBegin", function (name, file) {
     let fileExt = file.name.substr(file.name.lastIndexOf(".") + 1);
     let fileName = "";
     fileName = fileNameLocationPicture = Date.now() + "location-picture";
@@ -102,8 +102,8 @@ function updateLocationPicture(req, res, next) {
           location
             ? res.status(200).json({ success: true, location })
             : res
-                .status(200)
-                .json({ sucess: false, error: "Something went wrong" });
+              .status(200)
+              .json({ sucess: false, error: "Something went wrong" });
         })
         .catch(err => next(err));
     } else {
@@ -123,7 +123,7 @@ function updateLocation(req, res, next) {
   var form = new formidable.IncomingForm();
   form.multiples = true;
   //console.log('here')
-  form.on("fileBegin", function(name, file) {
+  form.on("fileBegin", function (name, file) {
     let fileExt = file.name.substr(file.name.lastIndexOf(".") + 1);
     let fileName = "";
     if (name == "picture") {
@@ -176,8 +176,8 @@ function updateLocation(req, res, next) {
           location
             ? res.status(200).json({ success: true, location })
             : res
-                .status(200)
-                .json({ sucess: false, error: "Something went wrong" });
+              .status(200)
+              .json({ sucess: false, error: "Something went wrong" });
         })
         .catch(err => next(err));
     } else {
@@ -198,8 +198,8 @@ function getLocation(req, res, next) {
       location
         ? res.status(200).json({ success: true, location })
         : res
-            .status(200)
-            .json({ success: false, error: "something went wrong" })
+          .status(200)
+          .json({ success: false, error: "something went wrong" })
     )
     .catch(err => next(err));
 }
@@ -297,6 +297,16 @@ async function updateCompanyLocation(nLocation, locationId, user_id) {
   //console.log(nLocation)
   var location = await locationService.getLocationById(locationId);
   var user = await userService.getUserById(user_id);
+  if (location) {
+    if (nLocation.isHeadOffice) {
+      const locations = await locationService.getCompanyLocations(user.companyProfileId);
+      locations.map(item => {
+        const updateOther = locationService.updateLocation(item, { isHeadOffice: 0 });
+
+      })
+    }
+  }
+
   // console.log(user.role, "the role of the user", location.locationName)
   if (
     location &&
@@ -413,7 +423,7 @@ function uploadFilePromise(file, bucketName, fileName) {
   uploadParams.Body = fileStream;
   uploadParams.Key = path.basename(file);
   return new Promise((resolve, reject) => {
-    s3.upload(uploadParams, function(err, data) {
+    s3.upload(uploadParams, function (err, data) {
       if (err) {
         reject(err);
       }
@@ -427,10 +437,20 @@ function uploadFilePromise(file, bucketName, fileName) {
 }
 async function addCompanyLocation(location) {
   location.isHeadOffice = location.isHeadOffice == "false" ? false : true;
+
+
   const companyProfile = await userService
     .getCompanyProfileById(location.companyProfileId)
     .catch(err => console.log);
+
   if (companyProfile) {
+    if (location.isHeadOffice) {
+      const locations = await locationService.getCompanyLocations(companyProfile.id);
+      locations.map(item => {
+        const updateOther = locationService.updateLocation(item, { isHeadOffice: 0 });
+
+      })
+    }
     const newLocation = await locationService
       .addLocation(location)
       .catch(err => console.log(err));
