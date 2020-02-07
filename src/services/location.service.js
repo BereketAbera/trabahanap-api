@@ -13,6 +13,13 @@ async function getLocationById(LocationId){
     }
 }
 
+async function getHeadLocationForCompany(companyProfileId) {
+    const heads = await Location.findAll({where: {companyProfileId, isHeadOffice: true}}).catch(err => console.log(err));
+    if(heads) {
+        return heads;
+    }
+}
+
 function getCityByRegionId(regionId){
     return City.findAll({where: {regionId}}).catch(err => console.log(err));
 }
@@ -49,6 +56,7 @@ function updateLocation(location, newLocation){
 module.exports = {
     getLocationById,
     getCities,
+    getHeadLocationForCompany,
     getRegions,
     getCountries,
     addLocation,

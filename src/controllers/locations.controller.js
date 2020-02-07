@@ -204,6 +204,12 @@ function getLocation(req, res, next) {
     .catch(err => next(err));
 }
 
+function getHeadLocations(req, res, next) {
+  getCompanyHeadLocations(req.user.sub)
+    .then(heads => heads ? res.status(200).json({ success: true, heads }) : res.status(200).json({ success: false, error: "something went wrong" }))
+    .catch(err => next(err));
+}
+
 function getAllCities(req, res, next) {
   getCities()
     .then(cities => res.status(200).send({ success: true, cities }))
@@ -449,8 +455,19 @@ async function getCompanyLocationById(id, userId) {
   const user = await userService.getUserById(userId);
   if (user && user.company_profile) {
     const location = await locationService.getLocationById(id);
+    const head = await locationService.getHeadLocationForCompany(user.company_profile.id);
     if (location.companyProfileId == user.companyProfileId) {
-      return location;
+      return {location: location, heads: head};
+    }
+  }
+}
+
+async function getCompanyHeadLocations(userId) {
+  const user = await userService.getUserById(userId);
+  if (user && user.company_profile && user.companyProfileId) {
+    const heads = await locationService.getHeadLocationForCompany(user.companyProfileId);
+    if (heads) {
+      return heads;
     }
   }
 }
@@ -466,6 +483,7 @@ module.exports = {
   updateLocationByAdmin,
   addLocationWithImage,
   getLocation,
+  getHeadLocations,
   updateLocation,
   updateLocationPicture,
   getLocatiosForCompany

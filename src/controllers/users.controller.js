@@ -588,6 +588,9 @@ function editApplicantProfile(req, res, next) {
         if (name == "applicantPicture") {
             fileName = fileNameProfilePicture = Date.now() + "applicant-profile";
         }
+        else {
+            fileName = fileNameCV = Date.now() + "applicant-cv";
+        }
 
         file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
     });
@@ -613,10 +616,33 @@ function editApplicantProfile(req, res, next) {
         }
 
         //console.log('after')
-
-        let profilePictureFile = files['applicantPicture']
-        if (profilePictureFile) {
+        let applicantcv = files['cv'];
+        let profilePictureFile = files['applicantPicture'];
+        if (applicantcv) {
             // console.log(profilePictureFile.path, "the path")
+            uploadFilePromise(applicantcv.path, 'live.jobsearch/th-applicant-cv', fileNameCV)
+                .then(data => {
+                    applicantProfile['cv'] = data.Location;
+                    if (profilePictureFile) {
+                        return uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
+                    }
+                    // return editUserApplicantProfile(applicantProfile, req.params.id);
+                })
+                .then(data => {
+                    if (profilePictureFile) {
+                        applicantProfile['applicantPicture'] = data.Location;
+                        fs.unlinkSync(applicantcv.path)
+                        fs.unlinkSync(profilePictureFile.path);
+                    }
+                    return editUserApplicantProfile(applicantProfile, req.params.id);
+                })
+                .then(applicantProfile => {
+                    //console.log(applicantProfile.applicantProfile,'a')
+                    applicantProfile ? res.status(200).json({ success: true, applicantProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
+                })
+                .catch(err => next(err));
+        }
+        else if(profilePictureFile) {
             uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
                 .then(data => {
                     applicantProfile['applicantPicture'] = data.Location;
@@ -644,7 +670,7 @@ function editApplicantProfile(req, res, next) {
     //     .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
     //     .catch(err => next(err));
 }
-
+// sdfasdfasdfasdf
 function createApplicantProfileWithCVAndPicture(req, res, next) {
     var fileNameCV = "";
     var fileNameProfilePicture = "";
