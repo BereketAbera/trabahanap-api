@@ -12,32 +12,34 @@
   z-index: 1500;
   background-color: #ce2127;
 }
+
 .img-container {
   position: absolute;
   background-color: #aa111d;
   top: 0;
   left: 50%;
-  width: 20rem;
+  width: 18rem;
   height: 6.5rem;
   transform: translateX(-50%);
   text-align: center;
   z-index: 3;
   border-bottom-right-radius: 12.5rem;
   border-bottom-left-radius: 12.5rem;
-  box-shadow: 0 1px 5px rgba(#000, 0.2);
+  /* box-shadow: 0 1px 5px black; */
+}
+
+.img-holder {
+  display: inline-block;
+  background-color: white;
+  width: 10rem;
+  border-bottom-right-radius: 14px;
+  border-bottom-left-radius: 14px;
+  box-shadow: 0 2px 5px black;
+  transition: all 0.2s;
 }
 
 .logo {
   width: 9rem;
-  border-bottom-right-radius: 14px;
-  border-bottom-left-radius: 14px;
-  /* box-shadow: 0 2px 5px rgba(black, 0.5); */
-  transition: all 0.2s;
-  box-shadow: 0 2px 5px #666;
-}
-.logo img:hover {
-  box-shadow: 0 2px 8px rgba(black, 0.5);
-  box-shadow: 0 2px 8px #666;
 }
 
 .navigation {

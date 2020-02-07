@@ -3,8 +3,8 @@ var fs = require('fs');
 var path = require('path');
 var AWS = require('aws-sdk');
 const _ = require('lodash');
-var credentials = new AWS.SharedIniFileCredentials({ profile: 'liguam' });
-AWS.config.credentials = credentials;
+// var credentials = new AWS.SharedIniFileCredentials({ profile: 'liguam' });
+// AWS.config.credentials = credentials;
 // Set the region 
 AWS.config.update({ region: 'us-west-2' });
 var moment = require('moment');
@@ -118,6 +118,13 @@ function changePassword(req, res, next) {
 
 }
 
+
+function UserById(req, res, next) {
+    getUserById(req.params.id)
+        .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
+        .catch(err => next(err));
+}
+
 function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
 
     var fileNameLogo = "";
@@ -171,10 +178,10 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
         var fileLogo = files["companyLogo"];
         var fileLicense = files["businessLicense"];
         if (fileLogo && fileLicense && fileLogo.path && fileLicense.path) {
-            uploadFilePromise(fileLogo.path, 'live.jobsearch/th-employer-logo', fileNameLogo)
+            uploadFilePromise(fileLogo.path, 'th-employer-logo', fileNameLogo)
                 .then(data => {
                     companyProfile["companyLogo"] = data.Location;
-                    return uploadFilePromise(fileLicense.path, 'live.jobsearch/th-employer-license', fileNameBusinessLisence);
+                    return uploadFilePromise(fileLicense.path, 'th-employer-license', fileNameBusinessLisence);
                 })
                 .then(data => {
                     companyProfile["businessLicense"] = data.Location;
@@ -429,10 +436,10 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
         var fileLogo = files["companyLogo"];
         var fileLicense = files["businessLicense"];
         if (fileLogo && fileLicense && fileLogo.path && fileLicense.path) {
-            uploadFilePromise(fileLogo.path, 'live.jobsearch/th-employer-logo', fileNameLogo)
+            uploadFilePromise(fileLogo.path, 'th-employer-logo', fileNameLogo)
                 .then(data => {
                     companyProfile["companyLogo"] = data.Location;
-                    return uploadFilePromise(fileLicense.path, 'live.jobsearch/th-employer-license', fileNameBusinessLisence);
+                    return uploadFilePromise(fileLicense.path, 'th-employer-license', fileNameBusinessLisence);
                 })
                 .then(data => {
                     companyProfile["businessLicense"] = data.Location;
@@ -466,7 +473,7 @@ function updateCompanyLogo(req, res, next) {
     form.parse(req, (err, fields, files) => {
         var companyLogo = files['companyLogo'];
         if (companyLogo && companyLogo.path) {
-            uploadFilePromise(companyLogo.path, 'live.jobsearch/th-employer-logo', fileNameLogo)
+            uploadFilePromise(companyLogo.path, 'th-employer-logo', fileNameLogo)
                 .then(data => {
                     return updateCompanyField(data.Location, "companyLogo", req.user.sub);
                 })
@@ -497,7 +504,7 @@ function updateCompanyBusinessLicense(req, res, next) {
     form.parse(req, (err, fields, files) => {
         var businessLicense = files['businessLicense'];
         if (businessLicense && businessLicense.path) {
-            uploadFilePromise(businessLicense.path, 'live.jobsearch/th-employer-license', fileBusinessLicense)
+            uploadFilePromise(businessLicense.path, 'th-employer-license', fileBusinessLicense)
                 .then(data => {
                     return updateCompanyField(data.Location, "businessLicense", req.user.sub);
                 })
@@ -560,7 +567,7 @@ function updateApplicantPicture(req, res, next) {
         var applicantPicture = files['applicantPicture'];
         // console.log("console.log");
         if (applicantPicture && applicantPicture.path) {
-            uploadFilePromise(applicantPicture.path, 'live.jobsearch/th-employer-logo', fileNameApplicantPicture)
+            uploadFilePromise(applicantPicture.path, 'th-employer-logo', fileNameApplicantPicture)
                 .then(data => {
                     return updateApplicantField(data.Location, "applicantPicture", req.user.sub);
                 })
@@ -588,6 +595,9 @@ function editApplicantProfile(req, res, next) {
         if (name == "applicantPicture") {
             fileName = fileNameProfilePicture = Date.now() + "applicant-profile";
         }
+        else {
+            fileName = fileNameCV = Date.now() + "applicant-cv";
+        }
 
         file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
     });
@@ -613,10 +623,33 @@ function editApplicantProfile(req, res, next) {
         }
 
         //console.log('after')
-
-        let profilePictureFile = files['applicantPicture']
-        if (profilePictureFile) {
+        let applicantcv = files['cv'];
+        let profilePictureFile = files['applicantPicture'];
+        if (applicantcv) {
             // console.log(profilePictureFile.path, "the path")
+            uploadFilePromise(applicantcv.path, 'live.jobsearch/th-applicant-cv', fileNameCV)
+                .then(data => {
+                    applicantProfile['cv'] = data.Location;
+                    if (profilePictureFile) {
+                        return uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
+                    }
+                    // return editUserApplicantProfile(applicantProfile, req.params.id);
+                })
+                .then(data => {
+                    if (profilePictureFile) {
+                        applicantProfile['applicantPicture'] = data.Location;
+                        fs.unlinkSync(applicantcv.path)
+                        fs.unlinkSync(profilePictureFile.path);
+                    }
+                    return editUserApplicantProfile(applicantProfile, req.params.id);
+                })
+                .then(applicantProfile => {
+                    //console.log(applicantProfile.applicantProfile,'a')
+                    applicantProfile ? res.status(200).json({ success: true, applicantProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
+                })
+                .catch(err => next(err));
+        }
+        else if(profilePictureFile) {
             uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
                 .then(data => {
                     applicantProfile['applicantPicture'] = data.Location;
@@ -644,7 +677,7 @@ function editApplicantProfile(req, res, next) {
     //     .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
     //     .catch(err => next(err));
 }
-
+// sdfasdfasdfasdf
 function createApplicantProfileWithCVAndPicture(req, res, next) {
     var fileNameCV = "";
     var fileNameProfilePicture = "";
@@ -682,12 +715,12 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
         var cvFile = files['cv'];
         var profilePictureFile = files['applicantPicture']
         if (cvFile) {
-            uploadFilePromise(cvFile.path, 'live.jobsearch/th-applicant-cv', fileNameCV)
+            uploadFilePromise(cvFile.path, 'th-applicant-cv', fileNameCV)
                 .then(data => {
                     //console.log(data)
                     applicantProfile['cv'] = data.Location;
                     if (profilePictureFile) {
-                        return uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
+                        return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
                     }
                     //return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
                 })
@@ -752,13 +785,13 @@ function createApplicant(req, res, next) {
         var cvFile = files['cv'];
         var profilePictureFile = files['applicantPicture'];
         if (cvFile && cvFile.path) {
-            uploadFilePromise(cvFile.path, 'live.jobsearch/th-applicant-cv', fileNameCV)
+            uploadFilePromise(cvFile.path, 'th-applicant-cv', fileNameCV)
                 .then(data => {
                     applicantProfile['cv'] = data.Location;
                     if (profilePictureFile) {
-                        return uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
+                        return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
                     }
-                    //return uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
+                    //return uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
                 })
                 .then(data => {
                     if (profilePictureFile) {
@@ -832,7 +865,7 @@ function editCompanyProfile(req, res, next) {
         let profilePictureFile = files['companyLogo']
         if (profilePictureFile) {
             // console.log(profilePictureFile.path, "the path")
-            uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
+            uploadFilePromise(profilePictureFile.path, 'th-employer-logo', fileNameProfilePicture)
                 .then(data => {
                     companyProfile['companyLogo'] = data.Location;
                     return editUserCompanyProfile(companyProfile, req.params.id);
@@ -990,7 +1023,7 @@ async function signUpUserApplicant(body) {
     if (recaptchaResponse.data.success) {
 
         const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4(), role: ROLE.APPLICANT})
-         //console.log(user.data)
+         console.log(user.data)
         if (user.data.success) {
             body["role"] = ROLE.APPLICANT;
 
@@ -1068,9 +1101,22 @@ async function signUpUserEmployer(body) {
 }
 
 async function getUserById(user_id) {
-    const user = userService.getUserById(user_id);
+    const user = await userService.getUserById(user_id);
     if (user) {
-        return user;
+        const userWithoutPassword = {};
+        console.log(user)
+        _.map(user.dataValues, (value, key) => {
+            userWithoutPassword[key] = value;
+        });
+
+        // user.map()
+
+        applicantProfile = await userService.getApplicantProfileByUserIdOnly(user_id);
+        if(applicantProfile){
+            userWithoutPassword['applicantProfile'] = applicantProfile;
+        }
+        //console.log(userWithoutPassword.applicantProfile,'user')
+        return userWithoutPassword;
     }
 }
 
@@ -1400,5 +1446,6 @@ module.exports = {
     googleAuth,
     forgetPassword,
     resetPasswordFromEmail,
-    changePassword
+    changePassword,
+    UserById
 }

@@ -38,6 +38,7 @@ app.put(
   "/profile/locations/picture/:id",
   locationController.updateLocationPicture
 );
+app.get("/profile/locations/heads", locationController.getHeadLocations);
 app.get("/profile/locations/:id", locationController.getLocation);
 app.put("/profile/locations/:id", locationController.updateLocation);
 app.post("/profile/logo", userController.updateCompanyLogo);
