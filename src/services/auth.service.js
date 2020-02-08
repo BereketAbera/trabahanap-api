@@ -46,6 +46,10 @@ async function updateUser(user_id, body) {
   });
 }
 
+async function addCompanies(body){
+  return await axios.post(`${environment}/auth/companies`,{...body,address:body.companyAddress, ApplicationId:'TRABAHANAP'})
+}
+
 module.exports = {
   createUserApi,
   verifyUserFromApi,
@@ -54,5 +58,6 @@ module.exports = {
   changePassword,
   getUserByEmailFromApi,
   updatePassword,
-  updateUser
+  updateUser,
+  addCompanies
 };

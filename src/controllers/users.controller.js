@@ -1214,6 +1214,8 @@ async function createUserCompanyProfile(body) {
     if (user) {
         const compProfile = await userService.addCompanyProfile(body);
         if (compProfile) {
+            let { companyName,companyAddress,industryType,user_id} = body
+            const companiesAuth = await authService.addCompanies({companyName,companyAddress,industryType,user_id,id:compProfile.id})
             const updated = await userService.updateUserById(user.id, { companyProfileId: compProfile.id, hasFinishedProfile: true });
             if (updated) {
                 return await userService.getUserById(updated.id);
