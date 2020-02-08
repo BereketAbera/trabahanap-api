@@ -72,4 +72,4 @@ app.get("/filter/jobs", jobsController.filterAllJobs);
 
 app.post("/subscription", paymentController.addSubscription);
 app.get("/subscription", paymentController.getUserSubscription);
-app.get("/subscription/purchase/:id",paymentController.purchaseSubscription);
+app.post("/subscription/purchase/:id",paymentController.purchaseSubscription);

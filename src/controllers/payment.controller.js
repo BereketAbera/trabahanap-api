@@ -53,8 +53,8 @@ async function getUserSubscriptionHandler(UserId) {
 }
 
 async function purchaseSubscriptionHandler(id){
-  const purchase = await axios.post(`${environment}/purchase/cv/${id}`)
-
+  const purchase = await axios.post(`${environment}/payment/purchase/cv/${id}`)
+  // console.log(purchase.data)
   if (!purchase || !purchase.data.success) {
     throw "something went wrong";
   }
