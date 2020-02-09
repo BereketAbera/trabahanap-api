@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
 
-const sequelize = new Sequelize("final_migration_test_1", "root", "password", {
+const sequelize = new Sequelize("final_migration", "root", "password", {
   host: "192.168.0.10",
   dialect: "mysql",
   logging: false

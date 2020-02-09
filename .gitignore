@@ -1,5 +1,4 @@
 /node_modules
-/uploads
 .env
 *.csv
 migrate-data.js
