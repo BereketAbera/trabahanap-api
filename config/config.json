@@ -2,7 +2,7 @@
   "development": {
     "username": "root",
     "password": "password",
-    "database": "final_migration_test_1",
+    "database": "final_migration",
     "host": "192.168.0.10",
     "dialect": "mysql"
   },
