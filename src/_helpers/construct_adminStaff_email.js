@@ -29,8 +29,8 @@ module.exports = function constractStafferEmail(firstName, email, token){
 						<tbody>
 							<tr>
 								<td style="padding-top:30px;padding-bottom:20px">
-									<div  style="box-sizing:border-box; width:250px;margin-top:0; margin-bottom:0; margin-left:auto;margin-right:auto;padding:0;font-family:'Open Sans','Helvetica Neue','Helvetica',Helvetica,Arial,sans-serif;font-size:16px;vertical-align:top;background-color:#dd3806;border-radius:3px;text-align:center;border:solid 2px #e2d0cb;" valign="top">
-									<a href="${constants.HOST_URL}/auth/reset_password/${email}/${token}" style="box-sizing:border-box;border-color:#348eda;font-weight:400;text-decoration:none;display:inline-block;margin:0;color:#ffffff;background-color:#dd3806;border:solid 1px #348eda;border-radius:2px;font-size:14px;padding:12px 45px" target="_blank" >Accept Invitation</a>								</div>
+									<div  style="box-sizing:border-box; width:250px;margin-top:0; margin-bottom:0; margin-left:auto;margin-right:auto;padding:0;font-family:'Open Sans','Helvetica Neue','Helvetica',Helvetica,Arial,sans-serif;font-size:16px;vertical-align:top;background-color:#aa111d;border-radius:3px;text-align:center;border:solid 2px #e2d0cb;" valign="top">
+									<a href="${constants.HOST_URL}/auth/reset_password/${email}/${token}" style="box-sizing:border-box;border-color:#348eda;font-weight:400;text-decoration:none;display:inline-block;margin:0;color:#ffffff;background-color:#aa111d;border:solid 1px #348eda;border-radius:2px;font-size:14px;padding:12px 45px" target="_blank" >Accept Invitation</a>								</div>
 						</tbody>
 					</table>
 				</td>

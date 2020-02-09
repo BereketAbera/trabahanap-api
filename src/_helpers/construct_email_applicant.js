@@ -29,8 +29,8 @@ module.exports = function construct_email_applicant(user){
 						<tbody>
 							<tr>
 								<td style="padding-top:30px;padding-bottom:20px">
-									<div  style="box-sizing:border-box; width:350px;margin-top:0; margin-bottom:0; margin-left:auto;margin-right:auto;padding:0;font-family:'Open Sans','Helvetica Neue','Helvetica',Helvetica,Arial,sans-serif;font-size:16px;vertical-align:top;background-color:#dd3806;border-radius:3px;text-align:center;border:solid 2px #e2d0cb;" valign="top">
-										<a href="${constants.HOST_URL}/auth/email_verification?token=${user.emailVerificationToken}&email=${user.email}" style="box-sizing:border-box;border-color:#eb0909;font-weight:400;text-decoration:none;display:inline-block;margin:0;color:#ffffff;background-color:#dd3806;border-radius:2px;font-size:14px;padding:12px 45px" target="_blank" >Verify Email</a>
+									<div  style="box-sizing:border-box; width:350px;margin-top:0; margin-bottom:0; margin-left:auto;margin-right:auto;padding:0;font-family:'Open Sans','Helvetica Neue','Helvetica',Helvetica,Arial,sans-serif;font-size:16px;vertical-align:top;background-color:#aa111d;border-radius:3px;text-align:center;border:solid 2px #e2d0cb;" valign="top">
+										<a href="${constants.HOST_URL}/auth/email_verification?token=${user.emailVerificationToken}&email=${user.email}" style="box-sizing:border-box;border-color:#eb0909;font-weight:400;text-decoration:none;display:inline-block;margin:0;color:#ffffff;background-color:#aa111d;border-radius:2px;font-size:14px;padding:12px 45px" target="_blank" >Verify Email</a>
 									</div>
 								</div>
 						</tbody>
