@@ -12,7 +12,7 @@ const ROLE = require('../_helpers/role');
 const sequelize = require('../database/connection');
 
 async function getAdminStats() {
-    let employers = await CompanyProfile.count({ where: { verified: true }});
+    let employers = await CompanyProfile.count();
     let applicants = await User.count({ where: { role: ROLE.APPLICANT }});
     let jobs = await Job.count({where:{ active:1}});
     let applications = await JobApplication.count();
