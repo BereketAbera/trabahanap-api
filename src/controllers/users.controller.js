@@ -80,6 +80,20 @@ function signUpApplicant(req, res, next) {
 
 }
 
+
+function sendEmail(req, res, next) {
+
+    fetchUserWith()
+        .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
+        .catch(err => next(err));
+}
+
+function getUnVerified(req, res, next) {
+    getAllUserWithDate()
+        .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
+        .catch(err => next(err));
+}
+
 function signUpEmployer(req, res, next) {
     const valid = validateUser(req.body);
     if (valid != true) {
@@ -380,7 +394,7 @@ async function renderNewUserPassword(req) {
 
 
 async function resetPassword(body) {
-   // console.log(body)
+    // console.log(body)
     if (body.email) {
         const user = await userService.getUserByEmail(body.email);
         const token = uuidv4();
@@ -416,19 +430,19 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
         }
         file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
     });
-   
+
     form.parse(req, (err, fields, files) => {
         let companyProfile = {};
         _.map(fields, (value, key) => {
             companyProfile[key] = value;
         })
-        
+
         //companyProfile ={ ...companyProfile }
         companyProfile = { ...companyProfile, CityId: companyProfile.cityId, RegionId: companyProfile.regionId, CountryId: companyProfile.countryId };
         const valid = validateCompanyProfile(companyProfile);
-    
+
         if (valid != true) {
-  
+
             res.status(200).json({ success: false, validationError: valid });
             return;
         }
@@ -443,7 +457,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
                 })
                 .then(data => {
                     companyProfile["businessLicense"] = data.Location;
-                     return createUserCompanyProfile({ ...companyProfile, user_id: req.user.sub });
+                    return createUserCompanyProfile({ ...companyProfile, user_id: req.user.sub });
                 })
                 .then(companyProfile => {
                     fs.unlinkSync(fileLogo.path);
@@ -649,7 +663,7 @@ function editApplicantProfile(req, res, next) {
                 })
                 .catch(err => next(err));
         }
-        else if(profilePictureFile) {
+        else if (profilePictureFile) {
             uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
                 .then(data => {
                     applicantProfile['applicantPicture'] = data.Location;
@@ -938,7 +952,7 @@ async function deactivateUserById(id) {
 
     }
     if (deactivated && user) {
-       // console.log(user)
+        // console.log(user)
         return user;
     }
 }
@@ -946,7 +960,7 @@ async function deactivateUserById(id) {
 async function authenticateUsers({ email, password }) {
     const resp = await authService.loginFromApi({ email, password });
     // console.log(resp.data);
-   // console.log(resp.data, 'res')
+    // console.log(resp.data, 'res')
     if (resp.data.success) {
         const user = await userService.getUserByEmail(email);
         if (user) {
@@ -1022,8 +1036,8 @@ async function signUpUserApplicant(body) {
     let recaptchaResponse = await checkRecaptcha(verificationUrl);
     if (recaptchaResponse.data.success) {
 
-        const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4(), role: ROLE.APPLICANT})
-         console.log(user.data)
+        const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4(), role: ROLE.APPLICANT })
+        console.log(user.data)
         if (user.data.success) {
             body["role"] = ROLE.APPLICANT;
 
@@ -1053,14 +1067,14 @@ async function signUpUserApplicantFromAdmin(body) {
     if (unique) {
         body["role"] = ROLE.APPLICANT;
         body["emailVerified"] = true;
-        const userApi = await authService.createUserApi({...body, role: ROLE.ADMIN});
-        if(userApi.data.success){
-            const user = await userService.createUser({...body,id:userApi.data.user.id});
+        const userApi = await authService.createUserApi({ ...body, role: ROLE.ADMIN });
+        if (userApi.data.success) {
+            const user = await userService.createUser({ ...body, id: userApi.data.user.id });
             if (user && userApi.data.success) {
                 return user;
             }
         }
-       
+
         throw "Something went wrong.";
     } else {
         throw "Email is already in use";
@@ -1112,7 +1126,7 @@ async function getUserById(user_id) {
         // user.map()
 
         applicantProfile = await userService.getApplicantProfileByUserIdOnly(user_id);
-        if(applicantProfile){
+        if (applicantProfile) {
             userWithoutPassword['applicantProfile'] = applicantProfile;
         }
         //console.log(userWithoutPassword.applicantProfile,'user')
@@ -1121,7 +1135,7 @@ async function getUserById(user_id) {
 }
 
 async function editUserApplicantProfile(body, id) {
-    
+
     body = { ...body, cityId: body.CityId, countryId: body.countryId, regionId: body.regionId };
     const updatedLinguanUser = await authService.updateUser(body.user_id, body);
     //console.log(updatedLinguanUser.data)
@@ -1214,8 +1228,8 @@ async function createUserCompanyProfile(body) {
     if (user) {
         const compProfile = await userService.addCompanyProfile(body);
         if (compProfile) {
-            let { companyName,companyAddress,industryType,user_id} = body
-            const companiesAuth = await authService.addCompanies({companyName,companyAddress,industryType,user_id,id:compProfile.id})
+            let { companyName, companyAddress, industryType, user_id } = body
+            const companiesAuth = await authService.addCompanies({ companyName, companyAddress, industryType, user_id, id: compProfile.id })
             const updated = await userService.updateUserById(user.id, { companyProfileId: compProfile.id, hasFinishedProfile: true });
             if (updated) {
                 return await userService.getUserById(updated.id);
@@ -1402,6 +1416,15 @@ async function socialAuthHandler(provider, access_token, socialId, localUser) {
     }
 }
 
+async function fetchUserWith() {
+    // const inUser = await userService.getUseByVerificationDate();
+
+}
+
+async function getAllUserWithDate(){
+    // const 
+}
+
 function uploadFilePromise(file, bucketName, fileName) {
     var uploadParams = { Bucket: bucketName, Key: fileName, Body: '', ACL: 'public-read' };
     var fileStream = fs.createReadStream(file);
@@ -1449,5 +1472,7 @@ module.exports = {
     forgetPassword,
     resetPasswordFromEmail,
     changePassword,
-    UserById
+    UserById,
+    sendEmail,
+    getUnVerified
 }

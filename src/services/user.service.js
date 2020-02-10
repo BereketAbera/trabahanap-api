@@ -22,7 +22,9 @@ function getUserByEmailToken(token){
 function getUserById(id){
     return User.findOne({where: { id }, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
 }
-
+function getUserByVerificationDate(){
+    return User.findOne({where:{ emailVerified:0}})
+}
 
 function getUserByIdAndRole(id, role){
     return User.findOne({where: { id, role}, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
@@ -139,6 +141,7 @@ module.exports = {
     createUserApi,
     updateUserByEmail,
     updateAdsField,
-    getApplicantProfileByUserIdOnly
+    getApplicantProfileByUserIdOnly,
+    getUserByVerificationDate
 
 };
