@@ -24,6 +24,12 @@ function getAdminDashboardCounts(req, res, next) {
         .catch(err => next(err));
 }
 
+function getAdminIssueStats(req, res, next) {
+    getIssueStats(req.user.sub)
+        .then(stats => res.status(200).send({ success: true, stats }))
+        .catch(err => next(err));
+}
+
 function getApplicantDashboardCounts(req, res, next) {
     getApplicantStats(req.user.sub)
         .then(stats => res.status(200).send({ success: true, stats }))
@@ -494,6 +500,14 @@ async function getAdminStats(userId) {
     const user = await userService.getUserById(userId);
     if (user && (user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
         const stats = await otherService.getAdminStats();
+        if (stats) { return stats }
+    }
+}
+
+async function getIssueStats(userId) {
+    const user = await userService.getUserById(userId);
+    if (user && (user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
+        const stats = await otherService.getIssueStats();
         if (stats) { return stats }
     }
 }
@@ -1115,6 +1129,7 @@ module.exports = {
     getEmployerDashboardCounts,
     getApplicantDashboardCounts,
     getAllIndustries,
+    getAdminIssueStats,
     addEmpIssue,
     getEmpIssues,
     addIssue,

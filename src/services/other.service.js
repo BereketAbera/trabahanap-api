@@ -13,13 +13,30 @@ const sequelize = require('../database/connection');
 
 async function getAdminStats() {
     let employers = await CompanyProfile.count();
-    let applicants = await User.count({ where: { role: ROLE.APPLICANT }});
+    let applicants = await User.count({ where: { role: ROLE.APPLICANT, emailVerified: 1 }});
     let jobs = await Job.count({where:{ active:1}});
     let applications = await JobApplication.count();
     // let applications = await sequelize.query(`SELECT COUNT(*) FROM view_filtered_job_applications AS count`, { type: sequelize.QueryTypes.SELECT });
 
     return { employers, applicants, jobs, applications:applications }
 }
+
+async function getIssueStats() {
+    let employerIssues = await Issue.count({ where: { ApplicantProfileId: null }});
+    let newEmployerIssues = await Issue.count({ where: { ApplicantProfileId: null, IssueResponseId: null }});
+    let applicantIssues = await Issue.count({ where: { CompanyProfileId: null }});
+    let newApplicantIssues = await Issue.count({ where: { CompanyProfileId: null, IssueResponseId: null }});
+    let reportedJobs = await Reports.count();
+    let newReportedJobs = await Reports.count({ where:{ checked: 0 }});
+    // let applications = await sequelize.query(`SELECT COUNT(*) FROM view_filtered_job_applications AS count`, { type: sequelize.QueryTypes.SELECT });
+
+    return { 
+        employerStats: {employerIssues, newEmployerIssues}, 
+        applicantStats: {applicantIssues, newApplicantIssues}, 
+        reportStats: {reportedJobs, newReportedJobs} 
+    }
+}
+
 async function getApplicantStats(ApplicantProfileId){
     let jobCount = await Job.count({ where: {active:1}});
     let employers = await CompanyProfile.count({ where: { verified: true }});
@@ -181,6 +198,7 @@ function getAdsByRanges(now,endDay){
 
 module.exports = {
     getAdminStats,
+    getIssueStats,
     getEmployerStats,
     getApplicantStats,
     getAllIndustries,
