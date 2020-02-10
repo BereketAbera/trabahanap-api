@@ -1037,7 +1037,7 @@ async function signUpUserApplicant(body) {
     if (recaptchaResponse.data.success) {
 
         const user = await authService.createUserApi({ ...body, emailVerificationToken: uuidv4(), role: ROLE.APPLICANT })
-        console.log(user.data)
+        //console.log(user.data)
         if (user.data.success) {
             body["role"] = ROLE.APPLICANT;
 
@@ -1417,12 +1417,34 @@ async function socialAuthHandler(provider, access_token, socialId, localUser) {
 }
 
 async function fetchUserWith() {
-    // const inUser = await userService.getUseByVerificationDate();
+    const inUser = await userService.getUserByVerificationDate();
+    if(inUser){
+        inUser.map(
+            items => {
+                if(items.role=='APPLICANT'){
+                    const message = construct_email_applicant(items);
+                    //console.log(message)
+                    //sgMail.send(message);
+                    // return user;
+                }else if(items.role =='EMPLOYER'){
+                  const message = constructEmail(items.firstName, items.email, items.emailVerificationToken);
+                    console.log(message)
+                    // sgMail.send(message);
+                    // return message;
+                }   
+               
+            }
+        )
+        return inUser
+    }
 
 }
 
 async function getAllUserWithDate(){
-    // const 
+     const user = await userService.getUserByVerificationDate();
+     if(user){
+         return user;
+     }
 }
 
 function uploadFilePromise(file, bucketName, fileName) {

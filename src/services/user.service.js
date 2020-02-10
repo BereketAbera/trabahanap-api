@@ -23,7 +23,7 @@ function getUserById(id){
     return User.findOne({where: { id }, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
 }
 function getUserByVerificationDate(){
-    return User.findOne({where:{ emailVerified:0}})
+    return sequelize.query("SELECT * FROM users AS count WHERE emailVerified=0 and createdAt > '2020-02-10'", { type: sequelize.QueryTypes.SELECT })
 }
 
 function getUserByIdAndRole(id, role){
