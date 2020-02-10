@@ -10,7 +10,7 @@ module.exports = function constructEmail(firstName,email,emailVerificationToken)
         text: "Click hear to activate your account.",
         html: `<div style="display: flex; flex-direction: column; width: 35rem; justify-content: center; align-self: center;">
 		<div style="">
-			<span style="font-size: 1.2rem; font-weight: 300;"> Dear Silas, </span>
+			<span style="font-size: 1.2rem; font-weight: 300;"> Dear ${firstName}, </span>
 		</div>
 	
 		<div style="margin: 2rem 0; ">

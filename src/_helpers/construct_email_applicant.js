@@ -15,7 +15,8 @@ module.exports = function construct_email_applicant(user){
     </div>
 
     <div style="margin: 1rem 0; ">
-        Maraming salamat sa pag-register sa TrabaHanap! I-click ang pulang button sa ibaba upang maumpisahan mo na ang paghahanap ng trabahong swak at malapit sa'yo! 
+		Maraming salamat sa pag-register sa TrabaHanap! I-click ang pulang button sa ibaba upang 
+		maumpisahan mo na ang paghahanap ng trabahong swak at malapit sa'yo! 
     </div>
 
     <div style="margin: 1rem 2rem;">

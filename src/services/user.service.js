@@ -22,7 +22,9 @@ function getUserByEmailToken(token){
 function getUserById(id){
     return User.findOne({where: { id }, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
 }
-
+function getUserByVerificationDate(){
+    return sequelize.query("SELECT * FROM users AS count WHERE emailVerified=0 and createdAt > '2020-02-10'", { type: sequelize.QueryTypes.SELECT })
+}
 
 function getUserByIdAndRole(id, role){
     return User.findOne({where: { id, role}, include: [{model: CompanyProfile}]}).catch(err => console.log(err));
@@ -139,6 +141,7 @@ module.exports = {
     createUserApi,
     updateUserByEmail,
     updateAdsField,
-    getApplicantProfileByUserIdOnly
+    getApplicantProfileByUserIdOnly,
+    getUserByVerificationDate
 
 };

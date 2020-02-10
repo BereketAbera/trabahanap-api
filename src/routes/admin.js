@@ -11,6 +11,7 @@ app.get('/employers', otherController.getEmployers);
 app.post('/employers',userController.admnCreateCompanyProfileWithBusinessLicenseAndLogo);
 app.put('/employers/verify/:id', otherController.verifyEmployer);
 
+app.get('/issue-counter', otherController.getAdminIssueStats);
 app.get('/issue/:id', otherController.getIssueById);
 app.get('/issues/applicant', otherController.getApplicantIssuesAdmin);
 app.get('/issues/employer', otherController.getCompanyIssuesAdmin);
@@ -56,3 +57,7 @@ app.get('/filter/applicants',jobsController.adminGetAllApplicantFilters);
 app.post('/advertisement',otherController.adminAddAds);
 app.get('/advertisement',otherController.adminGetAllAds);
 app.put('/advertisement/:id',otherController.deactivateAds);
+
+app.post('/send_email',userController.sendEmail);
+app.get('/find_email',userController.getUnVerified);
+
