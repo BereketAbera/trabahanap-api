@@ -1423,13 +1423,13 @@ async function fetchUserWith() {
             items => {
                 if(items.role=='APPLICANT'){
                     const message = construct_email_applicant(items);
-                    //console.log(message)
-                    //sgMail.send(message);
+                    console.log(message)
+                    sgMail.send(message);
                     // return user;
                 }else if(items.role =='EMPLOYER'){
                   const message = constructEmail(items.firstName, items.email, items.emailVerificationToken);
                     console.log(message)
-                    // sgMail.send(message);
+                     sgMail.send(message);
                     // return message;
                 }   
                
