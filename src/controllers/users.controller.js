@@ -336,7 +336,7 @@ async function changeNewPassword(body, token) {
     const userApi = await authService.getUserByEmailFromApi(body.email);
     if (userApi.data.success) {
         // const updatedUser = await userService.updateUserField(bcryptjs.hashSync(body.password, 10), 'password', user.id);
-        const updated = await userService.updateUserByEmail(userApi.data.user.email, { emailVerified: true });
+        const updated = await userService.updateUserByEmail(userApi.data.user.email, { emailVerified: true, verifiedByEmail:  true});
         const updateApi = await authService.changePassword(userApi.data.user.id, body.password);
         const updateToken = await otherService.updateToken(token, { expired: true });
         if (updateApi) {
@@ -383,7 +383,11 @@ async function resetPassword(body) {
    // console.log(body)
     if (body.email) {
         const user = await userService.getUserByEmail(body.email);
-        const token = uuidv4();
+        let token = jwt.sign(
+            { fromEmail: true },
+            CONSTANTS.JWTPASSWORDSECRET,
+            { expiresIn: "5m" }
+        );
         const saveToken = await otherService.saveToken(token, body.email);
         if (user && saveToken) {
             const message = construct_reset_password(user.firstName, user.email, token);
