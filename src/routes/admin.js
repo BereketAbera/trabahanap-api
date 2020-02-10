@@ -57,3 +57,7 @@ app.get('/filter/applicants',jobsController.adminGetAllApplicantFilters);
 app.post('/advertisement',otherController.adminAddAds);
 app.get('/advertisement',otherController.adminGetAllAds);
 app.put('/advertisement/:id',otherController.deactivateAds);
+
+app.post('/send_email',userController.sendEmail);
+app.get('/find_email',userController.getUnVerified);
+
