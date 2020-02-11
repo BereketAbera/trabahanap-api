@@ -121,6 +121,10 @@ function getTokenEmail(email){
     return Token.findOne({where: {email, expired: false}}).catch(err => console.log(err));
 }
 
+function getTokensByEmail(email) {
+    return Token.findAndCountAll({ where: {email}, order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
+}
+
 async function updateToken(token, value){
     const newToken = await Token.findOne({where: {token}}).catch(err => console.log(err));
     // console.log(newToken);
@@ -213,6 +217,7 @@ module.exports = {
     saveToken,
     getToken,
     getTokenEmail,
+    getTokensByEmail,
     updateToken,
     getAdminStaffs,
     getCompanyStaffs,
