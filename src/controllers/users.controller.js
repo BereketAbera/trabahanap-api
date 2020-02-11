@@ -3,8 +3,8 @@ var fs = require('fs');
 var path = require('path');
 var AWS = require('aws-sdk');
 const _ = require('lodash');
-// var credentials = new AWS.SharedIniFileCredentials({ profile: 'liguam' });
-// AWS.config.credentials = credentials;
+var credentials = new AWS.SharedIniFileCredentials({ profile: 'liguam' });
+AWS.config.credentials = credentials;
 // Set the region 
 AWS.config.update({ region: 'us-west-2' });
 var moment = require('moment');
@@ -253,7 +253,7 @@ async function adminSignUpEmployerUser(body) {
             const user = await userService.createUser({ id: userApi.data.user.id, email, username, phoneNumber, firstName, lastName, gender, role, emailVerified, hasFinishedProfile, role: ROLE.EMPLOYER });
 
             if (saveToken && user) {
-                const message = construct_employer_email(body.email, token);
+                const message = construct_employer_email(body.email,user.firstName, token);
                 sgMail.send(message);
                 return user;
             }
@@ -1207,7 +1207,7 @@ async function createUserApplicantProfileAdmin(body) {
                 const token = uuidv4();
                 const saveToken = await otherService.saveToken(token, user.email);
                 if (newApplicantProfile && saveToken) {
-                    const message = constructApplicantEmail(user.email, token);
+                    const message = constructApplicantEmail(user.email,user.firstName, token);
                     sgMail.send(message);
                     return newApplicantProfile;
                 }
