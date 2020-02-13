@@ -1,13 +1,12 @@
+const constants = require("./../../constants");
 
-const constants = require('./../../constants');
-
-module.exports = function constractStafferEmail(email, token){
-    const msg = {
-        to: email,
-        from: "support@trabahanap.com",
-        subject: "Employer Invitations",
-        text: "Click hear to accept invitation",
-        html: `
+module.exports = function constractStafferEmail(email, token) {
+  const msg = {
+    to: email,
+    from: "support@trabahanap.com",
+    subject: "Employer Invitations",
+    text: "Click hear to accept invitation",
+    html: `
 		<div style="display: flex-box; flex-direction: column; width: 35rem; justify-content: center; align-self: center;">
     <div style="margin:1rem 0;display: block;">
         <span style="font-size: 1.2rem; font-weight: 300; color:black"> Dear, </span>
@@ -41,14 +40,13 @@ module.exports = function constractStafferEmail(email, token){
     </div>
     <div>
         <span style="color:black;">
-            TrabaHanap Team <br> 
-            Thank you, 
+        Thank you, <br> 
+        TrabaHanap Team 
         </span>
 
     </div>
 </div>`
-    }
+  };
 
-    return msg;
-}
-
+  return msg;
+};

@@ -1,14 +1,14 @@
 // require('dotenv').config();
 
-const constants = require('./../../constants');
+const constants = require("./../../constants");
 
-module.exports = function construct_email_applicant(user){
-    const msg = {
-        to: user.email,
-        from: "support@trabahanap.com",
-        subject: "Email Verification",
-        text: "Click hear to activate your account.",
-        html: `
+module.exports = function construct_email_applicant(user) {
+  const msg = {
+    to: user.email,
+    from: "support@trabahanap.com",
+    subject: "Email Verification",
+    text: "Click hear to activate your account.",
+    html: `
 		<div style="display: flex; flex-direction: column; width: 35rem; justify-content: center; align-self: center;">
     <div style="">
         <span style="font-size: 1.2rem; font-weight: 300;"> Magandang araw ${user.firstName}, </span>
@@ -41,13 +41,13 @@ module.exports = function construct_email_applicant(user){
     </div>
     <div>
         <span>
-            TrabaHanap Team <br> 
-            Thank you, 
+        Thank you, <br> 
+        TrabaHanap Team 
         </span>
 
     </div>
 </div>`
-    }
+  };
 
-    return msg;
-}
+  return msg;
+};
