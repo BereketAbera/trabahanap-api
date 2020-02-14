@@ -59,6 +59,11 @@ function advancedSearchJob(req, res, next) {
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
+function searchCountLocations(req, res, next) {
+    getSearchCountLocations()
+        .then(cityCount => cityCount ? res.status(200).json({ success: true, cityCount }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
 
 function deactivateAds(req, res, next) {
     deactivateAdsById(req.params.id)
@@ -521,7 +526,7 @@ async function getEmployerStats(userId) {
     }
 }
 
-async function getApplicantStats(userId){
+async function getApplicantStats(userId) {
     const user = await userService.getApplicantProfileByUserId(userId);
     if (user) {
         const stats = await otherService.getApplicantStats(user.id);
@@ -823,7 +828,7 @@ async function getAllAds(page, pageSize) {
     const limit = pager.pageSize;
 
     const ads = await otherService.getAllAdsWithOffset(offset, limit);
-   // console.log(ads)
+    // console.log(ads)
     if (ads) {
         pager.totalItems = ads.count;
         pager.totalPages = Math.ceil(ads.count / pager.pageSize);
@@ -966,8 +971,19 @@ async function getSearchedIndustry(search) {
         if (industries) {
             return industries;
         }
-    } else return {}
+    } else return {}    
+}
 
+async function getSearchCountLocations(){
+    let now = new Date().toISOString().toString().split('T')[0];
+    const queryCity = `select cityName,count(*) as count from view_companies_jobs_search where applicationStartDate <= "${now}" and applicationEndDate >= "${now}" GROUP BY cityName ORDER BY 2 DESC`;
+    const cityNameCount = await jobsService.executeSearchQuery(queryCity); 
+    const queryJob = `select jobTitle,count(*) as count from view_companies_jobs_search where applicationStartDate <= "${now}" and applicationEndDate >= "${now}" GROUP BY jobTitle ORDER BY 2 DESC`;
+    const jobNameCount = await jobsService.executeSearchQuery(queryJob); 
+    if(cityNameCount && jobNameCount){
+        //cityNameCount = cityNameCount.slice(0,18)
+        return {city:cityNameCount.slice(0,18), job:jobNameCount.slice(0,18)};
+    }
 }
 
 async function getAdvancedSearched(search, employType, industry, salaryRange, cityName, pwd, page) {
@@ -995,7 +1011,7 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
     const limit = pager.pageSize;
 
     queryResult = advancedSearchQueryBuilder(search || '', employType || '', industry || '', salaryRange || '', cityName || '', pwd, offset || 0, limit || 8);
-     //console.log(queryResult)
+    //console.log(queryResult)
     // console.log(queryResult.count);
 
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
@@ -1062,9 +1078,9 @@ function advancedSearchQueryBuilder(search, employType, industry, salaryRange, c
         query = query + ` where and (jobTitle like '%${search}%' or companyName like '%${search}%')`;
     }
 
-    if(!haveWhere){
+    if (!haveWhere) {
         query += ` where applicationStartDate <= "${now}" and applicationEndDate >= "${now}"`;
-    }else{
+    } else {
         query += ` AND applicationStartDate <= "${now}" and applicationEndDate >= "${now}"`;
     }
     let selectQuery = `select * from view_companies_jobs_search ` + query + ` order by createdAt desc LIMIT ${offset},${limit}`;
@@ -1167,5 +1183,6 @@ module.exports = {
     adminAddAds,
     adminGetAllAds,
     deactivateAds,
-    getAdvertisement
+    getAdvertisement,
+    searchCountLocations
 }

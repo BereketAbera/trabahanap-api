@@ -47,7 +47,7 @@ async function updateUser(user_id, body) {
 }
 
 async function addCompanies(body){
-  return await axios.post(`${environment}/auth/companies`,{...body,address:body.companyAddress, ApplicationId:'TRABAHANAP'})
+  return await axios.post(`${environment}/auth/companies`,{...body,address:body.companyAddress, applicationApplicationId:'TRABAHANAP'})
 }
 
 module.exports = {

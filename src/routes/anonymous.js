@@ -22,6 +22,7 @@ app.get('/cities',jobsController.searchCities);
 app.get('/search/location',jobsController.searchByLocation);
 app.get('/search/industry',otherController.searchIndustry);
 app.get('/search/advanced',otherController.advancedSearchJob);
+app.get('/search/count/location',otherController.searchCountLocations);
 
 app.get('/user/:email', migrationAuthController.getUserByEmail);
 app.get('/users/:id',userController.UserById)
