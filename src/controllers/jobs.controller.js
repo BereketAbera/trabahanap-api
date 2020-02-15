@@ -31,6 +31,12 @@ function getAllCompanyJobs(req, res, next) {
         .catch(err => next(err));
 }
 
+function getCompanyJobs(req, res, next){
+    getCompanyJobsHanlder(req.params.id)
+        .then(jobs => res.status(200).send({ success: true, jobs }))
+        .catch(err => next(err));
+}
+
 function adminGetAllCompanyJob(req, res, next) {
     adminGetCompanyJobsWithPagination(req.query.page || 1, req.query.pageSize || 8, req.params.companyProfileId)
         .then(jobs => res.status(200).send({ success: true, jobs }))
@@ -581,6 +587,14 @@ async function getCompanyJobsWithPagination(page, pageSize, user_id) {
         }
     }
 }
+
+async function getCompanyJobsHanlder(companyId){
+    const jobs = await jobsService.getCompanyJobsWithOffsetAndLimit(0, 8, companyId);
+
+    if (jobs) {
+        return jobs.rows
+    }
+};
 
 async function adminGetCompanyJobsWithPagination(page, pageSize, companyProfileId) {
     const pager = {
@@ -1474,5 +1488,6 @@ module.exports = {
     filterApplicantSavedJobs,
     filterApplicantAppliedJobs,
     deleteJob,
-    suspendJob
+    suspendJob,
+    getCompanyJobs
 }
