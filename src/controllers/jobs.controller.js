@@ -2,6 +2,8 @@ const jobsService = require('../services/job.service');
 const userService = require('../services/user.service');
 const ROLE = require('../_helpers/role');
 const _ = require('lodash');
+const jwt = require('jsonwebtoken');
+const CONSTANTS = require('../../constants');
 
 const {
     validateJob
@@ -32,7 +34,20 @@ function getAllCompanyJobs(req, res, next) {
 }
 
 function getCompanyJobs(req, res, next){
-    getCompanyJobsHanlder(req.params.id)
+    var header=req.headers['authorization']||'',
+    token=header.split(/\s+/).pop()||'';
+    let userId = null;
+    let role = null;
+    if(token){
+        try {
+            var decoded = jwt.verify(token, CONSTANTS.JWTSECRET);
+            userId = decoded.sub;
+            role = decoded.role;
+          } catch {
+            // throw "invalid token";
+          }
+    }
+    getCompanyJobsHanlder(req.params.id, userId, role)
         .then(jobs => res.status(200).send({ success: true, jobs }))
         .catch(err => next(err));
 }
@@ -258,7 +273,20 @@ function searchCities(req, res, next) {
 }
 
 function searchByCity(req, res, next) {
-    getSearchInCity(req.query.key || '', req.query.cityName || '', req.query.compId || '', req.query.page || 1, req.query.pageSize || 8)
+    var header=req.headers['authorization']||'',
+    token=header.split(/\s+/).pop()||'';
+    let userId = null;
+    let role = null;
+    if(token){
+        try {
+            var decoded = jwt.verify(token, CONSTANTS.JWTSECRET);
+            userId = decoded.sub;
+            role = decoded.role;
+          } catch {
+            // throw "invalid token";
+          }
+    }
+    getSearchInCity(req.query.key || '', req.query.cityName || '', req.query.compId || '', req.query.page || 1, req.query.pageSize || 8, userId, role)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -588,11 +616,21 @@ async function getCompanyJobsWithPagination(page, pageSize, user_id) {
     }
 }
 
-async function getCompanyJobsHanlder(companyId){
-    const jobs = await jobsService.getCompanyJobsWithOffsetAndLimit(0, 8, companyId);
+async function getCompanyJobsHanlder(companyId, userId, role){
+    let jobs = await jobsService.getCompanyJobsWithOffsetAndLimit(0, 8, companyId);
+    let savedIds = [];
 
     if (jobs) {
-        return jobs.rows
+        jobs = jobs.rows.map(jr => jr.dataValues);
+        if(userId && role == ROLE.APPLICANT){
+            const savedJobs = await getApplicantSavedReviewJobs(userId);
+            savedIds = savedJobs.map(sj => sj.id);
+        }
+        jobs = jobs.map(j => {
+            j['saved'] = savedIds.indexOf(j.id) >= 0;
+            return j;
+        });
+        return jobs
     }
 };
 
@@ -718,7 +756,7 @@ async function getCompanyApplicationsWithPaginations(user_id, page, pagSize) {
 
 }
 
-async function getSearchInCity(search, cityName, compId, page, pageSize) {
+async function getSearchInCity(search, cityName, compId, page, pageSize, userId, role) {
     // console.log(cityName, "city");
     const pager = {
         pageSize: parseInt(pageSize),
@@ -731,9 +769,17 @@ async function getSearchInCity(search, cityName, compId, page, pageSize) {
 
     queryResult = searchQueryBuilder(search || '', cityName || '', compId || '', offset, limit);
    // console.log(queryResult)
-    const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
-
+    let jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
+    let savedIds = [];
     if (jobs) {
+        if(userId && role == ROLE.APPLICANT){
+            const savedJobs = await getApplicantSavedReviewJobs(userId);
+            savedIds = savedJobs.map(sj => sj.id);
+        }
+        jobs = jobs.map(j => {
+            j['saved'] = savedIds.indexOf(j.jobId) >= 0;
+            return j;
+        });
         counts = await jobsService.executeSearchQuery(queryResult.count);
         if (counts) {
             pager.totalItems = Object.values(counts[0])[0];
@@ -1489,5 +1535,6 @@ module.exports = {
     filterApplicantAppliedJobs,
     deleteJob,
     suspendJob,
-    getCompanyJobs
+    getCompanyJobs,
+    getApplicantSavedReviewJobs
 }
