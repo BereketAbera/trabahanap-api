@@ -9,7 +9,7 @@ module.exports = function construct_email_applicant(user) {
     subject: "Email Verification",
     text: "Click hear to activate your account.",
     html: `
-        div>
+        <div>
         <div id="yiv9943655852">
           <style type="text/css">
             #yiv9943655852 html {
@@ -277,7 +277,7 @@ module.exports = function construct_email_applicant(user) {
             </table>
           </div>
         </div>
-      </div>
+        </div>
         `
   };
 

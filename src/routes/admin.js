@@ -4,6 +4,7 @@ const userController = require('../controllers/users.controller');
 const locationController = require('../controllers/locations.controller')
 const jobsController = require('../controllers/jobs.controller')
 const adminAuthorize = require('../_helpers/adminAuthorize');
+const paymentController = require('../controllers/payment.controller')
 const ROLE = require('../_helpers/role');
 
 app.get('/counters', otherController.getAdminDashboardCounts);
@@ -58,6 +59,11 @@ app.post('/advertisement',otherController.adminAddAds);
 app.get('/advertisement',otherController.adminGetAllAds);
 app.put('/advertisement/:id',otherController.deactivateAds);
 
-app.post('/send_email',userController.sendEmail);
-app.get('/find_email',userController.getUnVerified);
+// app.post('/send_email',userController.sendEmail);
+// app.get('/find_email',userController.getUnVerified);
 
+
+app.get('/subscriptions',paymentController.getSubscriptions)
+app.get('/subscription/:id',paymentController.getSubscriptionById)
+app.get('/subscription/company/:compId',paymentController.getSubscriptionByCompId)
+app.put('/confirm/payment/:id',paymentController.confirmPayment);
