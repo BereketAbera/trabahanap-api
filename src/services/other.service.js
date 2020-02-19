@@ -74,6 +74,12 @@ function addReports(reports){
 function addAdvertisement(ads){
     return Advertisement.create(ads).catch(err => console.log(err));
 }
+async function editAdsById(id,newAds){
+    const Advs = await Advertisement.findOne({ where: { id } }).catch(err =>
+      console.log(err)
+    );
+    return await Advs.update(newAds).catch(err => console.log(err));
+  }
 function getApplicantIssues(ApplicantProfileId){
     return Issue.findAll({where: {ApplicantProfileId}, include: [{model: IssueResponse}], order: [['createdAt', 'DESC']]}).catch(err => console.log(err));
 }
@@ -240,5 +246,6 @@ module.exports = {
     addAdvertisement,
     getAllAdsWithOffset,
     getAdsById,
-    getAdsByRanges
+    getAdsByRanges,
+    editAdsById
 }
