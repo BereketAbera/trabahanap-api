@@ -1,14 +1,14 @@
 // require('dotenv').config();
 
-const constants = require('./../../constants');
+const constants = require("./../../constants");
 
-module.exports = function construct_email_applicant(user){
-    const msg = {
-        to: user.email,
-        from: "support@trabahanap.com",
-        subject: "Email Verification",
-        text: "Click hear to activate your account.",
-        html: `
+module.exports = function construct_email_applicant(user) {
+  const msg = {
+    to: user.email,
+    from: "support@trabahanap.com",
+    subject: "Email Verification",
+    text: "Click hear to activate your account.",
+    html: `
         <div>
         <div id="yiv9943655852">
           <style type="text/css">
@@ -253,7 +253,7 @@ module.exports = function construct_email_applicant(user){
                                     <div
                                       style="font-size:18px;line-height:20px;padding:0px 30px;"
                                     >
-                                      Regards,
+                                      Thank you,
                                     </div>
                                     <div
                                       style="font-size:18px;line-height:26px;font-weight:bold;padding:0px 30px;"
@@ -279,7 +279,7 @@ module.exports = function construct_email_applicant(user){
         </div>
         </div>
         `
-    }
+  };
 
-    return msg;
-}
+  return msg;
+};

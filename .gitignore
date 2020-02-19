@@ -1,5 +1,8 @@
 /node_modules
 /uploads
+/comp_license
+/comp_logos
 .env
 *.csv
 migrate-data.js
+upload_files.js

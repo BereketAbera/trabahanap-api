@@ -1,14 +1,14 @@
 // require('dotenv').config();
 
-const constants = require('./../../constants');
+const constants = require("./../../constants");
 
 module.exports = function constractResetEmail(firstName, email, token) {
-	const msg = {
-		to: email,
-		from: "support@trabahanap.com",
-		subject: "Reset Password",
-		text: "Click hear to rest password",
-		html: `
+  const msg = {
+    to: email,
+    from: "support@trabahanap.com",
+    subject: "Reset Password",
+    text: "Click hear to rest password",
+    html: `
 		<div>
         <div id="yiv9943655852">
           <style type="text/css">
@@ -256,7 +256,7 @@ module.exports = function constractResetEmail(firstName, email, token) {
                                     <div
                                       style="font-size:18px;line-height:20px;padding:0px 30px;"
                                     >
-                                      Regards,
+                                      Thank you,
                                     </div>
                                     <div
                                       style="font-size:18px;line-height:26px;font-weight:bold;padding:0px 30px;"
@@ -282,7 +282,7 @@ module.exports = function constractResetEmail(firstName, email, token) {
         </div>
       </div>
 `
-	}
+  };
 
-	return msg;
-}
+  return msg;
+};

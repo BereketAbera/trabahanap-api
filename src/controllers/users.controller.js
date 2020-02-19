@@ -905,7 +905,7 @@ function editCompanyProfile(req, res, next) {
 
         let profilePictureFile = files['companyLogo']
         if (profilePictureFile) {
-            // console.log(profilePictureFile.path, "the path")
+            console.log(profilePictureFile.path, fileNameProfilePicture);
             uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
                 .then(data => {
                     companyProfile['companyLogo'] = data.Location;

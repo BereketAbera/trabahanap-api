@@ -2,7 +2,9 @@ const otherService = require('../services/other.service');
 const userService = require('../services/user.service');
 const jobsService = require('../services/job.service');
 const authService = require('../services/auth.service');
+const JobsController = require('../controllers/jobs.controller');
 const ROLE = require('../_helpers/role');
+const jwt = require('jsonwebtoken');
 
 var fs = require('fs');
 var path = require('path');
@@ -55,7 +57,20 @@ function searchIndustry(req, res, next) {
 }
 
 function advancedSearchJob(req, res, next) {
-    getAdvancedSearched(req.query.search || "", req.query.et || "", req.query.industry || "", req.query.sr || "", req.query.ct || "", req.query.pwd || 1, req.query.page || 1)
+    var header=req.headers['authorization']||'',
+    token=header.split(/\s+/).pop()||'';
+    let userId = null;
+    let role = null;
+    if(token){
+        try {
+            var decoded = jwt.verify(token, CONSTANTS.JWTSECRET);
+            userId = decoded.sub;
+            role = decoded.role;
+          } catch {
+            // throw "invalid token";
+          }
+    }
+    getAdvancedSearched(req.query.search || "", req.query.et || "", req.query.industry || "", req.query.sr || "", req.query.ct || "", req.query.pwd || 1, req.query.page || 1, userId, role)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next(err));
 }
@@ -1011,7 +1026,7 @@ async function getSearchCountLocations() {
     }
 }
 
-async function getAdvancedSearched(search, employType, industry, salaryRange, cityName, pwd, page) {
+async function getAdvancedSearched(search, employType, industry, salaryRange, cityName, pwd, page, userId, role) {
     const pager = {
         pageSize: 8,
         totalItems: 0,
@@ -1039,9 +1054,18 @@ async function getAdvancedSearched(search, employType, industry, salaryRange, ci
     //console.log(queryResult)
     // console.log(queryResult.count);
 
-    const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
+    let jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
+    let savedIds = [];
     //console.log(jobs)
     if (jobs) {
+        if(userId && role == ROLE.APPLICANT){
+            const savedJobs = await JobsController.getApplicantSavedReviewJobs(userId);
+            savedIds = savedJobs.map(sj => sj.id);
+        }
+        jobs = jobs.map(j => {
+            j['saved'] = savedIds.indexOf(j.jobId) >= 0;
+            return j;
+        });
         counts = await jobsService.executeSearchQuery(queryResult.count);
         if (counts) {
             pager.totalItems = Object.values(counts[0])[0];
