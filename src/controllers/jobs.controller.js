@@ -870,7 +870,8 @@ async function addCompanyJob(body, compProfileId) {
 }
 
 async function editEmployerJob(body) {
-    const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
+    const user = await userService.getUserById(body.user_id);
+    //const user = await userService.getUserByIdAndRole(body.user_id, ROLE.EMPLOYER);
     const job = await jobsService.getJobById(body.id);
     if (user && job) {
         const updatedJob = jobsService.editJobById(job.id, body);
@@ -1030,7 +1031,6 @@ async function getEmployerFilteredJobWithApplications(user_id, page, pageSize) {
         if (jobWithApplications) {
             pager.totalItems = Object.values(jobscount[0][0])[0];
             pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
-
             return {
                 pager,
                 rows: jobWithApplications
