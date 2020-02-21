@@ -476,7 +476,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
 
         var fileLogo = files["companyLogo"];
         var fileLicense = files["businessLicense"];
-        if (fileLogo && fileLicense && fileLogo.path && fileLicense.path) {
+        if (fileLogo && fileLicense && fileLogo.path && fileLicense.path && fileLicense.size < 5000000) {
             uploadFilePromise(fileLogo.path, 'live.jobsearch/th-employer-logo', fileNameLogo)
                 .then(data => {
                     companyProfile["companyLogo"] = data.Location;
@@ -544,7 +544,7 @@ function updateCompanyBusinessLicense(req, res, next) {
 
     form.parse(req, (err, fields, files) => {
         var businessLicense = files['businessLicense'];
-        if (businessLicense && businessLicense.path) {
+        if (businessLicense && businessLicense.path && businessLicense.size < 5000000) {
             uploadFilePromise(businessLicense.path, 'live.jobsearch/th-employer-license', fileBusinessLicense)
                 .then(data => {
                     return updateCompanyField(data.Location, "businessLicense", req.user.sub);
@@ -574,7 +574,7 @@ function updateApplicantCV(req, res, next) {
     });
     form.parse(req, (err, fields, files) => {
         var applicantCV = files['cv'];
-        if (applicantCV && applicantCV.path) {
+        if (applicantCV && applicantCV.path && applicantCV.size < 4000000 ) {
             // console.log('from update uplicant cv');
             uploadFilePromise(applicantCV.path, 'live.jobsearch/ABS_Images', fileNameCV)
                 .then(data => {
@@ -666,7 +666,7 @@ function editApplicantProfile(req, res, next) {
         //console.log('after')
         let applicantcv = files['cv'];
         let profilePictureFile = files['applicantPicture'];
-        if (applicantcv) {
+        if (applicantcv && applicantcv.size < 4000000) {
             // console.log(profilePictureFile.path, "the path")
             uploadFilePromise(applicantcv.path, 'live.jobsearch/th-applicant-cv', fileNameCV)
                 .then(data => {
@@ -755,7 +755,7 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
 
         var cvFile = files['cv'];
         var profilePictureFile = files['applicantPicture']
-        if (cvFile) {
+        if (cvFile && cvFile.size < 4000000) {
             uploadFilePromise(cvFile.path, 'live.jobsearch/th-applicant-cv', fileNameCV)
                 .then(data => {
                     //console.log(data)
