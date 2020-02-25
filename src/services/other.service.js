@@ -83,7 +83,7 @@ function getEmployerIssues(CompanyProfileId){
 }
 
 function getReportedIssueById(id) {
-    return Issue.findOne({where: {id}, include: [{model: IssueResponse}]}).catch(err => console.log(err));
+    return Issue.findOne({where: {id}, include: [{model: IssueResponse}, {model: CompanyProfile}, {model: ApplicantProfile,include:[{model:User}]}]}).catch(err => console.log(err));
 }
 
 function getReportById(id){
