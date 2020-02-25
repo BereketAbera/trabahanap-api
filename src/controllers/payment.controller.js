@@ -77,7 +77,7 @@ async function getUserSubscriptionHandler(UserId) {
     `${environment}/payment/subscription/TRABAHANAP/${UserId}`
   );
 
-  console.log(res.data)
+  // console.log(res.data)
 
   if (!res || !res.data.success) {
     throw "something went wrong";

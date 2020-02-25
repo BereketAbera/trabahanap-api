@@ -55,13 +55,14 @@ app.get('/filter/applications',jobsController.adminGetAllApplicationsFilters);
 app.get('/filter/employers',jobsController.adminGetAllEmployersFilters);
 app.get('/filter/applicants',jobsController.adminGetAllApplicantFilters);
 
+app.get('/advs/:id',otherController.getAdsById);
 app.post('/advertisement',otherController.adminAddAds);
 app.get('/advertisement',otherController.adminGetAllAds);
 app.put('/advertisement/:id',otherController.deactivateAds);
+app.post('/advertisement/edit/:id',otherController.editAdvertisement)
 
 // app.post('/send_email',userController.sendEmail);
 // app.get('/find_email',userController.getUnVerified);
-
 
 app.get('/subscriptions',paymentController.getSubscriptions)
 app.get('/subscription/:id',paymentController.getSubscriptionById)

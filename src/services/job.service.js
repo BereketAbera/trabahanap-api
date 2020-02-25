@@ -48,6 +48,9 @@ async function getCompanyJobsWithOffsetAndLimit(
   }).catch(err => console.log(err));
 }
 
+async function getAllCompanyJob(compId){
+  return await Job.findAll({where: { compId,active:1}}).catch(err => console.log(err));
+}
 async function addJob(job) {
   return await Job.create(job).catch(err => console.log(err));
 }
@@ -378,6 +381,7 @@ module.exports = {
   countGetApplicantSavedJobs,
   getAllSavedJobs,
   updateJobsField,
-  getCountJobApplicants
+  getCountJobApplicants,
+  getAllCompanyJob
   // getApplicantApplication
 };

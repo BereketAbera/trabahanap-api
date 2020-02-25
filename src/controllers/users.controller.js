@@ -476,7 +476,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
 
         var fileLogo = files["companyLogo"];
         var fileLicense = files["businessLicense"];
-        if (fileLogo && fileLicense && fileLogo.path && fileLicense.path) {
+        if (fileLogo && fileLicense && fileLogo.path && fileLicense.path && fileLicense.size < 5000000) {
             uploadFilePromise(fileLogo.path, 'live.jobsearch/th-employer-logo', fileNameLogo)
                 .then(data => {
                     companyProfile["companyLogo"] = data.Location;
@@ -544,7 +544,7 @@ function updateCompanyBusinessLicense(req, res, next) {
 
     form.parse(req, (err, fields, files) => {
         var businessLicense = files['businessLicense'];
-        if (businessLicense && businessLicense.path) {
+        if (businessLicense && businessLicense.path && businessLicense.size < 5000000) {
             uploadFilePromise(businessLicense.path, 'live.jobsearch/th-employer-license', fileBusinessLicense)
                 .then(data => {
                     return updateCompanyField(data.Location, "businessLicense", req.user.sub);
@@ -574,7 +574,7 @@ function updateApplicantCV(req, res, next) {
     });
     form.parse(req, (err, fields, files) => {
         var applicantCV = files['cv'];
-        if (applicantCV && applicantCV.path) {
+        if (applicantCV && applicantCV.path && applicantCV.size < 4000000 ) {
             // console.log('from update uplicant cv');
             uploadFilePromise(applicantCV.path, 'live.jobsearch/ABS_Images', fileNameCV)
                 .then(data => {
@@ -666,7 +666,7 @@ function editApplicantProfile(req, res, next) {
         //console.log('after')
         let applicantcv = files['cv'];
         let profilePictureFile = files['applicantPicture'];
-        if (applicantcv) {
+        if (applicantcv && applicantcv.size < 4000000) {
             // console.log(profilePictureFile.path, "the path")
             uploadFilePromise(applicantcv.path, 'live.jobsearch/th-applicant-cv', fileNameCV)
                 .then(data => {
@@ -755,7 +755,7 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
 
         var cvFile = files['cv'];
         var profilePictureFile = files['applicantPicture']
-        if (cvFile) {
+        if (cvFile && cvFile.size < 4000000) {
             uploadFilePromise(cvFile.path, 'live.jobsearch/th-applicant-cv', fileNameCV)
                 .then(data => {
                     //console.log(data)
@@ -905,7 +905,7 @@ function editCompanyProfile(req, res, next) {
 
         let profilePictureFile = files['companyLogo']
         if (profilePictureFile) {
-            console.log(profilePictureFile.path, fileNameProfilePicture);
+            // console.log(profilePictureFile.path, fileNameProfilePicture);
             uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
                 .then(data => {
                     companyProfile['companyLogo'] = data.Location;
@@ -1145,7 +1145,7 @@ async function getUserById(user_id) {
     const user = await userService.getUserById(user_id);
     if (user) {
         const userWithoutPassword = {};
-        console.log(user)
+       // console.log(user)
         _.map(user.dataValues, (value, key) => {
             userWithoutPassword[key] = value;
         });
@@ -1451,12 +1451,12 @@ async function fetchUserWith() {
             items => {
                 if(items.role=='APPLICANT'){
                     const message = construct_email_applicant(items);
-                    console.log(message)
+                    //console.log(message)
                     sgMail.send(message);
                     // return user;
                 }else if(items.role =='EMPLOYER'){
                   const message = constructEmail(items.firstName, items.email, items.emailVerificationToken);
-                    console.log(message)
+                    //console.log(message)
                      sgMail.send(message);
                     // return message;
                 }   

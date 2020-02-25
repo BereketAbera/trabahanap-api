@@ -86,6 +86,18 @@ function deactivateAds(req, res, next) {
         .catch(err => next(err));
 }
 
+function editAdvertisement(req, res, next) {
+    editAdvertisementById(req.params.id, req.body)
+        .then(advs => advs ? res.status(200).json({ success: true, advs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
+function getAdsById(req, res, next) {
+    getAdsOneById(req.params.id)
+        .then(advs => advs ? res.status(200).json({ success: true, advs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
+        .catch(err => next(err));
+}
+
 function addEmpIssue(req, res, next) {
     let localImagePath = "";
     let issue = {};
@@ -160,6 +172,7 @@ function adminAddAds(req, res, next) {
     form.on('file', function (name, file) {
         // console.log('Uploaded ' + file.name);
     });
+
     form.parse(req, function (err, fields, files) {
         _.map(fields, (value, key) => {
             ads[key] = value;
@@ -905,11 +918,23 @@ async function verifyEmployerLicense(id) {
     if (companyProfile) {
         if (companyProfile.verified) {
             const verified = await userService.updateCompanyField(false, 'verified', id);
+            const companyJob = await jobsService.getAllCompanyJob(companyProfile.id);
+            if (companyJob) {
+                companyJob.map(item => {
+                    const updatedJob = jobsService.editJobById(item.id, { active: 0 });
+                })
+            }
             if (verified[0] > 0) {
                 return true;
             }
         } else {
             const verified = await userService.updateCompanyField(true, 'verified', id);
+            const companyJob = await jobsService.getAllCompanyJob(companyProfile.id);
+            if (companyJob) {
+                companyJob.map(item => {
+                    const updatedJob = jobsService.editJobById(item.id, { active: 1 });
+                })
+            }
             if (verified[0] > 0) {
                 return true;
             }
@@ -986,18 +1011,18 @@ async function getSearchedIndustry(search) {
         if (industries) {
             return industries;
         }
-    } else return {}    
+    } else return {}
 }
 
-async function getSearchCountLocations(){
+async function getSearchCountLocations() {
     let now = new Date().toISOString().toString().split('T')[0];
     const queryCity = `select cityName,count(*) as count from view_companies_jobs_search where applicationStartDate <= "${now}" and applicationEndDate >= "${now}" GROUP BY cityName ORDER BY 2 DESC`;
-    const cityNameCount = await jobsService.executeSearchQuery(queryCity); 
+    const cityNameCount = await jobsService.executeSearchQuery(queryCity);
     const queryJob = `select jobTitle,count(*) as count from view_companies_jobs_search where applicationStartDate <= "${now}" and applicationEndDate >= "${now}" GROUP BY jobTitle ORDER BY 2 DESC`;
-    const jobNameCount = await jobsService.executeSearchQuery(queryJob); 
-    if(cityNameCount && jobNameCount){
+    const jobNameCount = await jobsService.executeSearchQuery(queryJob);
+    if (cityNameCount && jobNameCount) {
         //cityNameCount = cityNameCount.slice(0,18)
-        return {city:cityNameCount.slice(0,18), job:jobNameCount.slice(0,18)};
+        return { city: cityNameCount.slice(0, 18), job: jobNameCount.slice(0, 18) };
     }
 }
 
@@ -1144,6 +1169,22 @@ async function addRemoveFeaturedCompanyHandler(id) {
     return false;
 }
 
+async function getAdsOneById(id) {
+    const ads = await otherService.getAdsById(id);
+    if (ads) {
+        return ads
+    }
+}
+async function editAdvertisementById(id,body){
+    const ads = await otherService.getAdsById(id);
+    if(ads){
+        const updatedJob = otherService.editAdsById(id, body);
+        if (updatedJob) {
+            //console.log(updatedJob)
+            return updatedJob;
+        }
+    }
+}
 async function deactivateAdsById(id) {
     const ads = await otherService.getAdsById(id);
     if (ads.active) {
@@ -1207,6 +1248,8 @@ module.exports = {
     adminAddAds,
     adminGetAllAds,
     deactivateAds,
+    editAdvertisement,
     getAdvertisement,
-    searchCountLocations
+    searchCountLocations,
+    getAdsById
 }
