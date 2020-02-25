@@ -1180,7 +1180,7 @@ async function editAdvertisementById(id,body){
     if(ads){
         const updatedJob = otherService.editAdsById(id, body);
         if (updatedJob) {
-            console.log(updatedJob)
+            //console.log(updatedJob)
             return updatedJob;
         }
     }

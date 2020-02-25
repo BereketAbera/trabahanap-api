@@ -466,7 +466,7 @@ async function adminFilterEmployersPagination(companyName, industry, verify, pag
     const limit = pager.pageSize;
 
     queryResult = filterEmployerQueryBuilder(companyName || '', industry || '', verify || '', offset || 0, limit || 6);
-     console.log(queryResult)
+     //console.log(queryResult)
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
     if (jobs) {
         counts = await jobsService.executeSearchQuery(queryResult.count);
