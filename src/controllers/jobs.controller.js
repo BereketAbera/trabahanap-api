@@ -65,7 +65,7 @@ function adminGetAllCompanyJobFilters(req, res, next) {
 }
 
 function adminGetAllEmployersFilters(req, res, next) {
-    adminFilterEmployersPagination(req.query.companyName || '', req.query.industry || '', req.query.page || 1, req.query.pageSize || 6)
+    adminFilterEmployersPagination(req.query.companyName || '', req.query.industry || '',req.query.verify || '', req.query.page || 1, req.query.pageSize || 6)
         .then(companies => res.status(200).send({ success: true, companies }))
         .catch(err => next(err));
 }
@@ -455,7 +455,7 @@ async function filterApplicationsPagination(user_id, applicantName, jobTitle, co
 
 }
 
-async function adminFilterEmployersPagination(companyName, industry, page, pageSize) {
+async function adminFilterEmployersPagination(companyName, industry, verify, page, pageSize) {
     const pager = {
         pageSize: parseInt(pageSize),
         totalItems: 0,
@@ -465,8 +465,8 @@ async function adminFilterEmployersPagination(companyName, industry, page, pageS
     const offset = (page - 1) * pager.pageSize;
     const limit = pager.pageSize;
 
-    queryResult = filterEmployerQueryBuilder(companyName || '', industry || '', offset || 0, limit || 6);
-    // console.log(queryResult)
+    queryResult = filterEmployerQueryBuilder(companyName || '', industry || '', verify || '', offset || 0, limit || 6);
+     console.log(queryResult)
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
     if (jobs) {
         counts = await jobsService.executeSearchQuery(queryResult.count);
@@ -1379,7 +1379,7 @@ function filterApplicationsBuilder(compId = '', applicantName, jobTitle, company
     return { selectQuery: selectQuery, count: QueryCount };
 }
 
-function filterEmployerQueryBuilder(companyName, industry, offset, limit) {
+function filterEmployerQueryBuilder(companyName, industry,verify, offset, limit) {
     let query = ``;
     let haveWhere = false;
     if (companyName != "") {
@@ -1392,9 +1392,16 @@ function filterEmployerQueryBuilder(companyName, industry, offset, limit) {
             query = query + ` where industryType like '%${industry}%'`;
             haveWhere = true;
         }
+    }if(verify !=""){
+        if (haveWhere) {
+            query = query + ` and verified=${verify}`;
+        } else {
+            query = query + ` where verified=${verify}`;
+            haveWhere = true;
+        }
     }
 
-    let selectQuery = `select * from company_profiles ` + query + ` LIMIT ${offset},${limit}`;
+    let selectQuery = `select * from company_profiles ` + query + ` order by createdAt desc LIMIT ${offset},${limit}`;
     let QueryCount = `SELECT COUNT(*) FROM company_profiles` + query;
     return { selectQuery: selectQuery, count: QueryCount };
 }
@@ -1408,7 +1415,7 @@ function filterApplicantQueryBuilder(name, email, offset, limit) {
         query = query + ` and email like '%${email}%'`;
 
     }
-    let selectQuery = `select * from users ` + query + ` LIMIT ${offset},${limit}`;
+    let selectQuery = `select * from users ` + query + ` order by createdAt desc LIMIT ${offset},${limit}`;
     let QueryCount = `SELECT COUNT(*) FROM users` + query;
     return { selectQuery: selectQuery, count: QueryCount };
 }
@@ -1429,7 +1436,7 @@ function filterEmployerApplicantionsQueryBuilder(CompanyProfileId, jobtitle, ind
         query = query + ` and active=${active}`;
 
     }
-    let selectQuery = `select * from view_job_applications ` + query + ` LIMIT ${offset},${limit}`;
+    let selectQuery = `select * from view_job_applications ` + query + ` order by createdAt desc LIMIT ${offset},${limit}`;
     let QueryCount = `SELECT COUNT(*) FROM view_job_applications` + query;
     return { selectQuery: selectQuery, count: QueryCount };
 }
@@ -1450,7 +1457,7 @@ function filterEmployerFilteredApplicantionsQueryBuilder(CompanyProfileId, jobti
         query = query + ` and active=${active}`;
 
     }
-    let selectQuery = `select * from view_filtered_job_applications ` + query + ` LIMIT ${offset},${limit}`;
+    let selectQuery = `select * from view_filtered_job_applications ` + query + ` order by createdAt desc LIMIT ${offset},${limit}`;
     let QueryCount = `SELECT COUNT(*) FROM view_filtered_job_applications` + query;
     return { selectQuery: selectQuery, count: QueryCount };
 }

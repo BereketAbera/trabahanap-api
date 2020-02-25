@@ -905,7 +905,7 @@ function editCompanyProfile(req, res, next) {
 
         let profilePictureFile = files['companyLogo']
         if (profilePictureFile) {
-            console.log(profilePictureFile.path, fileNameProfilePicture);
+            // console.log(profilePictureFile.path, fileNameProfilePicture);
             uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
                 .then(data => {
                     companyProfile['companyLogo'] = data.Location;
@@ -1145,7 +1145,7 @@ async function getUserById(user_id) {
     const user = await userService.getUserById(user_id);
     if (user) {
         const userWithoutPassword = {};
-        console.log(user)
+       // console.log(user)
         _.map(user.dataValues, (value, key) => {
             userWithoutPassword[key] = value;
         });
@@ -1451,12 +1451,12 @@ async function fetchUserWith() {
             items => {
                 if(items.role=='APPLICANT'){
                     const message = construct_email_applicant(items);
-                    console.log(message)
+                    //console.log(message)
                     sgMail.send(message);
                     // return user;
                 }else if(items.role =='EMPLOYER'){
                   const message = constructEmail(items.firstName, items.email, items.emailVerificationToken);
-                    console.log(message)
+                    //console.log(message)
                      sgMail.send(message);
                     // return message;
                 }   
