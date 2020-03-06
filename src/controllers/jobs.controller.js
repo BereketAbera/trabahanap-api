@@ -65,7 +65,7 @@ function adminGetAllCompanyJobFilters(req, res, next) {
 }
 
 function adminGetAllEmployersFilters(req, res, next) {
-    adminFilterEmployersPagination(req.query.companyName || '', req.query.industry || '',req.query.verify || '', req.query.page || 1, req.query.pageSize || 6)
+    adminFilterEmployersPagination(req.query.companyName || '', req.query.industry || '', req.query.verify || '', req.query.registrationDate, req.query.page || 1, req.query.pageSize || 6)
         .then(companies => res.status(200).send({ success: true, companies }))
         .catch(err => next(err));
 }
@@ -310,7 +310,7 @@ function adminGetAllApplicationsFilters(req, res, next) {
 }
 
 function adminGetAllApplicantFilters(req, res, next) {
-    adminFilterApplicantsPagination(req.query.name || '', req.query.email || '', req.query.page || 1, req.query.pageSize || 8)
+    adminFilterApplicantsPagination(req.query.name || '', req.query.email || '', req.query.registrationDate || '', req.query.page || 1, req.query.pageSize || 8)
         .then(applicants => res.status(200).send({ success: true, applicants }))
         .catch(err => next(err));
 }
@@ -450,12 +450,9 @@ async function filterApplicationsPagination(user_id, applicantName, jobTitle, co
             rows: jobs
         };
     }
-
-
-
 }
 
-async function adminFilterEmployersPagination(companyName, industry, verify, page, pageSize) {
+async function adminFilterEmployersPagination(companyName, industry, verify, registrationDate, page, pageSize) {
     const pager = {
         pageSize: parseInt(pageSize),
         totalItems: 0,
@@ -465,7 +462,7 @@ async function adminFilterEmployersPagination(companyName, industry, verify, pag
     const offset = (page - 1) * pager.pageSize;
     const limit = pager.pageSize;
 
-    queryResult = filterEmployerQueryBuilder(companyName || '', industry || '', verify || '', offset || 0, limit || 6);
+    queryResult = filterEmployerQueryBuilder(companyName || '', industry || '', verify || '', registrationDate || '',offset || 0, limit || 6);
      //console.log(queryResult)
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
     if (jobs) {
@@ -481,7 +478,7 @@ async function adminFilterEmployersPagination(companyName, industry, verify, pag
     }
 }
 
-async function adminFilterApplicantsPagination(name, email, page, pageSize) {
+async function adminFilterApplicantsPagination(name, email, registrationDate, page, pageSize) {
     const pager = {
         pageSize: parseInt(pageSize),
         totalItems: 0,
@@ -492,7 +489,7 @@ async function adminFilterApplicantsPagination(name, email, page, pageSize) {
     const offset = (page - 1) * pager.pageSize;
     const limit = pager.pageSize;
 
-    queryResult = filterApplicantQueryBuilder(name || '', email || '', offset || 0, limit || 6);
+    queryResult = filterApplicantQueryBuilder(name || '', email || '', registrationDate || '', offset || 0, limit || 6);
     // console.log(queryResult)
     const applicants = await jobsService.executeSearchQuery(queryResult.selectQuery);
     if (applicants) {
@@ -1379,7 +1376,7 @@ function filterApplicationsBuilder(compId = '', applicantName, jobTitle, company
     return { selectQuery: selectQuery, count: QueryCount };
 }
 
-function filterEmployerQueryBuilder(companyName, industry,verify, offset, limit) {
+function filterEmployerQueryBuilder(companyName, industry,verify, registrationDate, offset, limit) {
     let query = ``;
     let haveWhere = false;
     if (companyName != "") {
@@ -1392,28 +1389,40 @@ function filterEmployerQueryBuilder(companyName, industry,verify, offset, limit)
             query = query + ` where industryType like '%${industry}%'`;
             haveWhere = true;
         }
-    }if(verify !=""){
+    }
+    if(verify && verify !== 'false'){
+        console.log("type of verifty", typeof verify)
         if (haveWhere) {
-            query = query + ` and verified=${verify}`;
+            query = query + ` and verified=${!verify}`;
         } else {
-            query = query + ` where verified=${verify}`;
+            query = query + ` where verified=${!verify}`;
             haveWhere = true;
         }
     }
-
+    if(registrationDate != ""){
+        if (haveWhere) {
+            query = query + ` and DATE(createdAt)="${registrationDate}"`;
+        } else {
+            query = query + ` where DATE(createdAt)="${registrationDate}"`;
+            haveWhere = true;
+        }
+    }
     let selectQuery = `select * from company_profiles ` + query + ` order by createdAt desc LIMIT ${offset},${limit}`;
     let QueryCount = `SELECT COUNT(*) FROM company_profiles` + query;
     return { selectQuery: selectQuery, count: QueryCount };
 }
 
-function filterApplicantQueryBuilder(name, email, offset, limit) {
+function filterApplicantQueryBuilder(name, email, registrationDate, offset, limit) {
     let query = ``;
     query = ` where role='APPLICANT'`;
     if (name != "") {
         query = query + ` and (firstName like '%${name}%' or lastName like '%${name}%')`;
-    } if (email != "") {
+    } 
+    if (email != "") {
         query = query + ` and email like '%${email}%'`;
-
+    }
+    if(registrationDate != ""){
+        query = query + ` and DATE(createdAt)="${registrationDate}"`;
     }
     let selectQuery = `select * from users ` + query + ` order by createdAt desc LIMIT ${offset},${limit}`;
     let QueryCount = `SELECT COUNT(*) FROM users` + query;
