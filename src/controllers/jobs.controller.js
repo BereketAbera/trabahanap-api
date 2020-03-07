@@ -1380,7 +1380,7 @@ function filterEmployerQueryBuilder(companyName, industry,verify, registrationDa
     let query = ``;
     let haveWhere = false;
     if (companyName != "") {
-        query = query + ` where (companyName like '%${companyName}%' or companyDescription like '%${companyName}%')`;
+        query = query + ` where (companyName like '%${companyName}%')`;
         haveWhere = true;
     } if (industry != "") {
         if (haveWhere) {
