@@ -151,10 +151,14 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
     var form = new formidable.IncomingForm();
     form.multiples = true;
 
+    var invalid_files = false;
     form.on('fileBegin', function (name, file) {
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         let fileName = '';
         if (name == "companyLogo") {
+            if(!['JPEG', 'JPG', 'PNG'].includes(fileExt.toUpperCase())){
+                invalid_files=true;
+            }
             fileName = fileNameLogo = Date.now() + "company-logo";
         } else {
             fileName = fileNameBusinessLisence = Date.now() + "company-business-license";
@@ -164,6 +168,9 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
 
     form.parse(req, (err, fields, files) => {
         let companyProfile = {};
+        if(invalid_files){
+            return res.status(200).json({ success: false, error: "Company Logo should be JPG or PNG file. "});
+        }
         _.map(fields, (value, key) => {
             companyProfile[key] = value;
         })
@@ -447,10 +454,14 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
     var form = new formidable.IncomingForm();
     form.multiples = true;
 
+    var invalid_files = false;
     form.on('fileBegin', function (name, file) {
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         let fileName = '';
         if (name == "companyLogo") {
+            if(!['JPEG', 'JPG', 'PNG'].includes(fileExt.toUpperCase())){
+                invalid_files = true;
+            }
             fileName = fileNameLogo = Date.now() + "company-logo";
         } else {
             fileName = fileNameBusinessLisence = Date.now() + "company-business-license";
@@ -458,7 +469,14 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
         file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
     });
 
+
+
     form.parse(req, (err, fields, files) => {
+
+        if(invalid_files){
+            return res.status(200).json({ success: false, error: "Company Logo should be JPG or PNG file. "});
+        }
+
         let companyProfile = {};
         _.map(fields, (value, key) => {
             companyProfile[key] = value;
@@ -469,7 +487,6 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
         const valid = validateCompanyProfile(companyProfile);
 
         if (valid != true) {
-
             res.status(200).json({ success: false, validationError: valid });
             return;
         }
@@ -504,14 +521,21 @@ function updateCompanyLogo(req, res, next) {
     var form = new formidable.IncomingForm();
     form.multiples = true;
 
+    var invalid_files = false;
     form.on('fileBegin', function (name, file) {
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         let fileName = '';
+        if(!['JPEG', 'JPG', 'PNG'].includes(fileExt.toUpperCase())){
+            invalid_files = true;
+        }
         fileName = fileNameLogo = Date.now() + "company-logo";
         file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
     });
 
     form.parse(req, (err, fields, files) => {
+        if(invalid_files){
+            return res.status(200).json({ success: false, error: "Company Logo should be JPG or PNG file. "});
+        }
         var companyLogo = files['companyLogo'];
         if (companyLogo && companyLogo.path) {
             uploadFilePromise(companyLogo.path, 'live.jobsearch/th-employer-logo', fileNameLogo)
@@ -877,18 +901,25 @@ function editCompanyProfile(req, res, next) {
     var form = new formidable.IncomingForm();
     form.multiples = true;
     //console.log('here')
+    var invalid_files=false;
     form.on('fileBegin', function (name, file) {
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         let fileName = '';
         if (name == "companyLogo") {
+            if(!['JPEG', 'JPG', 'PNG'].includes(fileExt.toUpperCase())){
+                invalid_files=true
+            }
             fileName = fileNameProfilePicture = Date.now() + "company-logo";
         }
 
         file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
     });
-
+   
     form.parse(req, (err, fields, files) => {
         let companyProfile = {};
+        if(invalid_files){
+            return res.status(200).json({ success: false, error: "Company Logo should be JPG or PNG file." });
+        }
         _.map(fields, (value, key) => {
             companyProfile[key] = value;
         })
