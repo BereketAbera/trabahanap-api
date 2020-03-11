@@ -12,25 +12,25 @@ const {
 function getAllJobs(req, res, next) {
     getJobsWithPagination(req.query.page || 1)
         .then(jobs => res.status(200).send({ success: true, jobs }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getJob(req, res, next) {
     getJobById(req.params.id)
         .then(job => res.status(200).send({ success: true, job }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getApplicantJob(req, res, next) {
     getApplicantJobById(req.params.id, req.user.sub)
         .then(job => res.status(200).send({ success: true, job }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getAllCompanyJobs(req, res, next) {
     getCompanyJobsWithPagination(req.query.page || 1, req.query.pageSize || 8, req.user.sub)
         .then(jobs => res.status(200).send({ success: true, jobs }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getCompanyJobs(req, res, next){
@@ -49,31 +49,31 @@ function getCompanyJobs(req, res, next){
     }
     getCompanyJobsHanlder(req.params.id, userId, role)
         .then(jobs => res.status(200).send({ success: true, jobs }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function adminGetAllCompanyJob(req, res, next) {
     adminGetCompanyJobsWithPagination(req.query.page || 1, req.query.pageSize || 8, req.params.companyProfileId)
         .then(jobs => res.status(200).send({ success: true, jobs }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function adminGetAllCompanyJobFilters(req, res, next) {
     adminFilterJobsPagination(req.query.industry || '', req.query.et || '', req.query.salary || '', req.query.search || '', req.query.page || 1, req.query.pageSize || 6)
         .then(jobs => res.status(200).send({ success: true, jobs }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function adminGetAllEmployersFilters(req, res, next) {
     adminFilterEmployersPagination(req.query.companyName || '', req.query.industry || '',req.query.verify || '', req.query.page || 1, req.query.pageSize || 6)
         .then(companies => res.status(200).send({ success: true, companies }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function adminGetAllJobs(req, res, next) {
     getJobsWithPagination(req.query.page || 1, req.query.pageSize || 8)
         .then(jobs => res.status(200).send({ success: true, jobs }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function addJob(req, res, next) {
@@ -85,21 +85,21 @@ function addJob(req, res, next) {
 
     addEmployerJob({ ...req.body, user_id: req.user.sub, })
         .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 
 }
 
 function deleteJob(req, res, next) {
     deleteEmployerJob({ ...req.body, id: req.params.id })
         .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 
 }
 
 function suspendJob(req, res, next) {
     suspendEmployerJob(req.params.id)
         .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function adminAddJob(req, res, next) {
@@ -111,7 +111,7 @@ function adminAddJob(req, res, next) {
     const companyProfileId = req.params.companyProfileId;
     addCompanyJob(req.body, companyProfileId)
         .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function editJob(req, res, next) {
@@ -123,135 +123,135 @@ function editJob(req, res, next) {
 
     editEmployerJob({ ...req.body, user_id: req.user.sub, id: req.params.id })
         .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 
 }
 
 function applyJob(req, res, next) {
     addJobApplication({ ...req.body, user_id: req.user.sub })
         .then(response => response ? res.status(200).json({ success: true }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getApplicantApplications(req, res, next) {
     getUserApplicantApplications(req.user.sub)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getJobWithApplications(req, res, next) {
     getEmployerJobWithApplications(req.user.sub, req.query.page || 1, req.query.pageSize || 6)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getFilteredJobWithApplications(req, res, next) {
     getEmployerFilteredJobWithApplications(req.user.sub, req.query.page || 1, req.query.pageSize || 6)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function filterJobsApplications(req, res, next) {
     filterAllJobsApplicationsWithPaginations(req.user.sub, req.query.job || '', req.query.industry || '', req.query.position || '',req.query.active || "", req.query.page || 1)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function filterAllFilteredJobsApplications(req, res, next) {
     filterAllFilteredJobsApplicationsWithPaginations(req.user.sub, req.query.job || '', req.query.industry || '', req.query.position || '',req.query.active || '', req.query.page || 1)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getCompanyApplications(req, res, next) {
     getCompanyApplicationsWithPaginations(req.user.sub, req.query.page || 1, req.query.pageSize || 6)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function filterAllJobs(req, res, next) {
     getFilterJobsWithPaginations(req.user.sub, req.query.job, req.query.industry, req.query.position, req.query.page || 1)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getJobApplicants(req, res, next) {
     getEmployerGetJobApplicants(req.params.id, req.user.sub, req.query.page || 1, req.query.pageSize || 5)
         .then(applicants => applicants ? res.status(200).json({ success: true, applicants }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getFilteredJobApplicants(req, res, next) {
     getEmployerFilteredJobApplicants(req.params.id, req.user.sub)
         .then(applicants => applicants ? res.status(200).json({ success: true, applicants }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 function filterApplicantSavedJobs(req, res, next) {
     getFilterApplicantSavedJobs(req.user.sub, req.query.job, req.query.industry, req.query.company, req.query.page || 1)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function filterApplicantAppliedJobs(req, res, next) {
     getFilterApplicantAppliedJobs(req.user.sub, req.query.job, req.query.industry, req.query.company, req.query.page || 1)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getJobApplicant(req, res, next) {
     getJobApplicantById(req.params.id)
         .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function isHired(req, res, next) {
     getIsHired(req.params.id, req.params.jobId)
         .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 function getCompanyApplicant(req, res, next) {
     const companyProfileId = req.params.companyProfileId;
     // console.log(companyProfileId);
     getCompanyApplicantWithPagination(req.query.page || 1, req.query.pageSize || 5, companyProfileId)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getApplicantAppliedJobs(req, res, next) {
     getApplicantJobs(req.user.sub, req.query.page || 1, req.query.pageSize || 5)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function saveForLaterReview(req, res, next) {
     saveJobForLaterReview(req.user.sub, req.body.JobId)
         .then(success => res.status(200).json({ success }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getJobsLaterReview(req, res, next) {
     getApplicantLaterReviewJobs(req.user.sub, req.query.page || 1, req.query.pageSize)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getAllSavedJobs(req, res, next) {
     getApplicantSavedReviewJobs(req.user.sub)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 
 function filterJobApplication(req, res, next) {
     filterApplication(req.user.sub, jobId = req.body.jobId, applicantId = req.body.applicantId)
         .then(success => res.status(200).json({ success }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function hireJobApplication(req, res, next) {
     hireApplication(req.user.sub, jobId = req.body.jobId, applicantId = req.body.applicantId)
         .then(success => res.status(200).json({ success }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function editCompanyJob(req, res, next) {
@@ -263,13 +263,13 @@ function editCompanyJob(req, res, next) {
 
     adminEditJob({ ...req.body, id: req.params.id })
         .then(job => job ? res.status(200).json({ success: true, job }) : res.status(200).json({ success: false, error: 'something is wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function searchCities(req, res, next) {
     searchAllCities(req.query.search)
         .then(cities => cities ? res.status(200).json({ success: true, cities }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function searchByCity(req, res, next) {
@@ -288,37 +288,37 @@ function searchByCity(req, res, next) {
     }
     getSearchInCity(req.query.key || '', req.query.cityName || '', req.query.compId || '', req.query.page || 1, req.query.pageSize || 8, userId, role)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function searchByLocation(req, res, next) {
     searchJobsByLocation(req.query.key || '', req.query.lat, req.query.long, req.query.distance || 5)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getAllApplications(req, res, next) {
     getAllApplicationsWithPaginations(req.query.page || 1, req.query.pageSize || 8)
         .then(applications => applications ? res.status(200).json({ success: true, applications }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function adminGetAllApplicationsFilters(req, res, next) {
     filterApplicationsPagination('', req.query.applicant || '', req.query.job || '', req.query.company || '', req.query.hired || '', req.query.page || 1, req.query.pageSize || 6)
         .then(applications => res.status(200).send({ success: true, applications }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function adminGetAllApplicantFilters(req, res, next) {
     adminFilterApplicantsPagination(req.query.name || '', req.query.email || '', req.query.page || 1, req.query.pageSize || 8)
         .then(applicants => res.status(200).send({ success: true, applicants }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getFilterCompanyApplications(req, res, next) {
     filterApplicationsPagination(req.user.sub || '', req.query.applicant || '', req.query.job || '', req.query.company || '', req.query.hired || '', req.query.page || 1, req.query.pageSize || 6)
         .then(applications => res.status(200).send({ success: true, applications }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 async function getFilterJobsWithPaginations(user_id, jobtitle, industry, position, page) {

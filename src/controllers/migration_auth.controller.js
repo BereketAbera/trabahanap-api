@@ -19,7 +19,7 @@ function getUserByEmail(req, res, next) {
 
   getUserByEmailHandler(email)
     .then(user => res.status(200).send({ success: true, user }))
-    .catch(err => next(err));
+    .catch(err => next("Can not Login"));
 }
 
 function validateUser(req, res, next) {
@@ -30,7 +30,7 @@ function validateUser(req, res, next) {
 
   validateUserHandler(user)
     .then(user => res.status(200).send({ success: true, user }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function setPassword(req, res, next) {
@@ -45,7 +45,7 @@ function setPassword(req, res, next) {
 
   setPasswordHandler({ password, token })
     .then(success => res.status(200).send({ success }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function sendSMS(req, res, next) {
@@ -56,7 +56,7 @@ function sendSMS(req, res, next) {
 
   sendSMSHandler(email)
     .then(success => res.status(200).send({ success }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function confirmSMSPasscode(req, res, next) {
@@ -67,7 +67,7 @@ function confirmSMSPasscode(req, res, next) {
 
   confirmSMSPasscodeHandler(passcode, email)
     .then(user => res.status(200).send({ success: true, user }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 async function getUserByEmailHandler(email) {

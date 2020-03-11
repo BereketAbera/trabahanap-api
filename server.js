@@ -31,9 +31,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // var whitelist = ['http://192.168.0.103:4200','localhost:4200'];
-var whitelist = ['https://www.trabahanap.com','https://8thdd.com','https://8thbb.com'];
+var whitelist = ['https://www.trabahanap.com','https://8thdd.com','https://8thbb.com','http://localhost:4200'];
 var corsOptions = {
   origin: function (origin, callback) {
+    // console.log(origin)
     if (whitelist.indexOf(origin) !== -1) {
       callback(null, true)
     } else {
@@ -42,7 +43,7 @@ var corsOptions = {
   }
 }
 
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.use(routes);
 

@@ -23,37 +23,37 @@ sgMail.setApiKey(CONSTANTS.SENDGRID_KEY);
 function getAdminDashboardCounts(req, res, next) {
     getAdminStats(req.user.sub)
         .then(stats => res.status(200).send({ success: true, stats }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getAdminIssueStats(req, res, next) {
     getIssueStats(req.user.sub)
         .then(stats => res.status(200).send({ success: true, stats }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getApplicantDashboardCounts(req, res, next) {
     getApplicantStats(req.user.sub)
         .then(stats => res.status(200).send({ success: true, stats }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getEmployerDashboardCounts(req, res, next) {
     getEmployerStats(req.user.sub)
         .then(stats => res.status(200).send({ success: true, stats }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getAllIndustries(req, res, next) {
     getIndutries()
         .then(industries => res.status(200).send({ success: true, industries }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function searchIndustry(req, res, next) {
     getSearchedIndustry(req.query.search)
         .then(industries => industries ? res.status(200).json({ success: true, industries }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function advancedSearchJob(req, res, next) {
@@ -72,30 +72,30 @@ function advancedSearchJob(req, res, next) {
     }
     getAdvancedSearched(req.query.search || "", req.query.et || "", req.query.industry || "", req.query.sr || "", req.query.ct || "", req.query.pwd || 1, req.query.page || 1, userId, role)
         .then(jobs => jobs ? res.status(200).json({ success: true, jobs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 function searchCountLocations(req, res, next) {
     getSearchCountLocations()
         .then(cityCount => cityCount ? res.status(200).json({ success: true, cityCount }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function deactivateAds(req, res, next) {
     deactivateAdsById(req.params.id)
         .then(ads => ads ? res.status(200).json({ success: true, ads }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function editAdvertisement(req, res, next) {
     editAdvertisementById(req.params.id, req.body)
         .then(advs => advs ? res.status(200).json({ success: true, advs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getAdsById(req, res, next) {
     getAdsOneById(req.params.id)
         .then(advs => advs ? res.status(200).json({ success: true, advs }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function addEmpIssue(req, res, next) {
@@ -132,13 +132,13 @@ function addEmpIssue(req, res, next) {
                     fs.unlinkSync(localImagePath);
                     res.status(200).send({ success: true, issue })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         } else {
             processFileUpload(userId, issue, fileName, localImagePath, 'employer')
                 .then(issue => {
                     res.status(200).send({ success: true, issue })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         }
     });
 
@@ -147,13 +147,13 @@ function addEmpIssue(req, res, next) {
 function getEmpIssues(req, res, next) {
     getEmployerIssues(req.user.sub)
         .then(issues => issues ? res.status(200).send({ success: true, issues }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function addReports(req, res, next) {
     addApplicantReports(req.body, req.user.sub, req.params.id)
         .then(reports => reports ? res.status(200).send({ success: true, reports }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 function adminAddAds(req, res, next) {
     let localImagePath = "";
@@ -194,7 +194,7 @@ function adminAddAds(req, res, next) {
                     fs.unlinkSync(localImagePath);
                     res.status(200).send({ success: true, ads })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         }
 
     });
@@ -236,13 +236,13 @@ function addIssue(req, res, next) {
                     fs.unlinkSync(localImagePath);
                     res.status(200).send({ success: true, issue })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         } else {
             processFileUpload(userId, issue, fileName, localImagePath, 'applicant')
                 .then(issue => {
                     res.status(200).send({ success: true, issue })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         }
 
     });
@@ -252,67 +252,67 @@ function addIssue(req, res, next) {
 function getAdminStaff(req, res, next) {
     getAdminStaffers(req.user.sub, req.query.pageSize || 8, req.query.page || 1)
         .then(staffs => staffs ? res.status(200).send({ success: true, staffs }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function addAdminStaff(req, res, next) {
     addAdminStaffer(req.body, req.user.sub)
         .then(success => res.status(200).send({ success }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getIssues(req, res, next) {
     getApplicantIssues(req.user.sub)
         .then(issues => issues ? res.status(200).send({ success: true, issues }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getStaffs(req, res, next) {
     getEmployerStaffs(req.user.sub)
         .then(staffs => staffs ? res.status(200).send({ success: true, staffs }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getIssue(req, res, next) {
     getApplicantIssue(req.user.sub, req.params.id)
         .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getEmpIssueById(req, res, next) {
     getEmployerIssue(req.user.sub, req.params.id)
         .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function deleteEmpIssue(req, res, next) {
     deleteEmployerIssue(req.user.sub, req.params.id)
         .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function deleteAppIssue(req, res, next) {
     deleteApplicantIssue(req.user.sub, req.params.id)
         .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function addStaff(req, res, next) {
     addCompanyStaffer(req.body, req.user.sub)
         .then(staff => staff ? res.status(200).send({ success: true, staff }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function addNewStaffer(req, res, next) {
     renderNewStafferPassword(req)
         .then(response => res.render('addNewStaffer', { layout: 'main', response }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function addNewApplicant(req, res, next) {
     renderNewApplicantPassword(req)
         .then(response => res.render('addNewApplicant', { layout: 'main', response }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 
@@ -342,7 +342,7 @@ function changeStafferPassword(req, res, next) {
             res.render('addNewApplicant', { layout: 'main', response });
             return;
         })
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function changeApplicantPassword(req, res, next) {
@@ -371,101 +371,101 @@ function changeApplicantPassword(req, res, next) {
             res.render('addNewApplicant', { layout: 'main', response });
             return;
         })
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getEmployers(req, res, next) {
     getAllEmployers(req.query.page || 1, req.query.pageSize || 8)
         .then(employers => employers ? res.status(200).send({ success: true, employers }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function adminGetAllAds(req, res, next) {
     getAllAds(req.query.page || 1, req.query.pageSize || 8)
         .then(ads => ads ? res.status(200).send({ success: true, ads }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getAdvertisement(req, res, next) {
     getAdvertisementOfToday()
         .then(ads => ads ? res.status(200).send({ success: true, ads }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getCompanyDetails(req, res, next) {
     getCompanyDetailsInfo(req.params.companyProfileId)
         .then(employers => employers ? res.status(200).send({ success: true, employers }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function verifyEmployer(req, res, next) {
     verifyEmployerLicense(req.params.id)
         .then(success => res.status(200).send({ success }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function checkReport(req, res, next) {
     updateCheckReportById(req.params.id)
         .then(success => res.status(200).send({ success }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getAllIssues(req, res, next) {
     getAllReportedIssues()
         .then(issues => issues ? res.status(200).send({ success: true, issues }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getReportById(req, res, next) {
     reportById(req.params.id)
         .then(report => report ? res.status(200).send({ success: true, report }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 function getIssueById(req, res, next) {
     getReportedIssueById(req.params.id)
         .then(issue => issue ? res.status(200).send({ success: true, issue }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getApplicantReports(req, res, next) {
     getAllreportsFromApplicants()
         .then(reports => reports ? res.status(200).send({ success: true, reports }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 function getApplicantIssuesAdmin(req, res, next) {
     getAllIssuesFromApplicants()
         .then(issues => issues ? res.status(200).send({ success: true, issues }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getCompanyIssuesAdmin(req, res, next) {
     getAllIssuesFromCompany()
         .then(issues => issues ? res.status(200).send({ success: true, issues }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function addIssueResponse(req, res, next) {
     postIssueResponse(req.body, req.user.sub)
         .then(issueResponse => issueResponse ? res.status(200).send({ success: true, issueResponse }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getStaffsCompany(req, res, next) {
     adminGetCompanyStaffs(req.params.companyProfileId)
         .then(staffs => staffs ? res.status(200).send({ success: true, staffs }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function addStaffsCompany(req, res, next) {
     adminAddCompanyStaffs(req.body, req.params.companyProfileId)
         .then(staffs => staffs ? res.status(200).send({ success: true, staffs }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getFeaturedCompanies(req, res, next) {
     getFeaturedCompaniesHandler()
         .then(companies => res.status(200).send({ success: true, companies }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function addRemoveFeaturedCompany(req, res, next) {
@@ -476,7 +476,7 @@ function addRemoveFeaturedCompany(req, res, next) {
 
     addRemoveFeaturedCompanyHandler(id)
         .then(success => res.status(200).send({ success }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 async function processFileUpload(userId, issue, fileName, localImagepath, role) {
@@ -518,8 +518,8 @@ function uploadFilePromise(file, bucketName, fileName) {
     uploadParams.Key = path.basename(file);
     return new Promise((resolve, reject) => {
         s3.upload(uploadParams, function (err, data) {
-            if (err) {
-                reject(err)
+            if ("Internal Server Error! Try again") {
+                reject("Internal Server Error! Try again")
             } if (data) {
                 resolve(data);
             } else {

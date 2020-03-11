@@ -47,13 +47,13 @@ function authenticate(req, res, next) {
             }
             user ? res.status(200).json({ success: user.success, user: user.resp }) : res.status(200).json({ success: false, error: 'username or password is incorrect' })
         })
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getCompanyProfile(req, res, next) {
     getUserById(req.user.sub)
         .then(employer => employer ? res.status(200).json({ success: true, employer }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function signUpApplicant(req, res, next) {
@@ -76,7 +76,7 @@ function signUpApplicant(req, res, next) {
 
     signUpUserApplicant(req.body)
         .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 
 }
 
@@ -85,13 +85,13 @@ function sendEmail(req, res, next) {
 
     fetchUserWith()
         .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getUnVerified(req, res, next) {
     getAllUserWithDate()
         .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function signUpEmployer(req, res, next) {
@@ -105,7 +105,7 @@ function signUpEmployer(req, res, next) {
 
     signUpUserEmployer(req.body)
         .then(employer => employer ? res.status(200).json({ success: true, employer }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 
@@ -118,7 +118,7 @@ function forgetPassword(req, res, next) {
             else {
                 return res.status(200).json({ success: false, response: response.message })
             }
-        }).catch(err => next(err));
+        }).catch(err => next("Internal Server Error! Try again"));
 }
 
 
@@ -132,7 +132,7 @@ function changePassword(req, res, next) {
 
     updateUserPassword(req.body, req.user.sub)
         .then(response => response ? res.status(200).json({ success: !response.error, response }) : res.status(200).json({ success: false, response: 'No User with this email' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 
 
 }
@@ -141,7 +141,7 @@ function changePassword(req, res, next) {
 function UserById(req, res, next) {
     getUserById(req.params.id)
         .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Email is already in use' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
@@ -191,7 +191,7 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
                 res.status(200).json({ success: false, Error: "email must be unique" });
                 return;
             }
-        }).catch(err => next(err));
+        }).catch(err => next("Internal Server Error! Try again"));
 
 
         var fileLogo = files["companyLogo"];
@@ -215,7 +215,7 @@ function admnCreateCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
                 .then(employer => {
                     employer ? res.status(200).json({ success: true, employer }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         } else {
             res.status(200).json({ success: false });
         }
@@ -273,7 +273,7 @@ async function adminSignUpEmployerUser(body) {
 function getAllEmployers(req, res, next) {
     getEmployersWithPagination(req.query.page || 1)
         .then(jobs => res.status(200).send({ success: true, jobs }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function facebookAuth(req, res, next) {
@@ -285,7 +285,7 @@ function facebookAuth(req, res, next) {
 
     socialAuthHandler('facebook', access_token, social_id, user)
         .then(user => res.status(200).send({ success: true, user }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function googleAuth(req, res, next) {
@@ -297,7 +297,7 @@ function googleAuth(req, res, next) {
 
     socialAuthHandler('google', access_token, social_id, user)
         .then(user => res.status(200).send({ success: true, user }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 async function getEmployersWithPagination(page) {
@@ -348,7 +348,7 @@ function changeUserPassword(req, res, next) {
             res.render('setNewPassword', { layout: 'main', response });
             return;
         })
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 async function changeNewPassword(body, token) {
@@ -384,7 +384,7 @@ async function updateUserPassword(body, user_id) {
 function resetPasswordFromEmail(req, res, next) {
     renderNewUserPassword(req)
         .then(response => res.render('setNewPassword', { layout: 'main', response }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 async function renderNewUserPassword(req) {
@@ -491,7 +491,7 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
                     fs.unlinkSync(fileLicense.path);
                     companyProfile ? res.status(200).json({ success: true, companyProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         } else {
             res.status(200).json({ success: false });
         }
@@ -522,7 +522,7 @@ function updateCompanyLogo(req, res, next) {
                     fs.unlinkSync(companyLogo.path);
                     companyProfile ? res.status(200).json({ success: true, companyProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         } else {
             res.status(200).json({ success: false });
         }
@@ -553,7 +553,7 @@ function updateCompanyBusinessLicense(req, res, next) {
                     fs.unlinkSync(businessLicense.path);
                     companyProfile ? res.status(200).json({ success: true, companyProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         } else {
             res.status(200).json({ success: false });
         }
@@ -584,7 +584,7 @@ function updateApplicantCV(req, res, next) {
                     fs.unlinkSync(applicantCV.path);
                     applicantProfile ? res.status(200).json({ success: true, applicantProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         } else {
             res.status(200).json({ success: false });
         }
@@ -616,7 +616,7 @@ function updateApplicantPicture(req, res, next) {
                     fs.unlinkSync(applicantPicture.path);
                     applicantProfile ? res.status(200).json({ success: true, applicantProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         } else {
             res.status(200).json({ success: false });
         }
@@ -688,7 +688,7 @@ function editApplicantProfile(req, res, next) {
                     //console.log(applicantProfile.applicantProfile,'a')
                     applicantProfile ? res.status(200).json({ success: true, applicantProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         }
         else if (profilePictureFile) {
             uploadFilePromise(profilePictureFile.path, 'live.jobsearch/th-employer-logo', fileNameProfilePicture)
@@ -701,13 +701,13 @@ function editApplicantProfile(req, res, next) {
                     //console.log(applicantProfile.applicantProfile,'a')
                     applicantProfile ? res.status(200).json({ success: true, applicantProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         }
         else {
             // if there the picture is not editted
             editUserApplicantProfile(applicantProfile, req.params.id)
                 .then(applicant => applicant ? res.status(200).json({ success: true, applicantProfile: applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         }
 
     });
@@ -776,7 +776,7 @@ function createApplicantProfileWithCVAndPicture(req, res, next) {
                     //console.log(applicantProfile.applicantProfile,'a')
                     applicantProfile ? res.status(200).json({ success: true, applicantProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         }
 
     });
@@ -847,7 +847,7 @@ function createApplicant(req, res, next) {
                     fs.unlinkSync(cvFile.path);
                     applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         }
 
     });
@@ -863,13 +863,13 @@ function getApplicantProfile(req, res, next) {
                 res.status(200).json({ success: true, applicantProfile: null })
             }
         })
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function verifyEmail(req, res, next) {
     verifyUserEmail(req)
         .then(response => res.render('emailVerification', { layout: 'main', response }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function editCompanyProfile(req, res, next) {
@@ -916,13 +916,13 @@ function editCompanyProfile(req, res, next) {
                     //console.log(companyProfile.companyProfile,'a')
                     companyProfile ? res.status(200).json({ success: true, companyProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         }
         else {
             // if there the picture is not editted
             editUserCompanyProfile(companyProfile, req.params.id)
                 .then(applicant => applicant ? res.status(200).json({ success: true, companyProfile: applicant }) : res.status(200).json({ success: false, error: 'something went wrong' }))
-                .catch(err => next(err));
+                .catch(err => next("Internal Server Error! Try again"));
         }
 
     });
@@ -935,19 +935,19 @@ function editCompanyProfile(req, res, next) {
 function getApplicants(req, res, next) {
     getAllApplicants(req.query.page || 1, req.query.pageSize || 8)
         .then(applicants => applicants ? res.status(200).json({ success: true, applicants }) : res.status(200).json({ sucess: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function deactivateUser(req, res, next) {
     deactivateUserById(req.params.id)
         .then(user => user ? res.status(200).json({ success: true, user }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getApplicantById(req, res, next) {
     getApplicantProfileByUserId(req.params.id)
         .then(applicant => applicant ? res.status(200).json({ success: true, applicant }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
 }
 
 

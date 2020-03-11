@@ -13,14 +13,14 @@ function addSubscription(req, res, next) {
 
   addSubscriptionHandler({ ...req.body, UserId })
     .then(subscription => res.status(200).json({ success: true, subscription }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function purchaseSubscription(req, res, next) {
 
   purchaseSubscriptionHandler(req.params.id)
     .then(subscription => res.status(200).json({ success: true, subscription }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getUserSubscription(req, res, next) {
@@ -28,31 +28,31 @@ function getUserSubscription(req, res, next) {
 
   getUserSubscriptionHandler(UserId)
     .then(subscription => res.status(200).json({ success: true, subscription }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getSubscriptions(req, res, next) {
   getAllSubscriptionsHandler()
     .then(subscriptions => res.status(200).json({ success: true, subscriptions }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getSubscriptionById(req, res, next) {
 
   getSubscriptionHandlerById(req.params.id)
     .then(subscriptions => res.status(200).json({ success: true, subscriptions }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getSubscriptionByCompId(req, res, next) {
   getSubscriptionHandlerByCompId(req.params.compId)
     .then(subscriptions => res.status(200).json({ success: true, subscriptions }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 function confirmPayment(req, res, next) {
   confirmPaymentById(req.params.id)
     .then(payment => payment ? res.status(200).json({ success: true, payment }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 async function confirmPaymentById(id) {
   const res = await paymentService.updateConfirmPaymentByTransaction(id);
