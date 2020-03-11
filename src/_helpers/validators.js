@@ -124,7 +124,7 @@ function validateCompanyProfile(data){
                 valid = false;
             }
         }else if(key == "zipcode" && value){
-            if(!validator.isPostalCode(value + '', 'US')){
+            if(!validator.isPostalCode(value + '', 'any')){
                 errors[key] = `zipcode is not valid`;
                 valid = false;
             }
