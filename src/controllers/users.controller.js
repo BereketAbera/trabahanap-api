@@ -451,6 +451,9 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         let fileName = '';
         if (name == "companyLogo") {
+            if(!['JPEG', 'JPG', 'PNG'].includes(fileExt.toUpperCase())){
+                return res.status(200).json({ success: false, error: `Company Logo should be JPG or PNG file.` });
+            }
             fileName = fileNameLogo = Date.now() + "company-logo";
         } else {
             fileName = fileNameBusinessLisence = Date.now() + "company-business-license";
@@ -507,6 +510,11 @@ function updateCompanyLogo(req, res, next) {
     form.on('fileBegin', function (name, file) {
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         let fileName = '';
+        // console.log('-------------------from update company logo ------------------');
+        // console.log(fileExt);
+        if(!['JPEG', 'JPG', 'PNG'].includes(fileExt.toUpperCase())){
+            return res.status(200).json({ success: false, error: `Company Logo should be JPG or PNG file.` });
+        }
         fileName = fileNameLogo = Date.now() + "company-logo";
         file.path = CONSTANTS.baseDir + '/uploads/' + fileName + '.' + fileExt;
     });
@@ -881,6 +889,9 @@ function editCompanyProfile(req, res, next) {
         let fileExt = file.name.substr(file.name.lastIndexOf('.') + 1);
         let fileName = '';
         if (name == "companyLogo") {
+            if(!['JPEG', 'JPG', 'PNG'].includes(fileExt.toUpperCase())){
+                return res.status(200).json({ success: false, error: `Company Logo should be JPG or PNG file.` });
+            }
             fileName = fileNameProfilePicture = Date.now() + "company-logo";
         }
 

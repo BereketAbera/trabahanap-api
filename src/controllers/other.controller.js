@@ -81,6 +81,7 @@ function searchCountLocations(req, res, next) {
 }
 
 function deactivateAds(req, res, next) {
+    console.log(req.body);
     deactivateAdsById(req.params.id)
         .then(ads => ads ? res.status(200).json({ success: true, ads }) : res.status(200).json({ success: false, error: 'Something went wrong' }))
         .catch(err => next("Internal Server Error! Try again"));
@@ -194,7 +195,10 @@ function adminAddAds(req, res, next) {
                     fs.unlinkSync(localImagePath);
                     res.status(200).send({ success: true, ads })
                 })
-                .catch(err => next("Internal Server Error! Try again"));
+                .catch(err => {
+                    console.log(err);
+                    next("Internal Server Error! Try again")
+                });
         }
 
     });
@@ -392,6 +396,12 @@ function getAdvertisement(req, res, next) {
         .catch(err => next("Internal Server Error! Try again"));
 }
 
+function getVerticalAdvertisement(req, res, next){
+    getVertialAdvertisementOfToday()
+        .then(ads => ads ? res.status(200).send({ success: true, ads }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
+        .catch(err => next("Internal Server Error! Try again"));
+}
+
 function getCompanyDetails(req, res, next) {
     getCompanyDetailsInfo(req.params.companyProfileId)
         .then(employers => employers ? res.status(200).send({ success: true, employers }) : res.status(200).send({ success: false, error: "Something went wrong!" }))
@@ -518,7 +528,8 @@ function uploadFilePromise(file, bucketName, fileName) {
     uploadParams.Key = path.basename(file);
     return new Promise((resolve, reject) => {
         s3.upload(uploadParams, function (err, data) {
-            if ("Internal Server Error! Try again") {
+            // console.log(data);
+            if (err) {
                 reject("Internal Server Error! Try again")
             } if (data) {
                 resolve(data);
@@ -843,6 +854,17 @@ async function getAdvertisementOfToday() {
         return ads;
     }
 
+}
+
+async function getVertialAdvertisementOfToday(){
+    const now = moment().utc().format();
+    const endDay = moment().add(1, 'days').utc().format();;
+    // console.log(now);
+    // console.log(endDay, 'dea')
+    const ads = await otherService.getVertialAdsByRanges(now, endDay);
+    if (ads) {
+        return ads;
+    }
 }
 
 async function getAllAds(page, pageSize) {
@@ -1251,5 +1273,6 @@ module.exports = {
     editAdvertisement,
     getAdvertisement,
     searchCountLocations,
-    getAdsById
+    getAdsById,
+    getVerticalAdvertisement
 }

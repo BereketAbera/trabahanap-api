@@ -6,9 +6,9 @@ const _ = require("lodash");
 //     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
 //     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 // };
-var credentials = new AWS.SharedIniFileCredentials({ profile: "liguam" });
+// var credentials = new AWS.SharedIniFileCredentials({ profile: "liguam" });
+// AWS.config.credentials = credentials;
 var ROLE = require("../_helpers/role");
-AWS.config.credentials = credentials;
 // Set the region
 AWS.config.update({ region: "us-west-2" });
 // Create S3 service object

@@ -2,7 +2,7 @@
   "development": {
     "username": "root",
     "password": "password",
-    "database": "temp_db",
+    "database": "final_migration",
     "host": "192.168.0.10",
     "dialect": "mysql"
   },
