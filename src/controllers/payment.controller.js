@@ -75,32 +75,11 @@ function confirmPayment(req, res, next) {
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
-function payExempt(req, res, next) {
-  payExemptByCompId(req.params.id, req.user.sub, req.body)
-    .then(payment =>
-      payment
-        ? res.status(200).json({ success: true, payment })
-        : res
-            .status(200)
-            .json({ success: false, error: "Something went wrong" })
-    )
-    .catch(err => next("Internal Server Error! Try again"));
-}
 
-function payFromBalance(req, res, next) {
-  payFromBalanceHandler(req.params.id)
-    .then(payment =>
-      payment
-        ? res.status(200).json({ success: true, payment })
-        : res
-            .status(200)
-            .json({ success: false, error: "Something went wrong" })
-    )
-    .catch(err => next("Internal Server Error! Try again"));
-}
+
 
 function depositMoney(req, res, next) {
-  depositMoneyByCompany(req.params.id, req.body)
+  depositMoneyByCompany(req.params.id,req.user.sub, req.body)
     .then(deposit =>
       deposit
         ? res.status(200).json({ success: true, deposit })
@@ -111,8 +90,8 @@ function depositMoney(req, res, next) {
     .catch(err => next("Internal Server Error! Try again"));
 }
 
-async function depositMoneyByCompany(compId, body) {
-  const deposit = await paymentService.depositMoneyForCompany({ compId, body });
+async function depositMoneyByCompany(compId,userId, body) {
+  const deposit = await paymentService.depositMoneyForCompany({ compId, body,userId });
   // console.log(deposit);
   if (deposit.data) {
     return deposit.data;
@@ -126,19 +105,7 @@ async function confirmPaymentById(id, userId, body) {
   }
 }
 
-async function payExemptByCompId(id, userId, body) {
-  const res = await paymentService.payExemptApiService(id, body);
-  if (res.data.success) {
-    return res.data.payment;
-  }
-}
-async function payFromBalanceHandler(id) {
-  const pay = await paymentService.payFromBalance(id);
-  // console.log(pay);
-  if (pay.data.success) {
-    return true;
-  }
-}
+
 
 async function addSubscriptionHandler(data) {
   const res = await axios.post(`${environment}/payment/buy_plan`, data);
@@ -224,8 +191,6 @@ module.exports = {
   getSubscriptionById,
   getSubscriptionByCompId,
   confirmPayment,
-  payExempt,
-  payFromBalance,
   depositMoney,
   getBalance
 };
