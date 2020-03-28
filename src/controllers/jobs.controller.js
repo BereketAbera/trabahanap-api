@@ -423,19 +423,19 @@ async function filterApplicationsPagination(user_id, applicantName, jobTitle, co
         totalPages: 0,
         currentPage: parseInt(page)
     }
-
+    console.log(hired,'sdf')
     const offset = (page - 1) * pager.pageSize;
     const limit = pager.pageSize;
     if (user_id != '') {
         const user = await userService.getUserById(user_id);
 
         if (user.companyProfileId) {
-            queryResult = filterApplicationsBuilder(user.companyProfileId || '', applicantName || '', jobTitle || '', companyName || '', hired | '', offset || 0, limit || 6);
-            //console.log(queryResult)
+            queryResult = filterApplicationsBuilder(user.companyProfileId || '', applicantName || '', jobTitle || '', companyName || '', hired || '', offset || 0, limit || 6);
+            console.log(queryResult)
         }
     } else {
-        queryResult = filterApplicationsBuilder('', applicantName || '', jobTitle || '', companyName || '', hired | '', offset || 0, limit || 6);
-        //console.log(queryResult)
+        queryResult = filterApplicationsBuilder('', applicantName || '', jobTitle || '', companyName || '', hired || '', offset || 0, limit || 6);
+        console.log(queryResult)
     }
 
     const jobs = await jobsService.executeSearchQuery(queryResult.selectQuery);
@@ -1335,6 +1335,7 @@ function FiltersJobQueryBuilder(search, employType, industry, salaryRange, offse
 function filterApplicationsBuilder(compId = '', applicantName, jobTitle, companyName, hired, offset, limit) {
     let query = ``;
     let haveWhere = false;
+    console.log(hired,'sdf')
     if (compId != '') {
         query = query + ` where companyProfileId='${compId}' `;
         haveWhere = true;
@@ -1363,16 +1364,17 @@ function filterApplicationsBuilder(compId = '', applicantName, jobTitle, company
             haveWhere = true;
         }
     }
-    if (hired != "") {
+    if(hired !="" && hired !== 'false'){
+        console.log("type of hired", typeof hired)
         if (haveWhere) {
-            query = query + ` and hired='${hired}'`;
+            query = query + ` and hired=${hired}`;
         } else {
-            query = query + ` where hired='${hired}'`;
+            query = query + ` where hired=${hired}`;
             haveWhere = true;
         }
     }
-    let selectQuery = `select * from view_job_applications_applicant ` + query + ` LIMIT ${offset},${limit}`;
-    let QueryCount = `SELECT COUNT(*) FROM view_job_applications_applicant` + query;
+    let selectQuery = `select * from view_job_applications_applicant ` + query + ` order by createdAt desc LIMIT ${offset},${limit}`;
+    let QueryCount = `SELECT COUNT(*) FROM view_job_applications_applicant` + query + ` order by createdAt desc`;
     return { selectQuery: selectQuery, count: QueryCount };
 }
 

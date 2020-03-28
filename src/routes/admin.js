@@ -68,3 +68,7 @@ app.get('/subscriptions',paymentController.getSubscriptions)
 app.get('/subscription/:id',paymentController.getSubscriptionById)
 app.get('/subscription/company/:compId',paymentController.getSubscriptionByCompId)
 app.put('/confirm/payment/:id',paymentController.confirmPayment);
+app.post('/subscription/deposit/:id',paymentController.depositMoney);
+app.get("/subscription/balance/:id", paymentController.getBalance);
+app.get("/subscription/pay/:id", paymentController.payFromBalance);
+app.put("/subscription/pay/exempt/:id", paymentController.payExempt);
