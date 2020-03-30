@@ -65,7 +65,7 @@ function getSubscriptionByCompId(req, res, next) {
     .catch(err => next("Internal Server Error! Try again"));
 }
 function confirmPayment(req, res, next) {
-  confirmPaymentById(req.params.id, req.user.sub, req.body)
+  confirmPaymentById(req.params.id)
     .then(payment =>
       payment
         ? res.status(200).json({ success: true, payment })
@@ -85,7 +85,21 @@ function depositMoney(req, res, next) {
         ? res.status(200).json({ success: true, deposit })
         : res
             .status(200)
-            .json({ success: false, error: "Something went wrong" })
+            .json({ success: false, error: "Something went wrong" }))
+
+}
+function getPaymentPlanTypes(req, res, next) {
+  getPaymentPlanTypesHandler()
+    .then(payment_plan_types =>
+      res.status(200).json({ success: true, payment_plan_types })
+    )
+    .catch(err => next("Internal Server Error! Try again"));
+}
+
+function getPaymentPlanType(req, res, next) {
+  getPaymentPlanTypeHandler(req.params.id)
+    .then(payment_plan_type =>
+      res.status(200).json({ success: true, payment_plan_type })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -100,12 +114,30 @@ async function depositMoneyByCompany(compId,userId, body) {
 
 async function confirmPaymentById(id, userId, body) {
   const res = await paymentService.updateConfirmPaymentByTransaction(id, body);
+
+}
+function createPaymentPlanType(req, res, next) {
+  createPaymentPlanTypeHandler(req.body)
+    .then(payment_plan_type => {
+      res.status(200).json({ success: true, payment_plan_type });
+    })
+    .catch(err => next("Internal Server Error! Try again"));
+}
+
+function updatePaymentPlanType(req, res, next) {
+  updatePaymentPlanTypeHandler(req.body)
+    .then(payment_plan_type => {
+      res.status(200).json({ success: true, payment_plan_type });
+    })
+    .catch(err => next("Internal Server Error! Try again"));
+}
+
+async function confirmPaymentById(id) {
+  const res = await paymentService.updateConfirmPaymentByTransaction(id);
   if (res.data.success) {
     return res.data.payment;
   }
 }
-
-
 
 async function addSubscriptionHandler(data) {
   const res = await axios.post(`${environment}/payment/buy_plan`, data);
@@ -183,6 +215,39 @@ async function purchaseSubscriptionHandler(id) {
   return purchase.data.subscription;
 }
 
+async function getPaymentPlanTypesHandler() {
+  const response = await paymentService.getAllPlanTypes();
+  if (response.data.success && response.data.payment_plan_types) {
+    return response.data.payment_plan_types;
+  }
+}
+
+async function getPaymentPlanTypeHandler(id) {
+  const response = await paymentService.getPlanType(id);
+  if (response.data.success && response.data.payment_plan_type) {
+    return response.data.payment_plan_type;
+  }
+}
+
+async function createPaymentPlanTypeHandler(payment_plan_type) {
+  const response = await paymentService.createPaymentPlanType(
+    payment_plan_type
+  );
+  // console.log(response);
+  if (response.data.success && response.data.payment_plan_type) {
+    return response.data.payment_plan_type;
+  }
+}
+
+async function updatePaymentPlanTypeHandler(payment_plan_type) {
+  const response = await paymentService.updatePaymentPlanType(
+    payment_plan_type
+  );
+  if (response.data.success && response.data.payment_plan_type) {
+    return response.data.payment_plan_type;
+  }
+}
+
 module.exports = {
   addSubscription,
   getUserSubscription,
@@ -192,5 +257,9 @@ module.exports = {
   getSubscriptionByCompId,
   confirmPayment,
   depositMoney,
-  getBalance
-};
+  getBalance,
+  getPaymentPlanTypes,
+  createPaymentPlanType,
+  updatePaymentPlanType,
+  getPaymentPlanType,
+}

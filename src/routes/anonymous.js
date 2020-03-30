@@ -33,5 +33,6 @@ app.get("/send_sms/:email", migrationAuthController.sendSMS);
 app.post("/confirm_sms_passcode", migrationAuthController.confirmSMSPasscode);
 
 app.get("/ads", otherController.getAdvertisement);
+app.get("/vertical-ads", otherController.getVerticalAdvertisement);
 
 app.get("/company/jobs/:id", jobsController.getCompanyJobs);

@@ -31,17 +31,21 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // var whitelist = ['http://192.168.0.103:4200','localhost:4200'];
-var whitelist = ['https://www.trabahanap.com','https://8thaa.com','https://8thbb.com'];
+var whitelist = [
+  "https://www.trabahanap.com",
+  "https://8thaa.com",
+  "https://8thbb.com"
+];
 var corsOptions = {
-  origin: function (origin, callback) {
+  origin: function(origin, callback) {
     // console.log(origin)
     if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true)
+      callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'))
+      callback(new Error("Not allowed by CORS"));
     }
   }
-}
+};
 
 app.use(cors());
 
