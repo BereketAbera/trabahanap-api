@@ -32,7 +32,7 @@ function getUserSubscription(req, res, next) {
 }
 
 function getSubscriptions(req, res, next) {
-  getAllSubscriptionsHandler()
+  getAllSubscriptionsHandler(req.query.page || 1, req.query.pageSize || 8)
     .then(subscriptions =>
       res.status(200).json({ success: true, subscriptions })
     )
@@ -76,17 +76,12 @@ function confirmPayment(req, res, next) {
     .catch(err => next("Internal Server Error! Try again"));
 }
 
-
-
 function depositMoney(req, res, next) {
-  depositMoneyByCompany(req.params.id,req.user.sub, req.body)
-    .then(deposit =>
-      deposit
-        ? res.status(200).json({ success: true, deposit })
-        : res
-            .status(200)
-            .json({ success: false, error: "Something went wrong" }))
-
+  depositMoneyByCompany(req.params.id, req.user.sub, req.body).then(deposit =>
+    deposit
+      ? res.status(200).json({ success: true, deposit })
+      : res.status(200).json({ success: false, error: "Something went wrong" })
+  );
 }
 function getPaymentPlanTypes(req, res, next) {
   getPaymentPlanTypesHandler()
@@ -104,8 +99,12 @@ function getPaymentPlanType(req, res, next) {
     .catch(err => next("Internal Server Error! Try again"));
 }
 
-async function depositMoneyByCompany(compId,userId, body) {
-  const deposit = await paymentService.depositMoneyForCompany({ compId, body,userId });
+async function depositMoneyByCompany(compId, userId, body) {
+  const deposit = await paymentService.depositMoneyForCompany({
+    compId,
+    body,
+    userId
+  });
   // console.log(deposit);
   if (deposit.data) {
     return deposit.data;
@@ -114,7 +113,6 @@ async function depositMoneyByCompany(compId,userId, body) {
 
 async function confirmPaymentById(id, userId, body) {
   const res = await paymentService.updateConfirmPaymentByTransaction(id, body);
-
 }
 function createPaymentPlanType(req, res, next) {
   createPaymentPlanTypeHandler(req.body)
@@ -173,12 +171,15 @@ async function getSubscriptionHandlerByCompId(id, page, pageSize) {
   const offset = (page - 1) * pager.pageSize;
   const limit = pager.pageSize;
 
-  const res = await paymentService.getSubscriptionByCompanyId(id,offset,limit);
+  const res = await paymentService.getSubscriptionsByCompanyId(
+    id,
+    offset,
+    limit
+  );
   if (res.data.success) {
-   
-    pager.totalItems = res.data.subscription.total
+    pager.totalItems = res.data.subscription.total;
     pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
-    return {subs:res.data.subscription.sub,pager};
+    return { subs: res.data.subscription.sub, pager };
   }
 }
 
@@ -197,11 +198,23 @@ async function getBalanceHandlerById(id) {
     return res.data.balance;
   }
 }
-async function getAllSubscriptionsHandler() {
-  const res = await paymentService.getAllSubscriptions();
-  // console.log(res.data)
+async function getAllSubscriptionsHandler(page, pageSize) {
+  const pager = {
+    pageSize: parseInt(pageSize),
+    totalItems: 0,
+    totalPages: 0,
+    currentPage: parseInt(page)
+  };
+
+  const offset = (page - 1) * pager.pageSize;
+  const limit = pager.pageSize;
+
+  const res = await paymentService.getAllSubscriptions(offset || 0, limit || 6);
+  pager.totalItems = res.data.subscriptions.count;
+  pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+
   if (res.data.success) {
-    return res.data.subscriptions;
+    return { subscriptions: res.data.subscriptions.rows,  pager };
   }
 }
 
@@ -261,5 +274,5 @@ module.exports = {
   getPaymentPlanTypes,
   createPaymentPlanType,
   updatePaymentPlanType,
-  getPaymentPlanType,
-}
+  getPaymentPlanType
+};

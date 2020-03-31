@@ -301,9 +301,15 @@ function getAllAdsWithOffset(offset, limit) {
 
 function getFeaturedCompanies() {
   // console.log('feating companies');
-  return CompanyProfile.findAll({ where: { featured: true } }).catch(err =>
+  return CompanyProfile.findAll({ where: { featured: true }}).catch(err =>
     console.log(err)
   );
+}
+
+function getExemptCompanies(offset,limit){
+  return CompanyProfile.findAndCountAll({ where: { exempt: true },offset,limit }).catch(err =>
+    console.log(err)
+  )
 }
 
 function getTokenByEmailAndToken(email, token) {
@@ -369,7 +375,7 @@ module.exports = {
   getFeaturedCompanies,
   getTokenByEmailAndToken,
   addReports,
-  getFeaturedCompanies,
+  getExemptCompanies,
   getReportById,
   updateReportField,
   addAdvertisement,

@@ -101,3 +101,9 @@ app.get("/payment_plan_types", paymentController.getPaymentPlanTypes);
 app.get("/payment_plan_types/:id", paymentController.getPaymentPlanType);
 app.post("/payment_plan_types", paymentController.createPaymentPlanType);
 app.put("/payment_plan_types", paymentController.updatePaymentPlanType);
+
+app.get(
+  "/employers/exempt/:id/toggle",
+  otherController.addRemoveExemptCompany
+);
+app.get("/employer/exempt", otherController.getExemptCompanies);

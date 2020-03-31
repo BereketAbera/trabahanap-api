@@ -1,10 +1,10 @@
 const environment = require("../environmets/environmet");
 const axios = require("axios");
 
-async function getAllSubscriptions() {
+async function getAllSubscriptions(page,pageSize) {
   const applicationId = "TRABAHANAP";
   return await axios.get(
-    `${environment}/payment/subscription/${applicationId}`
+    `${environment}/payment/subscription/${applicationId}?page=${page}&pageSize=${pageSize}`
   );
 }
 async function getSubscriptionById(id) {
@@ -13,7 +13,7 @@ async function getSubscriptionById(id) {
     `${environment}/payment/subscription_transaction/${id}`
   );
 }
-async function getSubscriptionByCompanyId(compId,page,pageSize){
+async function getSubscriptionsByCompanyId(compId,page,pageSize){
     return await axios.get(`${environment}/payment/company/subscription_transaction/${compId}?page=${page}&pageSize=${pageSize}`);   
 }
 async function updateConfirmPaymentByTransaction(id,body){
@@ -67,6 +67,7 @@ async function updatePaymentPlanType(payment_plan_type) {
 module.exports = {
   getAllSubscriptions,
   getSubscriptionById,
+  getSubscriptionsByCompanyId,
   getSubscriptionByCompanyId,
   updateConfirmPaymentByTransaction,
   getAllPlanTypes,
