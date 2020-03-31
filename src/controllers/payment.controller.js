@@ -76,17 +76,12 @@ function confirmPayment(req, res, next) {
     .catch(err => next("Internal Server Error! Try again"));
 }
 
-
-
 function depositMoney(req, res, next) {
-  depositMoneyByCompany(req.params.id,req.user.sub, req.body)
-    .then(deposit =>
-      deposit
-        ? res.status(200).json({ success: true, deposit })
-        : res
-            .status(200)
-            .json({ success: false, error: "Something went wrong" }))
-
+  depositMoneyByCompany(req.params.id, req.user.sub, req.body).then(deposit =>
+    deposit
+      ? res.status(200).json({ success: true, deposit })
+      : res.status(200).json({ success: false, error: "Something went wrong" })
+  );
 }
 function getPaymentPlanTypes(req, res, next) {
   getPaymentPlanTypesHandler()
@@ -104,8 +99,25 @@ function getPaymentPlanType(req, res, next) {
     .catch(err => next("Internal Server Error! Try again"));
 }
 
-async function depositMoneyByCompany(compId,userId, body) {
-  const deposit = await paymentService.depositMoneyForCompany({ compId, body,userId });
+function addEmployerSubscription(req, res, next) {
+  const { type, name, companyProfileId } = req.body;
+  const UserId = req.user.sub;
+
+  if (!type || !name || !companyProfileId || !UserId) {
+    res.status(200).json({ success: false, error: "invalid request" });
+    return;
+  }
+  addEmployerSubscriptionHandler({ ...req.body, UserId })
+    .then(subscription => res.status(200).json({ success: true, subscription }))
+    .catch(err => next("Internal Server Error! Try again"));
+}
+
+async function depositMoneyByCompany(compId, userId, body) {
+  const deposit = await paymentService.depositMoneyForCompany({
+    compId,
+    body,
+    userId
+  });
   // console.log(deposit);
   if (deposit.data) {
     return deposit.data;
@@ -114,7 +126,6 @@ async function depositMoneyByCompany(compId,userId, body) {
 
 async function confirmPaymentById(id, userId, body) {
   const res = await paymentService.updateConfirmPaymentByTransaction(id, body);
-
 }
 function createPaymentPlanType(req, res, next) {
   createPaymentPlanTypeHandler(req.body)
@@ -140,7 +151,14 @@ async function confirmPaymentById(id) {
 }
 
 async function addSubscriptionHandler(data) {
-  const res = await axios.post(`${environment}/payment/buy_plan`, data);
+  let user = await userService.getUserById(data.UserId);
+  if ((data.type != "PREMIUM" && data.type != "EXPRESS") || !user) {
+    throw "something went wrong";
+  }
+  const res = await axios.post(`${environment}/payment/buy_plan`, {
+    ...data,
+    transactionMadeBy: user.username
+  });
   // console.log(res.data)
   if (!res || !res.data.success) {
     throw "something went wrong";
@@ -173,12 +191,15 @@ async function getSubscriptionHandlerByCompId(id, page, pageSize) {
   const offset = (page - 1) * pager.pageSize;
   const limit = pager.pageSize;
 
-  const res = await paymentService.getSubscriptionByCompanyId(id,offset,limit);
+  const res = await paymentService.getSubscriptionByCompanyId(
+    id,
+    offset,
+    limit
+  );
   if (res.data.success) {
-   
-    pager.totalItems = res.data.subscription.total
+    pager.totalItems = res.data.subscription.total;
     pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
-    return {subs:res.data.subscription.sub,pager};
+    return { subs: res.data.subscription.sub, pager };
   }
 }
 
@@ -207,7 +228,6 @@ async function getAllSubscriptionsHandler() {
 
 async function purchaseSubscriptionHandler(id) {
   const purchase = await axios.post(`${environment}/payment/purchase/cv/${id}`);
-  //console.log(purchase.data)
   if (!purchase || !purchase.data.success) {
     throw "something went wrong";
   }
@@ -248,6 +268,42 @@ async function updatePaymentPlanTypeHandler(payment_plan_type) {
   }
 }
 
+async function addEmployerSubscriptionHandler({
+  type,
+  name,
+  companyProfileId,
+  UserId
+}) {
+  let user = await userService.getUserValuebyCompanyProfileId(companyProfileId);
+  let adminUser = await userService.getUserById(UserId);
+  if (!user || !adminUser) {
+    throw "something went wrong";
+  }
+
+  const res = await axios.post(`${environment}/payment/buy_plan`, {
+    type,
+    name,
+    UserId: user.id,
+    transactionMadeBy: adminUser.username
+  });
+  // console.log(res.data)
+  if (!res || !res.data.success) {
+    throw "something went wrong";
+  }
+
+  return res.data.subscription;
+}
+
+// async function addSubscriptionHandler(data) {
+//   const res = await axios.post(`${environment}/payment/buy_plan`, data);
+//   // console.log(res.data)
+//   if (!res || !res.data.success) {
+//     throw "something went wrong";
+//   }
+
+//   return res.data.subscription;
+// }
+
 module.exports = {
   addSubscription,
   getUserSubscription,
@@ -262,4 +318,5 @@ module.exports = {
   createPaymentPlanType,
   updatePaymentPlanType,
   getPaymentPlanType,
-}
+  addEmployerSubscription
+};

@@ -90,14 +90,19 @@ app.post("/advertisement/edit/:id", otherController.editAdvertisement);
 // app.post('/send_email',userController.sendEmail);
 // app.get('/find_email',userController.getUnVerified);
 
-app.get('/subscriptions',paymentController.getSubscriptions)
-app.get('/subscription/:id',paymentController.getSubscriptionById)
-app.get('/subscription/company/:compId',paymentController.getSubscriptionByCompId)
-app.put('/confirm/payment/:id',paymentController.confirmPayment);
-app.post('/subscription/deposit/:id',paymentController.depositMoney);
+app.get("/subscriptions", paymentController.getSubscriptions);
+app.get("/subscription/:id", paymentController.getSubscriptionById);
+app.get(
+  "/subscription/company/:compId",
+  paymentController.getSubscriptionByCompId
+);
+app.put("/confirm/payment/:id", paymentController.confirmPayment);
+app.post("/subscription/deposit/:id", paymentController.depositMoney);
 app.get("/subscription/balance/:id", paymentController.getBalance);
 
 app.get("/payment_plan_types", paymentController.getPaymentPlanTypes);
 app.get("/payment_plan_types/:id", paymentController.getPaymentPlanType);
 app.post("/payment_plan_types", paymentController.createPaymentPlanType);
 app.put("/payment_plan_types", paymentController.updatePaymentPlanType);
+
+app.post("/subscriptions", paymentController.addEmployerSubscription);
