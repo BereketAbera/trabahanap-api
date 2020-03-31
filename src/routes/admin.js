@@ -106,3 +106,5 @@ app.post("/payment_plan_types", paymentController.createPaymentPlanType);
 app.put("/payment_plan_types", paymentController.updatePaymentPlanType);
 
 app.post("/subscriptions", paymentController.addEmployerSubscription);
+app.get("/employers/exempt/:id/toggle", otherController.addRemoveExemptCompany);
+app.get("/employer/exempt", otherController.getExemptCompanies);

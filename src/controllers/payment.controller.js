@@ -32,7 +32,7 @@ function getUserSubscription(req, res, next) {
 }
 
 function getSubscriptions(req, res, next) {
-  getAllSubscriptionsHandler()
+  getAllSubscriptionsHandler(req.query.page || 1, req.query.pageSize || 8)
     .then(subscriptions =>
       res.status(200).json({ success: true, subscriptions })
     )
@@ -191,7 +191,7 @@ async function getSubscriptionHandlerByCompId(id, page, pageSize) {
   const offset = (page - 1) * pager.pageSize;
   const limit = pager.pageSize;
 
-  const res = await paymentService.getSubscriptionByCompanyId(
+  const res = await paymentService.getSubscriptionsByCompanyId(
     id,
     offset,
     limit
@@ -218,11 +218,23 @@ async function getBalanceHandlerById(id) {
     return res.data.balance;
   }
 }
-async function getAllSubscriptionsHandler() {
-  const res = await paymentService.getAllSubscriptions();
-  // console.log(res.data)
+async function getAllSubscriptionsHandler(page, pageSize) {
+  const pager = {
+    pageSize: parseInt(pageSize),
+    totalItems: 0,
+    totalPages: 0,
+    currentPage: parseInt(page)
+  };
+
+  const offset = (page - 1) * pager.pageSize;
+  const limit = pager.pageSize;
+
+  const res = await paymentService.getAllSubscriptions(offset || 0, limit || 6);
+  pager.totalItems = res.data.subscriptions.count;
+  pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+
   if (res.data.success) {
-    return res.data.subscriptions;
+    return { subscriptions: res.data.subscriptions.rows, pager };
   }
 }
 
@@ -318,5 +330,6 @@ module.exports = {
   createPaymentPlanType,
   updatePaymentPlanType,
   getPaymentPlanType,
-  addEmployerSubscription
+  addEmployerSubscription,
+  getPaymentPlanType
 };
