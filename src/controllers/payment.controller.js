@@ -64,17 +64,6 @@ function getSubscriptionByCompId(req, res, next) {
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
-function confirmPayment(req, res, next) {
-  confirmPaymentById(req.params.id)
-    .then(payment =>
-      payment
-        ? res.status(200).json({ success: true, payment })
-        : res
-            .status(200)
-            .json({ success: false, error: "Something went wrong" })
-    )
-    .catch(err => next("Internal Server Error! Try again"));
-}
 
 function depositMoney(req, res, next) {
   depositMoneyByCompany(req.params.id, req.user.sub, req.body).then(deposit =>
@@ -124,9 +113,6 @@ async function depositMoneyByCompany(compId, userId, body) {
   }
 }
 
-async function confirmPaymentById(id, userId, body) {
-  const res = await paymentService.updateConfirmPaymentByTransaction(id, body);
-}
 function createPaymentPlanType(req, res, next) {
   createPaymentPlanTypeHandler(req.body)
     .then(payment_plan_type => {
@@ -141,13 +127,6 @@ function updatePaymentPlanType(req, res, next) {
       res.status(200).json({ success: true, payment_plan_type });
     })
     .catch(err => next("Internal Server Error! Try again"));
-}
-
-async function confirmPaymentById(id) {
-  const res = await paymentService.updateConfirmPaymentByTransaction(id);
-  if (res.data.success) {
-    return res.data.payment;
-  }
 }
 
 async function addSubscriptionHandler(data) {
@@ -323,7 +302,6 @@ module.exports = {
   getSubscriptions,
   getSubscriptionById,
   getSubscriptionByCompId,
-  confirmPayment,
   depositMoney,
   getBalance,
   getPaymentPlanTypes,

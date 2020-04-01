@@ -96,7 +96,8 @@ app.get(
   "/subscription/company/:compId",
   paymentController.getSubscriptionByCompId
 );
-app.put("/confirm/payment/:id", paymentController.confirmPayment);
+
+
 app.post("/subscription/deposit/:id", paymentController.depositMoney);
 app.get("/subscription/balance/:id", paymentController.getBalance);
 
