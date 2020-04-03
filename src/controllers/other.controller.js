@@ -928,10 +928,10 @@ async function adminAddCompanyStaffs(body, compProfileId) {
     });
     const newUser = await userService.createUser({
       ...body,
-      role: ROLE.STAFFER,
       companyProfileId: compProfileId,
       username: body.email,
-      hasFinishedProfile: true
+      hasFinishedProfile: true,
+      role: ROLE.STAFFER
     });
     // console.log('created')
     if (saveToken && newUser && userApi) {
@@ -1041,7 +1041,6 @@ async function addAdminStaffer(body, userId) {
     const user = await authService.createUserApi({
       ...body,
       password: uuidv4(),
-      role: ROLE.ADMINSTAFF,
       username: body.email,
       emailVerificationToken: uuidv4()
     });
@@ -1049,7 +1048,7 @@ async function addAdminStaffer(body, userId) {
       const newUser = await userService.createUser({
         ...body,
         id: user.data.user.id,
-        role: ROLE.ADMINSTAFF,
+
         username: body.email
       });
       if (saveToken && newUser && user.data.success) {
@@ -1570,14 +1569,14 @@ async function getExemptCompaniesHandler(page, pageSize) {
   const offset = (page - 1) * pager.pageSize;
   const limit = pager.pageSize;
 
-  const company = await otherService.getExemptCompanies(offset,limit);
+  const company = await otherService.getExemptCompanies(offset, limit);
 
   if (!company) {
     throw "something went wrong";
   }
   pager.totalItems = company.count;
   pager.totalPages = Math.ceil(company.count / pager.pageSize);
-  return {company:company.rows,pager:pager};
+  return { company: company.rows, pager: pager };
 }
 
 async function addRemoveExemptCompanyHandler(id) {

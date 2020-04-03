@@ -1,3 +1,4 @@
+const Sequelize = require("sequelize");
 const {
   Indutry,
   Issue,
@@ -214,7 +215,11 @@ async function updateToken(token, value) {
 
 function getAdminStaffs(offset, limit) {
   return User.findAndCountAll({
-    where: { role: ROLE.ADMINSTAFF, emailVerified: true },
+    where: Sequelize.and(
+      { emailVerified: true },
+      Sequelize.or({ role: ROLE.ADMINSTAFF }, { role: ROLE.ADMINADS })
+    ),
+    order: [["createdAt", "DESC"]],
     offset,
     limit
   }).catch(err => console.log(err));
@@ -301,15 +306,17 @@ function getAllAdsWithOffset(offset, limit) {
 
 function getFeaturedCompanies() {
   // console.log('feating companies');
-  return CompanyProfile.findAll({ where: { featured: true }}).catch(err =>
+  return CompanyProfile.findAll({ where: { featured: true } }).catch(err =>
     console.log(err)
   );
 }
 
-function getExemptCompanies(offset,limit){
-  return CompanyProfile.findAndCountAll({ where: { exempt: true },offset,limit }).catch(err =>
-    console.log(err)
-  )
+function getExemptCompanies(offset, limit) {
+  return CompanyProfile.findAndCountAll({
+    where: { exempt: true },
+    offset,
+    limit
+  }).catch(err => console.log(err));
 }
 
 function getTokenByEmailAndToken(email, token) {
