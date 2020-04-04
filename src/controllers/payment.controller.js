@@ -73,7 +73,7 @@ function depositMoney(req, res, next) {
   );
 }
 function getPaymentPlanTypes(req, res, next) {
-  getPaymentPlanTypesHandler()
+  getPaymentPlanTypesHandler(req.query.page || 0,req.query.pageSize || 6)
     .then(payment_plan_types =>
       res.status(200).json({ success: true, payment_plan_types })
     )
@@ -226,10 +226,23 @@ async function purchaseSubscriptionHandler(id) {
   return purchase.data.subscription;
 }
 
-async function getPaymentPlanTypesHandler() {
-  const response = await paymentService.getAllPlanTypes();
+async function getPaymentPlanTypesHandler(page,pageSize) {
+  const pager = {
+    pageSize: parseInt(pageSize),
+    totalItems: 0,
+    totalPages: 0,
+    currentPage: parseInt(page)
+  };
+  const offset = (page - 1) * pager.pageSize;
+  const limit = pager.pageSize;
+
+  const response = await paymentService.getAllPlanTypes(offset || 0,limit || 8);
+
   if (response.data.success && response.data.payment_plan_types) {
-    return response.data.payment_plan_types;
+    // console.log(response.data)
+    pager.totalItems = response.data.payment_plan_types.count;
+    pager.totalPages = Math.ceil(pager.totalItems / pager.pageSize);
+    return { rows:response.data.payment_plan_types.rows,pager };
   }
 }
 
