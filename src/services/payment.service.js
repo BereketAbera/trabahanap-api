@@ -39,9 +39,9 @@ async function updateConfirmPaymentByTransaction(id) {
   );
 }
 
-async function getAllPlanTypes(offset,limit) {
+async function getAllPlanTypes() {
   return await axios
-    .get(`${environment}/payment/payment_plan_types?page=${offset}&pageSize=${limit}`)
+    .get(`${environment}/payment/payment_plan_types`)
     .catch(err => console.log(err));
 }
 
