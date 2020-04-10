@@ -52,7 +52,7 @@ function getEmployerReportFilter(req, res, next) {
 }
 
 function getEmployerJobReportFilter(req, res, next) {
-  getEmployerJobsStatsFilterReport(req.query.startDate, req.query.endDate, req.query.page || 1, req.query.pageSize || 5, req.query.order)
+  getEmployerJobsStatsFilterReport(req.params.companyId, req.query.startDate, req.query.endDate, req.query.page || 1, req.query.pageSize || 5, req.query.order)
     .then(stats => res.status(200).send({ success: true, stats }))
     .catch(err => next(err));
 }
@@ -875,7 +875,7 @@ async function getEmployerJobsStatsFilterReport(startDate, endDate, page, pageSi
   const offset = (page - 1) * pager.pageSize;
   const limit = pager.pageSize;
 
-  const reports = await otherService.getEmployerFilteredMarketingReports(startDate, endDate, offset, limit, order);
+  const reports = await otherService.getEmployerJobsFilteredMarketingReports(companyId,startDate, endDate, offset, limit, order);
 
   if (reports) {
     pager.totalItems = reports.count;
