@@ -1003,7 +1003,7 @@ async function authenticateUsers({ email, password }) {
                 applicantProfile = await userService.getApplicantProfileByUserId(user.id);
                 userWithoutPassword['applicantProfile'] = applicantProfile;
                 if (user.firstName != resp.data.user.firstName || user.lastName != resp.data.user.lastName) {
-                    console.log("should update the local now");
+                    // console.log("should update the local now");
                     const updatedUser = await userService.updateUserById(user.id, { firstName: resp.data.user.firstName, lastName: resp.data.user.lastName })
                     if (updatedUser) {
                         userWithoutPassword.firstName = updatedUser.firstName;
@@ -1014,6 +1014,8 @@ async function authenticateUsers({ email, password }) {
             if (resp.data.user.emailVerified) {
                 userWithoutPassword.emailVerified = 1;
             }
+
+            await userService.updateLastLoggedIn(user.id);
             // console.log(userWithoutPassword, 'ipass')
             return { success: true, resp: userWithoutPassword };
         }
@@ -1068,7 +1070,7 @@ async function signUpUserApplicant(body) {
         if (user.data.success) {
             body["role"] = ROLE.APPLICANT;
 
-            const users = await userService.createUser({ ...body, id: user.data.user.id, emailVerificationToken: uuidv4() });
+            const users = await userService.createUser({ ...body, id: user.data.user.id, emailVerificationToken: uuidv4(), registeredVia: 'normal' });
             if (users) {
                 const message = construct_email_applicant(user.data.user);
                 sgMail.send(message);
@@ -1076,14 +1078,14 @@ async function signUpUserApplicant(body) {
             }
         }
 
-        const unique = await isEmailUnique(body);
-        if (unique) {
-            body["role"] = ROLE.APPLICANT;
-            const user = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
-            const message = construct_email_applicant(user);
-            sgMail.send(message);
-            return user;
-        }
+        // const unique = await isEmailUnique(body);
+        // if (unique) {
+        //     body["role"] = ROLE.APPLICANT;
+        //     const user = await userService.createUser({ ...body, emailVerificationToken: uuidv4() });
+        //     const message = construct_email_applicant(user);
+        //     sgMail.send(message);
+        //     return user;
+        // }
     } else if (!resp.data.success) {
         return { success: false, resp: resp.data.error }
     }
@@ -1119,7 +1121,7 @@ async function signUpUserEmployer(body) {
         // console.log(user.data)
         if (user.data.success) {
             body["role"] = ROLE.EMPLOYER;
-            const users = await userService.createUser({ ...body, id: user.data.user.id, emailVerificationToken: uuidv4() });
+            const users = await userService.createUser({ ...body, id: user.data.user.id, emailVerificationToken: uuidv4(), registeredVia: 'normal' });
             if (users) {
                 const message = constructEmail(body.firstName, body.email, user.data.user.emailVerificationToken);
                 sgMail.send(message);
@@ -1378,14 +1380,11 @@ async function socialAuthHandler(provider, access_token, socialId, localUser) {
 
         authUser = authUser.data.user;
 
-
         let localUser = await userService.getUserByEmail(authUser.email);
 
         if (!localUser) {
             throw "something went wrong";
         }
-
-
 
         const token = jwt.sign({ sub: localUser.id, role: localUser.role }, CONSTANTS.JWTSECRET, { expiresIn: '24h' });
 
@@ -1408,8 +1407,8 @@ async function socialAuthHandler(provider, access_token, socialId, localUser) {
             }
         }
 
-
         userWithoutPassword.token = token;
+        await userService.updateLastLoggedIn(localUser.id);
 
         return userWithoutPassword;
     } else {
@@ -1423,7 +1422,7 @@ async function socialAuthHandler(provider, access_token, socialId, localUser) {
 
         // console.log({email, firstName, lastName, phoneNumber: "", socialId});
 
-        let localUser = await userService.createUser({ ...authUser, role, active: true, emailVerified: true });
+        let localUser = await userService.createUser({ ...authUser, role, active: true, emailVerified: true, registeredVia: provider });
         if (!localUser) {
             throw "something went wrong";
         }

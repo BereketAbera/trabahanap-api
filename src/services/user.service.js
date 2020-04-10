@@ -2,6 +2,7 @@ const { User, ApplicantProfile, CompanyProfile,Advertisement } = require('../mod
 // import { environment } from '../environmets/environmet';
 const environment = require('../environmets/environmet')
 const axios = require('axios');
+var Sequelize = require('sequelize');
 
 function createUser(user){
     return User.create(user).catch(err => console.log(err));
@@ -42,11 +43,15 @@ function addApplicantProfile(applicantProfile){
     return ApplicantProfile.create(applicantProfile).catch(err => console.log(err));
 }
 
-async function updateUserById(id, newUser){
+async function updateUserById(id, newUser) {
     let user = await User.findOne({where: { id }}).catch(err => console.log(err));
     return user.update(newUser);
 }
 
+async function updateLastLoggedIn(id) {
+    let user = await User.findOne({where: { id }}).catch(err => console.log(errr));
+    return user.update({lastLoggedIn: sequelize.fn('NOW'), dailyLoginCount: Sequelize.literal('dailyLoginCount + 1')})
+}
 
 async function updateUserByEmail(email, newUser){
     let user = await User.findOne({where: { email }}).catch(err => console.log(err));
@@ -59,6 +64,10 @@ async function updateCompanyProfileById(id, companyProfile){
 }
 
 function updateCompanyField(value, fieldName, companyProfileId){
+    if(fieldName === 'verified' && value === true) {
+        // to update verification date only when admin verifies the company
+        return CompanyProfile.update({[fieldName]: value, verificationDate: sequelize.fn('NOW')},{where: {id: companyProfileId}});
+    }
     return CompanyProfile.update({[fieldName]: value},{where: {id: companyProfileId}});
 }
 
@@ -112,11 +121,12 @@ async function getCompanyWithOffsetAndLimit(offset, limit){
 }
 
 function getAllApplicants(offset,limit){
-    return ApplicantProfile.findAndCountAll({offset,limit,include: [{model: User}],order: [['createdAt', 'DESC']]});
+    return User.findAndCountAll({offset,limit, where: {role: 'APPLICANT', emailVerified: 1}, order: [['createdAt', 'DESC']]});
 }
 
 module.exports = {
     updateUserById,
+    updateLastLoggedIn,
     addApplicantProfile,
     addCompanyProfile,
     getUserByIdAndRole,

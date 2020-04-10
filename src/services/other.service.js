@@ -4,10 +4,12 @@ const {
     Job, JobApplication,
     CompanyProfile,
     ApplicantProfile,
-    IssueResponse
+    IssueResponse, 
+    ApplicantReport,
+    EmployerReport
 } = require('../models');
 const jobService = require('./job.service');
-
+const { Op } = require("sequelize");
 const ROLE = require('../_helpers/role');
 const sequelize = require('../database/connection');
 
@@ -202,6 +204,37 @@ function getAdsByRanges(now,endDay){
     return sequelize.query(`SELECT * FROM advertisement WHERE active='1' AND adsEnd >= '${now}' AND adsStart < '${endDay}' `, { type: sequelize.QueryTypes.SELECT })
 }
 
+function getEmployerMarketingReports(offset,limit, order){
+    return EmployerReport.findAndCountAll({
+        offset,limit, 
+        order: [['datefield', order]],
+        attributes: { exclude: ['createdAt', 'updatedAt', 'rejected'] }
+    });
+}
+
+function getEmployerFilteredMarketingReports(startDate, endDate, offset,limit, order) {
+    return EmployerReport.findAndCountAll({ 
+        where: {datefield: {[Op.between]: [startDate, endDate]}}, 
+        offset,limit, order: [['datefield', order]], 
+        attributes: { exclude: ['createdAt', 'updatedAt', 'rejected'] } 
+    });
+}
+
+function getApplicantMarketingReports(offset,limit, order){
+    return ApplicantReport.findAndCountAll({
+        offset,limit, 
+        order: [['datefield', order]],
+        attributes: { exclude: ['createdAt', 'updatedAt'] }
+    });
+}
+
+function getApplicantFilteredMarketingReports(startDate, endDate, offset,limit, order) {
+    return ApplicantReport.findAndCountAll({ 
+        where: {datefield: {[Op.between]: [startDate, endDate]}}, 
+        offset,limit, order: [['datefield', order]],
+        attributes: { exclude: ['createdAt', 'updatedAt'] }
+    });
+}
 // function getCompanyProfileById(id){
 //     return CompanyProfile.findOne({where: {id}}).catch(err => console.log(err));
 // }
@@ -247,5 +280,9 @@ module.exports = {
     getAllAdsWithOffset,
     getAdsById,
     getAdsByRanges,
-    editAdsById
+    editAdsById,
+    getEmployerMarketingReports,
+    getApplicantMarketingReports,
+    getEmployerFilteredMarketingReports,
+    getApplicantFilteredMarketingReports
 }

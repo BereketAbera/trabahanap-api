@@ -1376,7 +1376,7 @@ function filterApplicationsBuilder(compId = '', applicantName, jobTitle, company
     return { selectQuery: selectQuery, count: QueryCount };
 }
 
-function filterEmployerQueryBuilder(companyName, industry,verify, registrationDate, offset, limit) {
+function filterEmployerQueryBuilder(companyName, industry, verify, registrationDate, offset, limit) {
     let query = ``;
     let haveWhere = false;
     if (companyName != "") {

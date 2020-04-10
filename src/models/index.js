@@ -16,6 +16,8 @@ const IssueResponse = sequelize.import("./issue_responses.js");
 const Token = sequelize.import("./tokens.js");
 const Reports = sequelize.import("./reports.js");
 const Advertisement = sequelize.import("./Advertisement.js")
+const ApplicantReport = sequelize.import("./applicant_reports.js")
+const EmployerReport = sequelize.import("./employer_reports.js")
 
 ApplicantProfile.belongsTo(User);
 ApplicantProfile.belongsTo(City);
@@ -74,5 +76,7 @@ module.exports = {
     IssueResponse,
     Token,
     Reports,
-    Advertisement
+    Advertisement,
+    ApplicantReport,
+    EmployerReport
 }

@@ -37,8 +37,7 @@ module.exports = function(sequelize, DataTypes) {
       },
       lastLoggedIn: {
         type: DataTypes.DATE,
-        allowNull: true,
-        defaultValue: "2019-10-08 11:33:47"
+        allowNull: true
       },
       emailVerified: {
         type: DataTypes.INTEGER(1),
@@ -48,6 +47,12 @@ module.exports = function(sequelize, DataTypes) {
       hasFinishedProfile: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+      },
+      registeredVia: {
+        type: DataTypes.STRING(255)
+      },
+      dailyLoginCount: {
+        type: DataTypes.INTEGER(11)
       },
       emailVerificationToken: {
         type: DataTypes.STRING,

@@ -8,6 +8,10 @@ const paymentController = require('../controllers/payment.controller')
 const ROLE = require('../_helpers/role');
 
 app.get('/counters', otherController.getAdminDashboardCounts);
+app.get('/report/applicant', otherController.getApplicantReport);
+app.get('/report/filter/applicant', otherController.getApplicantReportFilter);
+app.get('/report/employer', otherController.getEmployerReport);
+app.get('/report/filter/employer', otherController.getEmployerReportFilter);
 app.get('/employers', otherController.getEmployers);
 app.post('/employers',userController.admnCreateCompanyProfileWithBusinessLicenseAndLogo);
 app.put('/employers/verify/:id', otherController.verifyEmployer);

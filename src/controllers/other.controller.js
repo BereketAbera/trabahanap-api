@@ -5,6 +5,7 @@ const authService = require('../services/auth.service');
 const JobsController = require('../controllers/jobs.controller');
 const ROLE = require('../_helpers/role');
 const jwt = require('jsonwebtoken');
+const sequelize = require("../database/connection");
 
 var fs = require('fs');
 var path = require('path');
@@ -22,6 +23,30 @@ sgMail.setApiKey(CONSTANTS.SENDGRID_KEY);
 
 function getAdminDashboardCounts(req, res, next) {
     getAdminStats(req.user.sub)
+        .then(stats => res.status(200).send({ success: true, stats }))
+        .catch(err => next(err));
+}
+
+function getApplicantReport(req, res, next) {
+    getApplicantStatsReport(req.user.sub, req.query.page || 1, req.query.pageSize || 7, req.query.order)
+        .then(stats => res.status(200).send({ success: true, stats }))
+        .catch(err => next(err));
+}
+
+function getApplicantReportFilter(req, res, next) {
+    getApplicantStatsFilterReport(req.query.startDate, req.query.endDate, req.query.page || 1, req.query.pageSize || 7, req.query.order)
+        .then(stats => res.status(200).send({ success: true, stats }))
+        .catch(err => next(err));
+}
+
+function getEmployerReport(req, res, next) {
+    getEmployerStatsReport(req.user.sub, req.query.page || 1, req.query.pageSize || 7, req.query.order)
+        .then(stats => res.status(200).send({ success: true, stats }))
+        .catch(err => next(err));
+}
+
+function getEmployerReportFilter(req, res, next) {
+    getEmployerStatsFilterReport(req.query.startDate, req.query.endDate, req.query.page || 1, req.query.pageSize || 5, req.query.order)
         .then(stats => res.status(200).send({ success: true, stats }))
         .catch(err => next(err));
 }
@@ -537,6 +562,105 @@ async function getAdminStats(userId) {
     }
 }
 
+async function getApplicantStatsReport(userId, page, pageSize, order) {
+
+    const user = await userService.getUserById(userId);
+    if (user && (user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
+        const pager = {
+            pageSize: parseInt(pageSize),
+            totalItems: 0,
+            totalPages: 0,
+            currentPage: parseInt(page)
+        }
+       // console.log(pager)
+        const offset = (page - 1) * pager.pageSize;
+        const limit = pager.pageSize;
+
+        const reports = await otherService.getApplicantMarketingReports(offset, limit, order);
+
+        if (reports) {
+            pager.totalItems = reports.count;
+            pager.totalPages = Math.ceil(reports.count / pager.pageSize);
+            return {
+                pager,
+                rows: reports.rows
+            }
+        }
+    }
+}
+
+async function getEmployerStatsReport(userId, page, pageSize, order) {
+
+    const user = await userService.getUserById(userId);
+    if (user && (user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
+        const pager = {
+            pageSize: parseInt(pageSize),
+            totalItems: 0,
+            totalPages: 0,
+            currentPage: parseInt(page)
+        }
+        
+        const offset = (page - 1) * pager.pageSize;
+        const limit = pager.pageSize;
+
+        const reports = await otherService.getEmployerMarketingReports(offset, limit, order);
+
+        if (reports) {
+            pager.totalItems = reports.count;
+            pager.totalPages = Math.ceil(reports.count / pager.pageSize);
+            return {
+                pager,
+                rows: reports.rows
+            }
+        }
+    }
+}
+
+async function getEmployerStatsFilterReport(startDate, endDate, page, pageSize, order) {
+    const pager = {
+        pageSize: parseInt(pageSize),
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+    
+    const reports = await otherService.getEmployerFilteredMarketingReports(startDate, endDate, offset, limit, order);
+
+    if (reports) {
+        pager.totalItems = reports.count;
+        pager.totalPages = Math.ceil(reports.count / pager.pageSize);
+        return {
+            pager,
+            rows: reports.rows,
+        }
+    }
+}
+
+async function getApplicantStatsFilterReport(startDate, endDate, page, pageSize, order) {
+    const pager = {
+        pageSize: parseInt(pageSize),
+        totalItems: 0,
+        totalPages: 0,
+        currentPage: parseInt(page)
+    }
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+    
+    const reports = await otherService.getApplicantFilteredMarketingReports(startDate, endDate, offset, limit, order);
+
+    if (reports) {
+        pager.totalItems = reports.count;
+        pager.totalPages = Math.ceil(reports.count / pager.pageSize);
+        console.log(pager, "ehlsjdfios")
+        return {
+            pager,
+            rows: reports.rows,
+        }
+    }
+}
+
 async function getIssueStats(userId) {
     const user = await userService.getUserById(userId);
     if (user && (user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
@@ -760,6 +884,7 @@ async function addAdminStaffer(body, userId) {
         const token = uuidv4();
         const saveToken = await otherService.saveToken(token, body.email);
         const user = await authService.createUserApi({ ...body, password: uuidv4(), role: ROLE.ADMINSTAFF, username: body.email, emailVerificationToken: uuidv4() })
+        console.log(user)
         if (user.data.success) {
             const newUser = await userService.createUser({ ...body, id: user.data.user.id, role: ROLE.ADMINSTAFF, username: body.email });
             if (saveToken && newUser && user.data.success) {
@@ -1207,6 +1332,10 @@ async function deactivateAdsById(id) {
 
 module.exports = {
     getAdminDashboardCounts,
+    getApplicantReport,
+    getApplicantReportFilter,
+    getEmployerReport,
+    getEmployerReportFilter,
     getEmployerDashboardCounts,
     getApplicantDashboardCounts,
     getAllIndustries,
