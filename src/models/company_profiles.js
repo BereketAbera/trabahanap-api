@@ -40,6 +40,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
+    exempt:{
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     verified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false

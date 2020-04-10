@@ -7,9 +7,9 @@ const paymentController = require("../controllers/payment.controller");
 const empAutorize = require("../_helpers/empAutorize");
 const ROLE = require("../_helpers/role");
 
-app.get('/counters', otherController.getEmployerDashboardCounts);
-app.get('/locations', locationController.getCompanyLocations);
-app.post('/location', locationController.addLocationWithImage);
+app.get("/counters", otherController.getEmployerDashboardCounts);
+app.get("/locations", locationController.getCompanyLocations);
+app.post("/location", locationController.addLocationWithImage);
 
 app.get("/jobs/applications", jobsController.getJobWithApplications);
 app.post("/jobs/applications/filter", jobsController.filterJobApplication);
@@ -73,3 +73,5 @@ app.get("/filter/jobs", jobsController.filterAllJobs);
 app.post("/subscription", paymentController.addSubscription);
 app.get("/subscription", paymentController.getUserSubscription);
 app.post("/subscription/purchase/:id",paymentController.purchaseSubscription);
+app.get('/subscription/company/:compId',paymentController.getSubscriptionByCompId)
+app.get("/payment_plan_types", paymentController.getPaymentPlanTypes);

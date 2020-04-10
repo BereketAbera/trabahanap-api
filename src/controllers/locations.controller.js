@@ -6,9 +6,9 @@ const _ = require("lodash");
 //     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
 //     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 // };
-var credentials = new AWS.SharedIniFileCredentials({ profile: "liguam" });
+// var credentials = new AWS.SharedIniFileCredentials({ profile: "liguam" });
+// AWS.config.credentials = credentials;
 var ROLE = require("../_helpers/role");
-AWS.config.credentials = credentials;
 // Set the region
 AWS.config.update({ region: "us-west-2" });
 // Create S3 service object
@@ -60,13 +60,13 @@ function addLocationWithImage(req, res, next) {
           fs.unlinkSync(localImagePath);
           res.status(200).send({ success: true, location });
         })
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
     } else {
       processFileUpload(userId, location, fileName, localImagePath)
         .then(location => {
           res.status(200).send({ success: true, location });
         })
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
     }
   });
 }
@@ -105,7 +105,7 @@ function updateLocationPicture(req, res, next) {
                 .status(200)
                 .json({ sucess: false, error: "Something went wrong" });
         })
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
     } else {
       res.status(200).json({ success: false });
     }
@@ -115,7 +115,7 @@ function updateLocationPicture(req, res, next) {
 function updateLocationByAdmin(req, res, next) {
   updateCompanyLocation(req.body, req.params.id, req.user.sub)
     .then(location => res.status(200).send({ success: true, location }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function updateLocation(req, res, next) {
@@ -179,17 +179,17 @@ function updateLocation(req, res, next) {
                 .status(200)
                 .json({ sucess: false, error: "Something went wrong" });
         })
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
     } else {
       // if there the picture is not editted
       updateCompanyLocation(companyLocation, req.params.id, req.user.sub)
         .then(location => res.status(200).send({ success: true, location }))
-        .catch(err => next(err));
+        .catch(err => next("Internal Server Error! Try again"));
     }
   });
   // updateCompanyLocation(req.body, req.params.id, req.user.sub)
   //     .then(location => res.status(200).send({ success: true, location }))
-  //     .catch(err => next(err));
+  //     .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getLocation(req, res, next) {
@@ -201,7 +201,7 @@ function getLocation(req, res, next) {
             .status(200)
             .json({ success: false, error: "something went wrong" })
     )
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getHeadLocations(req, res, next) {
@@ -213,43 +213,43 @@ function getHeadLocations(req, res, next) {
             .status(200)
             .json({ success: false, error: "something went wrong" })
     )
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getAllCities(req, res, next) {
   getCities()
     .then(cities => res.status(200).send({ success: true, cities }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getAllRegions(req, res, next) {
   getRegions()
     .then(regions => res.status(200).send({ success: true, regions }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getAllCountries(req, res, next) {
   getCountries()
     .then(countries => res.status(200).send({ success: true, countries }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getRegionCities(req, res, next) {
   getCitiesByRegionsId(req.params.regionId)
     .then(cities => res.status(200).send({ success: true, cities }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getCompanyLocations(req, res, next) {
   getLocationByCompanyProfileId(req.user.sub)
     .then(locations => res.status(200).send({ success: true, locations }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getLocatiosForCompany(req, res, next) {
   adminGetLocations(req.params.companyProfileId)
     .then(locations => res.status(200).send({ success: true, locations }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getLocationByCompanyProfile(req, res, next) {
@@ -259,7 +259,7 @@ function getLocationByCompanyProfile(req, res, next) {
     req.params.companyProfileId
   )
     .then(locations => res.status(200).send({ success: true, locations }))
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 function getLocationById(req, res, next) {
@@ -269,7 +269,7 @@ function getLocationById(req, res, next) {
         ? res.status(200).send({ success: true, location })
         : res.status(200).send({ success: false, location })
     )
-    .catch(err => next(err));
+    .catch(err => next("Internal Server Error! Try again"));
 }
 
 async function getCities() {
@@ -358,7 +358,7 @@ async function getLocationByCompanyProfileId(user_id) {
 async function adminGetLocationById(id) {
   const location = await locationService
     .getLocationById(id)
-    .catch(err => console.log(err));
+    .catch(err => console.log("Internal Server Error! Try again"));
   if (location) {
     return location;
   }
@@ -470,7 +470,7 @@ async function addCompanyLocation(location) {
     }
     const newLocation = await locationService
       .addLocation(location)
-      .catch(err => console.log(err));
+      .catch(err => console.log("Internal Server Error! Try again"));
     if (newLocation) {
       const newComapanyProfile = await companyProfile.update({
         hasLocations: true
