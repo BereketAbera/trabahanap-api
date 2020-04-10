@@ -12,6 +12,8 @@ app.get('/report/applicant', otherController.getApplicantReport);
 app.get('/report/filter/applicant', otherController.getApplicantReportFilter);
 app.get('/report/employer', otherController.getEmployerReport);
 app.get('/report/filter/employer', otherController.getEmployerReportFilter);
+app.get('/report/filter/employers/jobs', otherController.getEmployerJobReportFilter);
+
 app.get('/employers', otherController.getEmployers);
 app.post('/employers',userController.admnCreateCompanyProfileWithBusinessLicenseAndLogo);
 app.put('/employers/verify/:id', otherController.verifyEmployer);

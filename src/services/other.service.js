@@ -349,6 +349,10 @@ function getEmployerMarketingReports(offset,limit, order){
     });
 }
 
+function getEmployerJobsFilteredMarketingReports(startDate, endDate, offset,limit, order) {
+  return 
+}
+
 function getEmployerFilteredMarketingReports(startDate, endDate, offset,limit, order) {
     return EmployerReport.findAndCountAll({ 
         where: {datefield: {[Op.between]: [startDate, endDate]}}, 
@@ -421,6 +425,7 @@ module.exports = {
     getEmployerMarketingReports,
     getApplicantMarketingReports,
     getEmployerFilteredMarketingReports,
+    getEmployerJobsFilteredMarketingReports,
     getApplicantFilteredMarketingReports,
     getExemptCompanies,
     getVertialAdsByRanges
