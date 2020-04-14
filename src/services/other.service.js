@@ -341,10 +341,10 @@ function getVertialAdsByRanges(now, endDay) {
   );
 }
 
-function getEmployerMarketingReports(offset,limit, order){
+function getEmployerMarketingReports(offset,limit){
     return EmployerReport.findAndCountAll({
         offset,limit, 
-        order: [['datefield', order]],
+        order: [['datefield', 'DESC']],
         attributes: { exclude: ['createdAt', 'updatedAt', 'rejected'] }
     });
 }
@@ -357,10 +357,10 @@ function getEmployerFilteredMarketingReports(startDate, endDate, offset,limit, o
     });
 }
 
-function getApplicantMarketingReports(offset,limit, order){
+function getApplicantMarketingReports(offset,limit){
     return ApplicantReport.findAndCountAll({
         offset,limit, 
-        order: [['datefield', order]],
+        order: [['datefield', 'DESC']],
         attributes: { exclude: ['createdAt', 'updatedAt'] }
     });
 }

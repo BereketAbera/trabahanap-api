@@ -818,11 +818,14 @@ async function getApplicantStatsReport(userId, page, pageSize, order) {
         const offset = (page - 1) * pager.pageSize;
         const limit = pager.pageSize;
 
-        const reports = await otherService.getApplicantMarketingReports(offset, limit, order);
+        const reports = await otherService.getApplicantMarketingReports(offset, limit);
 
         if (reports) {
             pager.totalItems = reports.count;
             pager.totalPages = Math.ceil(reports.count / pager.pageSize);
+            if(order === 'ASC') {
+              reports.rows = reports.rows.reverse()
+            }
             return {
                 pager,
                 rows: reports.rows
@@ -845,11 +848,14 @@ async function getEmployerStatsReport(userId, page, pageSize, order) {
         const offset = (page - 1) * pager.pageSize;
         const limit = pager.pageSize;
 
-        const reports = await otherService.getEmployerMarketingReports(offset, limit, order);
+        const reports = await otherService.getEmployerMarketingReports(offset, limit);
 
         if (reports) {
             pager.totalItems = reports.count;
             pager.totalPages = Math.ceil(reports.count / pager.pageSize);
+            if(order === 'ASC') {
+              reports.rows = reports.rows.reverse()
+            }
             return {
                 pager,
                 rows: reports.rows
@@ -1397,11 +1403,7 @@ async function verifyEmployerLicense(id) {
   const companyProfile = await userService.getCompanyProfileById(id);
   if (companyProfile) {
     if (companyProfile.verified) {
-      const verified = await userService.updateCompanyField(
-        false,
-        "verified",
-        id
-      );
+      const verified = await userService.updateCompanyField(false, "verified", id);
       const companyJob = await jobsService.getAllCompanyJob(companyProfile.id);
       if (companyJob) {
         companyJob.map(item => {

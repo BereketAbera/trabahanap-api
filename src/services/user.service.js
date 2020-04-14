@@ -92,7 +92,10 @@ async function updateCompanyProfileById(id, companyProfile) {
 function updateCompanyField(value, fieldName, companyProfileId){
     if(fieldName === 'verified' && value === true) {
         // to update verification date only when admin verifies the company
-        return CompanyProfile.update({[fieldName]: value, verificationDate: sequelize.fn('NOW')},{where: {id: companyProfileId}});
+      return CompanyProfile.update({[fieldName]: value, verificationDate: sequelize.fn('NOW')},{where: {id: companyProfileId}});
+    }
+    if(fieldName === 'suspended' && value === true) {
+      return CompanyProfile.update({[fieldName]: value, suspensionDate: sequelize.fn('NOW')},{where: {id: companyProfileId}});
     }
     return CompanyProfile.update({[fieldName]: value},{where: {id: companyProfileId}});
 }
@@ -210,5 +213,5 @@ module.exports = {
     updateAdsField,
     getApplicantProfileByUserIdOnly,
     getUserByVerificationDate,
-    getUserValuebyCompanyProfileId
+    getUserValuebyCompanyProfileId,
 };

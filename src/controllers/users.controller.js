@@ -981,6 +981,11 @@ function getApplicantById(req, res, next) {
         .catch(err => next("Internal Server Error! Try again"));
 }
 
+function suspendEmployer(req, res, next) {
+    suspendEmployerHandler(req.params.id)
+      .then(success => res.status(200).send({ success }))
+      .catch(err => next("Internal Server Error! Try again"));
+  }
 
 async function getApplicantProfileByUserId(id) {
     const applicant = userService.getApplicantProfileByUserId(id);
@@ -1014,6 +1019,37 @@ async function deactivateUserById(id) {
         return user;
     }
 }
+
+async function suspendEmployerHandler(id) {
+    const companyProfile = await userService.getCompanyProfileById(id);
+    if (companyProfile) {
+      if (companyProfile.suspended) {
+        const suspended = await userService.updateCompanyField(false, "suspended", id);
+        const personels = await userService.getAllByCompanyProfileId(companyProfile.id);
+        if (personels) {
+          personels.map(user => {
+            deactivateUserById(user.id)
+          });
+        }
+        if (suspended[0] > 0) {
+          return true;
+        }
+      } else {
+        const suspended = await userService.updateCompanyField(true, "suspended", id);
+        const personels = await userService.getAllByCompanyProfileId(companyProfile.id);
+        if (personels) {
+          personels.map(user => {
+            deactivateUserById(user.id)
+          });
+        }
+        if (suspended[0] > 0) {
+          return true;
+        }
+      }
+    }
+  
+    return false;
+  }
 
 async function authenticateUsers({ email, password }) {
     const resp = await authService.loginFromApi({ email, password });
@@ -1554,5 +1590,6 @@ module.exports = {
     changePassword,
     UserById,
     sendEmail,
-    getUnVerified
+    getUnVerified,
+    suspendEmployer
 }

@@ -15,6 +15,7 @@ app.get('/report/filter/employer', otherController.getEmployerReportFilter);
 app.get('/employers', otherController.getEmployers);
 app.post('/employers',userController.admnCreateCompanyProfileWithBusinessLicenseAndLogo);
 app.put('/employers/verify/:id', otherController.verifyEmployer);
+app.put('/employers/suspend/:id', userController.suspendEmployer);
 
 app.get("/issue-counter", otherController.getAdminIssueStats);
 app.get("/issue/:id", otherController.getIssueById);
