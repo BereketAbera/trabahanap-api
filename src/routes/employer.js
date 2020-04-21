@@ -47,10 +47,7 @@ app.post(
   userController.updateCompanyBusinessLicense
 );
 app.put("/profile/:id", userController.editCompanyProfile);
-app.post(
-  "/profile",
-  userController.createCompanyProfileWithBusinessLicenseAndLogo
-);
+app.post("/profile", userController.createCompanyProfileWithBusinessLicenseAndLogo);
 app.get("/profile", userController.getCompanyProfile);
 
 app.post("/staff/add", empAutorize(ROLE.EMPLOYER), otherController.addStaff);

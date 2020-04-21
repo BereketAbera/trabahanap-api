@@ -28,28 +28,35 @@ function getAdminDashboardCounts(req, res, next) {
 }
 
 function getApplicantReport(req, res, next) {
-    getApplicantStatsReport(req.user.sub, req.query.page || 1, req.query.pageSize || 7, req.query.order)
-        .then(stats => res.status(200).send({ success: true, stats }))
-        .catch(err => next(err));
+  getApplicantStatsReport(req.user.sub, req.query.page || 1, req.query.pageSize || 7, req.query.order)
+    .then(stats => res.status(200).send({ success: true, stats }))
+    .catch(err => next(err));
 }
 
 function getApplicantReportFilter(req, res, next) {
-    getApplicantStatsFilterReport(req.query.startDate, req.query.endDate, req.query.page || 1, req.query.pageSize || 7, req.query.order)
-        .then(stats => res.status(200).send({ success: true, stats }))
-        .catch(err => next(err));
+  getApplicantStatsFilterReport(req.query.startDate, req.query.endDate, req.query.page || 1, req.query.pageSize || 7, req.query.order)
+    .then(stats => res.status(200).send({ success: true, stats }))
+    .catch(err => next(err));
 }
 
 function getEmployerReport(req, res, next) {
-    getEmployerStatsReport(req.user.sub, req.query.page || 1, req.query.pageSize || 7, req.query.order)
-        .then(stats => res.status(200).send({ success: true, stats }))
-        .catch(err => next(err));
+  getEmployerStatsReport(req.user.sub, req.query.page || 1, req.query.pageSize || 7, req.query.order)
+    .then(stats => res.status(200).send({ success: true, stats }))
+    .catch(err => next(err));
 }
 
 function getEmployerReportFilter(req, res, next) {
-    getEmployerStatsFilterReport(req.query.startDate, req.query.endDate, req.query.page || 1, req.query.pageSize || 5, req.query.order)
-        .then(stats => res.status(200).send({ success: true, stats }))
-        .catch(err => next(err));
+  getEmployerStatsFilterReport(req.query.startDate, req.query.endDate, req.query.page || 1, req.query.pageSize || 5, req.query.order)
+    .then(stats => res.status(200).send({ success: true, stats }))
+    .catch(err => next(err));
 }
+
+function getEmployerJobReportFilter(req, res, next) {
+  getEmployerJobsStatsFilterReport(req.params.companyId, req.query.startDate, req.query.endDate, req.query.page || 1, req.query.pageSize || 5, req.query.order)
+    .then(stats => res.status(200).send({ success: true, stats }))
+    .catch(err => next(err));
+}
+
 
 function getAdminIssueStats(req, res, next) {
   getIssueStats(req.user.sub)
@@ -81,8 +88,8 @@ function searchIndustry(req, res, next) {
       industries
         ? res.status(200).json({ success: true, industries })
         : res
-            .status(200)
-            .json({ success: false, error: "Something went wrong" })
+          .status(200)
+          .json({ success: false, error: "Something went wrong" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -116,8 +123,8 @@ function advancedSearchJob(req, res, next) {
       jobs
         ? res.status(200).json({ success: true, jobs })
         : res
-            .status(200)
-            .json({ success: false, error: "Something went wrong" })
+          .status(200)
+          .json({ success: false, error: "Something went wrong" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -127,8 +134,8 @@ function searchCountLocations(req, res, next) {
       cityCount
         ? res.status(200).json({ success: true, cityCount })
         : res
-            .status(200)
-            .json({ success: false, error: "Something went wrong" })
+          .status(200)
+          .json({ success: false, error: "Something went wrong" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -140,8 +147,8 @@ function deactivateAds(req, res, next) {
       ads
         ? res.status(200).json({ success: true, ads })
         : res
-            .status(200)
-            .json({ success: false, error: "Something went wrong" })
+          .status(200)
+          .json({ success: false, error: "Something went wrong" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -152,8 +159,8 @@ function editAdvertisement(req, res, next) {
       advs
         ? res.status(200).json({ success: true, advs })
         : res
-            .status(200)
-            .json({ success: false, error: "Something went wrong" })
+          .status(200)
+          .json({ success: false, error: "Something went wrong" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -164,8 +171,8 @@ function getAdsById(req, res, next) {
       advs
         ? res.status(200).json({ success: true, advs })
         : res
-            .status(200)
-            .json({ success: false, error: "Something went wrong" })
+          .status(200)
+          .json({ success: false, error: "Something went wrong" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -185,10 +192,10 @@ function addEmpIssue(req, res, next) {
     file.path = CONSTANTS.baseDir + "/uploads/" + fileName + "." + fileExt;
     localImagePath = file.path;
   });
-  form.on("file", function(name, file) {
+  form.on("file", function (name, file) {
     // console.log('Uploaded ' + file.name);
   });
-  form.parse(req, function(err, fields, files) {
+  form.parse(req, function (err, fields, files) {
     _.map(fields, (value, key) => {
       issue[key] = value;
     });
@@ -221,8 +228,8 @@ function getEmpIssues(req, res, next) {
       issues
         ? res.status(200).send({ success: true, issues })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -233,8 +240,8 @@ function addReports(req, res, next) {
       reports
         ? res.status(200).send({ success: true, reports })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -252,11 +259,11 @@ function adminAddAds(req, res, next) {
       localImagePath = file.path;
     }
   });
-  form.on("file", function(name, file) {
+  form.on("file", function (name, file) {
     // console.log('Uploaded ' + file.name);
   });
 
-  form.parse(req, function(err, fields, files) {
+  form.parse(req, function (err, fields, files) {
     _.map(fields, (value, key) => {
       ads[key] = value;
       // console.log(key, '=', value)
@@ -299,11 +306,11 @@ function addIssue(req, res, next) {
       localImagePath = file.path;
     }
   });
-  form.on("file", function(name, file) {
+  form.on("file", function (name, file) {
     // console.log('Uploaded ' + file.name);
   });
 
-  form.parse(req, function(err, fields, files) {
+  form.parse(req, function (err, fields, files) {
     _.map(fields, (value, key) => {
       issue[key] = value;
     });
@@ -336,8 +343,8 @@ function getAdminStaff(req, res, next) {
       staffs
         ? res.status(200).send({ success: true, staffs })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -354,8 +361,8 @@ function getIssues(req, res, next) {
       issues
         ? res.status(200).send({ success: true, issues })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -366,8 +373,8 @@ function getStaffs(req, res, next) {
       staffs
         ? res.status(200).send({ success: true, staffs })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -378,8 +385,8 @@ function getIssue(req, res, next) {
       issue
         ? res.status(200).send({ success: true, issue })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -390,8 +397,8 @@ function getEmpIssueById(req, res, next) {
       issue
         ? res.status(200).send({ success: true, issue })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -402,8 +409,8 @@ function deleteEmpIssue(req, res, next) {
       issue
         ? res.status(200).send({ success: true, issue })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -414,8 +421,8 @@ function deleteAppIssue(req, res, next) {
       issue
         ? res.status(200).send({ success: true, issue })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -426,8 +433,8 @@ function addStaff(req, res, next) {
       staff
         ? res.status(200).send({ success: true, staff })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -520,8 +527,8 @@ function getEmployers(req, res, next) {
       employers
         ? res.status(200).send({ success: true, employers })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -532,8 +539,8 @@ function adminGetAllAds(req, res, next) {
       ads
         ? res.status(200).send({ success: true, ads })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -544,8 +551,8 @@ function getAdvertisement(req, res, next) {
       ads
         ? res.status(200).send({ success: true, ads })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -556,8 +563,8 @@ function getVerticalAdvertisement(req, res, next) {
       ads
         ? res.status(200).send({ success: true, ads })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -568,8 +575,8 @@ function getCompanyDetails(req, res, next) {
       employers
         ? res.status(200).send({ success: true, employers })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -592,8 +599,8 @@ function getAllIssues(req, res, next) {
       issues
         ? res.status(200).send({ success: true, issues })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -604,8 +611,8 @@ function getReportById(req, res, next) {
       report
         ? res.status(200).send({ success: true, report })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -615,8 +622,8 @@ function getIssueById(req, res, next) {
       issue
         ? res.status(200).send({ success: true, issue })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -627,8 +634,8 @@ function getApplicantReports(req, res, next) {
       reports
         ? res.status(200).send({ success: true, reports })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -638,8 +645,8 @@ function getApplicantIssuesAdmin(req, res, next) {
       issues
         ? res.status(200).send({ success: true, issues })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -650,8 +657,8 @@ function getCompanyIssuesAdmin(req, res, next) {
       issues
         ? res.status(200).send({ success: true, issues })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -662,8 +669,8 @@ function addIssueResponse(req, res, next) {
       issueResponse
         ? res.status(200).send({ success: true, issueResponse })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -674,8 +681,8 @@ function getStaffsCompany(req, res, next) {
       staffs
         ? res.status(200).send({ success: true, staffs })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -686,8 +693,8 @@ function addStaffsCompany(req, res, next) {
       staffs
         ? res.status(200).send({ success: true, staffs })
         : res
-            .status(200)
-            .send({ success: false, error: "Something went wrong!" })
+          .status(200)
+          .send({ success: false, error: "Something went wrong!" })
     )
     .catch(err => next("Internal Server Error! Try again"));
 }
@@ -780,7 +787,7 @@ function uploadFilePromise(file, bucketName, fileName) {
   uploadParams.Body = fileStream;
   uploadParams.Key = path.basename(file);
   return new Promise((resolve, reject) => {
-    s3.upload(uploadParams, function(err, data) {
+    s3.upload(uploadParams, function (err, data) {
       // console.log(data);
       if (err) {
         reject("Internal Server Error! Try again");
@@ -806,107 +813,126 @@ async function getAdminStats(userId) {
 
 async function getApplicantStatsReport(userId, page, pageSize, order) {
 
-    const user = await userService.getUserById(userId);
-    if (user && (user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
-        const pager = {
-            pageSize: parseInt(pageSize),
-            totalItems: 0,
-            totalPages: 0,
-            currentPage: parseInt(page)
-        }
-       // console.log(pager)
-        const offset = (page - 1) * pager.pageSize;
-        const limit = pager.pageSize;
+  const user = await userService.getUserById(userId);
+  if (user && (user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
+      const pager = {
+          pageSize: parseInt(pageSize),
+          totalItems: 0,
+          totalPages: 0,
+          currentPage: parseInt(page)
+      }
+      // console.log(pager)
+      const offset = (page - 1) * pager.pageSize;
+      const limit = pager.pageSize;
 
-        const reports = await otherService.getApplicantMarketingReports(offset, limit);
+      const reports = await otherService.getApplicantMarketingReports(offset, limit);
 
-        if (reports) {
-            pager.totalItems = reports.count;
-            pager.totalPages = Math.ceil(reports.count / pager.pageSize);
-            if(order === 'ASC') {
-              reports.rows = reports.rows.reverse()
-            }
-            return {
-                pager,
-                rows: reports.rows
-            }
-        }
-    }
+      if (reports) {
+          pager.totalItems = reports.count;
+          pager.totalPages = Math.ceil(reports.count / pager.pageSize);
+          if(order === 'ASC') {
+            reports.rows = reports.rows.reverse()
+          }
+          return {
+              pager,
+              rows: reports.rows
+          }
+      }
+  }
 }
 
 async function getEmployerStatsReport(userId, page, pageSize, order) {
 
-    const user = await userService.getUserById(userId);
-    if (user && (user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
-        const pager = {
-            pageSize: parseInt(pageSize),
-            totalItems: 0,
-            totalPages: 0,
-            currentPage: parseInt(page)
-        }
-        
-        const offset = (page - 1) * pager.pageSize;
-        const limit = pager.pageSize;
-
-        const reports = await otherService.getEmployerMarketingReports(offset, limit);
-
-        if (reports) {
-            pager.totalItems = reports.count;
-            pager.totalPages = Math.ceil(reports.count / pager.pageSize);
-            if(order === 'ASC') {
-              reports.rows = reports.rows.reverse()
-            }
-            return {
-                pager,
-                rows: reports.rows
-            }
-        }
+  const user = await userService.getUserById(userId);
+  if (user && (user.role === ROLE.ADMIN || user.role === ROLE.ADMINSTAFF)) {
+    const pager = {
+      pageSize: parseInt(pageSize),
+      totalItems: 0,
+      totalPages: 0,
+      currentPage: parseInt(page)
     }
+
+    const offset = (page - 1) * pager.pageSize;
+    const limit = pager.pageSize;
+
+    const reports = await otherService.getEmployerMarketingReports(offset, limit, order);
+
+    if (reports) {
+      pager.totalItems = reports.count;
+      pager.totalPages = Math.ceil(reports.count / pager.pageSize);
+      return {
+        pager,
+        rows: reports.rows
+      }
+    }
+  }
+}
+
+async function getEmployerJobsStatsFilterReport(startDate, endDate, page, pageSize, order) {
+  const pager = {
+    pageSize: parseInt(pageSize),
+    totalItems: 0,
+    totalPages: 0,
+    currentPage: parseInt(page)
+  }
+  const offset = (page - 1) * pager.pageSize;
+  const limit = pager.pageSize;
+
+  const reports = await otherService.getEmployerJobsFilteredMarketingReports(companyId,startDate, endDate, offset, limit, order);
+
+  if (reports) {
+    pager.totalItems = reports.count;
+    pager.totalPages = Math.ceil(reports.count / pager.pageSize);
+    return {
+      pager,
+      rows: reports.rows,
+    }
+  }
 }
 
 async function getEmployerStatsFilterReport(startDate, endDate, page, pageSize, order) {
-    const pager = {
-        pageSize: parseInt(pageSize),
-        totalItems: 0,
-        totalPages: 0,
-        currentPage: parseInt(page)
-    }
-    const offset = (page - 1) * pager.pageSize;
-    const limit = pager.pageSize;
-    
-    const reports = await otherService.getEmployerFilteredMarketingReports(startDate, endDate, offset, limit, order);
+  const pager = {
+    pageSize: parseInt(pageSize),
+    totalItems: 0,
+    totalPages: 0,
+    currentPage: parseInt(page)
+  }
+  const offset = (page - 1) * pager.pageSize;
+  const limit = pager.pageSize;
 
-    if (reports) {
-        pager.totalItems = reports.count;
-        pager.totalPages = Math.ceil(reports.count / pager.pageSize);
-        return {
-            pager,
-            rows: reports.rows,
-        }
+  const reports = await otherService.getEmployerFilteredMarketingReports(startDate, endDate, offset, limit, order);
+
+  if (reports) {
+    pager.totalItems = reports.count;
+    pager.totalPages = Math.ceil(reports.count / pager.pageSize);
+    return {
+      pager,
+      rows: reports.rows,
     }
+  }
 }
 
 async function getApplicantStatsFilterReport(startDate, endDate, page, pageSize, order) {
-    const pager = {
-        pageSize: parseInt(pageSize),
-        totalItems: 0,
-        totalPages: 0,
-        currentPage: parseInt(page)
-    }
-    const offset = (page - 1) * pager.pageSize;
-    const limit = pager.pageSize;
-    
-    const reports = await otherService.getApplicantFilteredMarketingReports(startDate, endDate, offset, limit, order);
+  const pager = {
+    pageSize: parseInt(pageSize),
+    totalItems: 0,
+    totalPages: 0,
+    currentPage: parseInt(page)
+  }
+  const offset = (page - 1) * pager.pageSize;
+  const limit = pager.pageSize;
 
-    if (reports) {
-        pager.totalItems = reports.count;
-        pager.totalPages = Math.ceil(reports.count / pager.pageSize);
-        console.log(pager, "ehlsjdfios")
-        return {
-            pager,
-            rows: reports.rows,
-        }
+  const reports = await otherService.getApplicantFilteredMarketingReports(startDate, endDate, offset, limit, order);
+
+  if (reports) {
+    pager.totalItems = reports.count;
+    pager.totalPages = Math.ceil(reports.count / pager.pageSize);
+    console.log(pager, "ehlsjdfios")
+    return {
+      pager,
+      rows: reports.rows,
     }
+  }
 }
 
 async function getIssueStats(userId) {
@@ -1790,6 +1816,7 @@ module.exports = {
   getApplicantReportFilter,
   getEmployerReport,
   getEmployerReportFilter,
+  getEmployerJobReportFilter,
   getEmployerDashboardCounts,
   getApplicantDashboardCounts,
   getAllIndustries,

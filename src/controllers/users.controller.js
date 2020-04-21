@@ -493,18 +493,25 @@ function createCompanyProfileWithBusinessLicenseAndLogo(req, res, next) {
 
         var fileLogo = files["companyLogo"];
         var fileLicense = files["businessLicense"];
-        if (fileLogo && fileLicense && fileLogo.path && fileLicense.path && fileLicense.size < 5000000) {
-            uploadFilePromise(fileLogo.path, 'live.jobsearch/th-employer-logo', fileNameLogo)
-                .then(data => {
-                    companyProfile["companyLogo"] = data.Location;
-                    return uploadFilePromise(fileLicense.path, 'live.jobsearch/th-employer-license', fileNameBusinessLisence);
-                })
+        if (fileLicense && fileLicense.path && fileLicense.size < 5000000) {
+            uploadFilePromise(fileLicense.path, 'live.jobsearch/th-employer-logo', fileNameBusinessLisence)
                 .then(data => {
                     companyProfile["businessLicense"] = data.Location;
+                    if(fileLogo) {
+                        return uploadFilePromise(fileLogo.path, 'live.jobsearch/th-employer-license', fileNameLogo);
+                    }
+                })
+                .then(data => {
+                    if(fileLogo) {
+                        companyProfile["companyLogo"] = data.Location;
+                    }
+                    console.log(companyProfile)
                     return createUserCompanyProfile({ ...companyProfile, user_id: req.user.sub });
                 })
                 .then(companyProfile => {
-                    fs.unlinkSync(fileLogo.path);
+                    if(fileLogo) {
+                        fs.unlinkSync(fileLogo.path);
+                    }
                     fs.unlinkSync(fileLicense.path);
                     companyProfile ? res.status(200).json({ success: true, companyProfile }) : res.status(200).json({ sucess: false, error: 'Something went wrong' })
                 })

@@ -135,7 +135,6 @@ function validateCompanyProfile(data) {
     "contactNumber",
     "industryType",
     "companyDescription",
-    "businessLicenseNumber",
     "CityId",
     "RegionId",
     "CountryId"

@@ -48,6 +48,24 @@ async function getCompanyJobsWithOffsetAndLimit(
   }).catch(err => console.log(err));
 }
 
+function getAllPwdJobs(offset,limit){
+  let query = `SELECT j.*, cp.companyName,(select count(*) FROM job_applications WHERE job_applications.JobId = j.id) as application,(select count(*) FROM job_applications WHERE job_applications.JobId = j.id and job_applications.hired=1) as hired FROM jobs j left join company_profiles cp on cp.id = j.CompanyProfileId where pwd=1  limit ${offset} ,${limit}`;
+  return sequelize.query(
+    query,
+    { type: sequelize.QueryTypes.SELECT }
+  ).catch(err => console.log(err));
+}
+
+function getCompanyJobswithThierApplication(offset, limit, companyProfileId) {
+  let query = `SELECT j.*, l.locationName,(select count(*) FROM job_applications WHERE job_applications.JobId = j.id) as application,(select count(*) FROM job_applications WHERE job_applications.JobId = j.id and job_applications.hired=1) as hired FROM jobs j left join locations l on j.LocationId = l.id  WHERE j.CompanyProfileId='${companyProfileId}' limit ${offset} ,${limit}`;
+  return sequelize.query(
+    query,
+    { type: sequelize.QueryTypes.SELECT }
+  ).catch(err => console.log(err));
+
+}
+
+
 async function getAllCompanyJob(compId){
   return await Job.findAll({where: { compId,active:1}}).catch(err => console.log(err));
 }
@@ -382,6 +400,8 @@ module.exports = {
   getAllSavedJobs,
   updateJobsField,
   getCountJobApplicants,
-  getAllCompanyJob
+  getAllCompanyJob,
+  getCompanyJobswithThierApplication,
+  getAllPwdJobs
   // getApplicantApplication
 };

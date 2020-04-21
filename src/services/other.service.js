@@ -349,6 +349,14 @@ function getEmployerMarketingReports(offset,limit){
     });
 }
 
+function getEmployerJobsFilteredMarketingReports(companyProfileId,startDate, endDate, offset,limit, order) {
+  let query = `SELECT j.*, l.locationName,(select count(*) FROM job_applications WHERE job_applications.JobId = j.id) as application,(select count(*) FROM job_applications WHERE job_applications.JobId = j.id and job_applications.hired=1) as hired FROM jobs j left join locations l on j.LocationId = l.id  WHERE j.CompanyProfileId='${companyProfileId}' and j.createdAt between ${startDate} and ${endDate} order by createdAt ${order} limit ${offset} ,${limit}`;
+  return sequelize.query(
+    query,
+    { type: sequelize.QueryTypes.SELECT }
+  ).catch(err => console.log(err));
+}
+
 function getEmployerFilteredMarketingReports(startDate, endDate, offset,limit, order) {
     return EmployerReport.findAndCountAll({ 
         where: {datefield: {[Op.between]: [startDate, endDate]}}, 
@@ -421,6 +429,7 @@ module.exports = {
     getEmployerMarketingReports,
     getApplicantMarketingReports,
     getEmployerFilteredMarketingReports,
+    getEmployerJobsFilteredMarketingReports,
     getApplicantFilteredMarketingReports,
     getExemptCompanies,
     getVertialAdsByRanges
